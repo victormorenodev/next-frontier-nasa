@@ -1,0 +1,86 @@
+{
+  "quantities": {
+    "oxygen": {
+      "name": "Oxygen",
+      "unit": "kg",
+      "unitName": "kilograms",
+      "start": 60,
+      "max": 60
+    },
+    "water": {
+      "name": "Water",
+      "unit": "L",
+      "unitName": "liters",
+      "start": 600,
+      "max": 700
+    },
+    "shield": {
+      "name": "Shield",
+      "unit": "g/cm\u00b2",
+      "unitName": "grams per square centimeter",
+      "start": 8,
+      "max": 10
+    },
+    "energy": {
+      "name": "Energy",
+      "unit": "kWh",
+      "unitName": "kilowatt-hours",
+      "start": 240,
+      "max": 300
+    },
+    "food": {
+      "name": "Food",
+      "unit": "kg",
+      "unitName": "kilograms of dry food",
+      "start": 100,
+      "max": 100
+    }
+  },
+  "indicators": [
+    {
+      "id": "oxygen",
+      "name": "Oxygen Level",
+      "parts": [
+        "oxygen"
+      ],
+      "icon": "oxygen",
+      "color": "#5fd4e6"
+    },
+    {
+      "id": "water",
+      "name": "Water Stock",
+      "parts": [
+        "water"
+      ],
+      "icon": "water",
+      "color": "#6b9dff"
+    },
+    {
+      "id": "shield",
+      "name": "Radiation Shield",
+      "parts": [
+        "shield"
+      ],
+      "icon": "shield",
+      "color": "#a99bff"
+    },
+    {
+      "id": "energy",
+      "name": "Energy Supply",
+      "parts": [
+        "energy"
+      ],
+      "icon": "energy",
+      "color": "#ffd25e"
+    },
+    {
+      "id": "food",
+      "name": "Food Stock",
+      "parts": [
+        "food"
+      ],
+      "icon": "food",
+      "color": "#7ddc8a"
+    }
+  ]
+}
