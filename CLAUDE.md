@@ -1,6 +1,6 @@
 # Next Frontier — contexto para Claude
 
-Este documento transfere o contexto de produto, pesquisa e implementação para o próximo agente. Leia-o junto com `README.md` e o código antes de sugerir alterações. Está escrito em português, idioma utilizado pelo responsável pelo projeto.
+Este documento transfere o contexto de produto, pesquisa e implementação para o próximo agente. Leia-o junto com `ARCHITECTURE.md` e o código antes de sugerir alterações. Está escrito em português, idioma utilizado pelo responsável pelo projeto; **o jogo em si é em inglês**.
 
 ## 1. Origem e objetivo
 
@@ -23,12 +23,21 @@ A associação ao hackathon descreve a origem e a proposta do projeto; não impl
 1. A equipe tem **quatro astronautas**.
 2. Uma partida vencedora deve durar aproximadamente **15–20 minutos**.
 3. Devem ocorrer **1–3 cartas por sol**, dependendo dos eventos.
-4. **Oxigênio e água são separados no cálculo, mas reunidos em Life Support na interface.**
-5. Shield Protection estava em aberto; o usuário pediu uma sugestão.
+4. **Cinco indicadores** (pedido de 14/11/2026, substitui a decisão anterior de reunir O₂ e água em "Life Support"): **Oxygen Level**, **Water Stock**, **Radiation Shield**, **Energy Supply** e **Food Stock**. Oxigênio e água são indicadores separados também na interface.
+5. A blindagem (hoje **Radiation Shield**) estava em aberto; o usuário pediu uma sugestão (abaixo, seção 4).
 6. O usuário considerou bons os exemplos de infraestrutura: painéis solares, reator, baterias, estufa e reabastecimento. Isso não define potências ou capacidades.
 7. O público é de **7–12 anos**.
 8. As quantidades devem ter significado físico: massa de alimentos, energia armazenada em bateria etc., em vez de pontos arbitrários com aparência científica.
-9. A implementação solicitada atualmente é um **protótipo simples**, na branch `prototype`.
+9. O projeto **recomeçou do zero** (novembro de 2026): o protótipo anterior foi removido e a construção é incremental, um passo por pedido.
+10. **O jogo é em inglês**: todo texto visível ao jogador (nomes, rótulos, mensagens) em inglês. Documentação interna pode continuar em português.
+11. **O jogo roda abrindo um arquivo HTML diretamente no navegador** (`file://`). Não pode exigir servidor, instalação, build ou dependências. Consequência técnica: nada de ES modules (`type="module"`), `fetch` de arquivos locais ou bibliotecas via npm; usar `<script src>` clássicos.
+12. **Unidades definidas** (pedido de 14/11/2026, "com a medida apropriada"): oxigênio em kg, água em litros (L), blindagem em g/cm² (densidade superficial), energia da bateria em kWh, alimentos secos em kg. A interface mostra a sigla e o nome por extenso em inglês. Valores iniciais e capacidades vêm do protótipo anterior (tabela da seção 5) e continuam sendo escolhas de protótipo.
+
+### Lema de interface
+
+> **O público-alvo tem de 7 a 12 anos.**
+
+Toda decisão de interface parte disso: ícones claros antes de texto, alvos de toque grandes, alto contraste, pouca informação por vez, frases curtas em inglês simples e funcionamento igual com mouse e com toque.
 
 ## 3. Proposta de design apresentada, ainda sujeita a validação
 
@@ -38,24 +47,25 @@ A associação ao hackathon descreve a origem e a proposta do projeto; não impl
 - O tempo avança após a escolha; ler a carta não consome recursos.
 - Vitória: concluir o sol 30 mantendo a equipe e a operação em condições adequadas.
 - Fracasso comunicado como interrupção preventiva da missão, sem violência gráfica.
-- Life Support destaca o componente mais próximo do limite; água abundante não esconde falta de O₂.
+- ~~Life Support destaca o componente mais próximo do limite~~ — superado: O₂ e água agora são indicadores separados (decisão 4).
 - Mostrar unidades junto de explicações simples e estimativas de autonomia.
 - O reabastecimento futuro deve representar logística previamente planejada, não uma entrega instantânea da Terra.
 
 **Atenção:** 30 sols, 45 cartas, estoques iniciais e distribuição de eventos são propostas de design. A duração em minutos não foi medida com usuários. No protótipo, a quantidade de cartas depende da fase da partida, ainda não do evento sorteado.
 
-## 4. Os quatro recursos
+## 4. Os cinco indicadores
 
 | Indicador | Grandezas físicas | Intenção |
 | --- | --- | --- |
-| Life Support | O₂ e água em kg; produção/consumo em kg/h; futuramente remoção de CO₂ | Preservar condições habitáveis e reservas separadas |
-| Shield Protection | Material, cobertura e densidade superficial em g/cm²; futuramente exposição acumulada | Preparar e utilizar um abrigo físico |
-| Energy | Energia da bateria em kWh; geração e demanda em kW | Balancear geração, operação e períodos de déficit |
+| Oxygen Level | O₂ em kg; produção/consumo por sol; futuramente remoção de CO₂ | Manter ar respirável |
+| Water Stock | Água utilizável em litros; perdas e reciclagem | Manter reserva de água, separada da água da blindagem |
+| Radiation Shield | Material, cobertura e densidade superficial em g/cm²; futuramente exposição acumulada | Preparar e utilizar um abrigo físico |
+| Energy Supply | Energia da bateria em kWh; geração e demanda em kW | Balancear geração, operação e períodos de déficit |
 | Food Stock | Massa por categoria, energia alimentar, validade e produção | Manter alimentação adequada ao longo da missão |
 
 Não confundir kW (potência) e kWh (energia), kg de comida hidratada e kg de sólidos alimentares, nem Gy e Sv.
 
-### Sugestão para Shield Protection
+### Sugestão para Radiation Shield
 
 Representar a proteção física do habitat/abrigo e a possibilidade de proteger os quatro astronautas. A radiação **não consome a blindagem como combustível**. Materiais podem ser redistribuídos e a configuração pode mudar; a exposição da equipe é uma variável distinta.
 
@@ -65,42 +75,33 @@ Mover água utilizável para a blindagem deve conservar a massa total, sem dupli
 
 ## 5. Estado real do código
 
-Projeto estático, sem framework, dependências ou etapa de build.
+O código atual é descrito em `ARCHITECTURE.md`, que é atualizado a cada passo. Resumo do recomeço:
 
-| Arquivo | Responsabilidade |
-| --- | --- |
-| `entry.html` | Página principal e estrutura acessível dos indicadores e cartas |
-| `style.css` | Estilo responsivo escuro, com tons de cobre |
-| `engine.js` | Estado, seis modelos de carta e evolução da missão; exporta `Mission` no navegador e API CommonJS no Node |
-| `app.js` | Renderização, botões, mensagens e reinício |
-| `README.md` | Execução e resumo das limitações |
-| `CLAUDE.md` | Este contexto |
+1. Sistema de indicadores (`indicators.js`), com unidade em cada quantidade.
+2. Interface com os indicadores (hoje cinco; `index.html`, `style.css`, `ui.js`): contêineres simples com ícones; ao passar o mouse ou o dedo, o valor atual aparece em destaque.
+3. Espaço reservado para as cartas (retângulo 3:4, centralizado abaixo dos indicadores; ainda vazio).
+4. Barra da missão acima dos indicadores: sol atual (`mission.js`) e botão **End mission**, com confirmação e opção de começar uma nova missão.
 
-### Como executar
+5. Sistema de cartas: dados em `cards.js` (10 cartas **mockup** para teste, com efeitos inventados), baralho de 45 em `deck.js` (embaralhado a cada missão, nunca a mesma carta duas vezes seguidas), carta na tela em `card-ui.js` (responder tocando, arrastando ou com as setas; as costas, com efeitos e instituição da fonte, aparecem girando depois da resposta).
 
-Abra `entry.html` diretamente no navegador ou, na pasta do repositório:
+Formato das cartas e regras do baralho: `ARCHITECTURE.md`, Passo 8. A capacidade de água subiu para 700 L para que mover água da blindagem para a reserva conserve a massa.
 
-```bash
-python -m http.server 8000
-```
+6. Tempo: cada carta consome ⅓, ⅔ ou 1 sol (campo `time`). A missão conta o tempo em terços de sol: cada sol tem dia → tarde → noite, e o número do sol sobe a cada sol completo. O fundo da página mostra o período (creme de dia, laranja à tarde, escuro à noite) e a barra mostra "Sol N" e o período, com ícone maior. Detalhes: `ARCHITECTURE.md`, Passo 9.
 
-Acesse `http://localhost:8000/entry.html`. O arquivo principal **não se chama `index.html`**.
+7. Consumo diário (`flows.js`): a cada terço de sol a equipe respira e come (coeficientes de referência), a reciclagem perde água, os painéis carregam a bateria só de dia e à tarde e a base gasta energia o tempo todo. As respostas podem ter efeito imediato (`effects`), mudar o ritmo por sol por alguns sols (`ongoing`, com espera e duração) ou agendar algo (`later`). Por exemplo, plantar sementes dá comida depois de 3 sols. Indicadores mostram setas ▲▼ e o detalhe mostra quanto muda por sol. Detalhes: `ARCHITECTURE.md`, Passo 10.
 
-### O que já funciona
+8. Cinco indicadores: Oxygen Level, Water Stock, Radiation Shield, Energy Supply e Food Stock (`ARCHITECTURE.md`, Passo 11).
+9. Detalhe dos indicadores: **apertar e segurar** mostra (mouse ou toque; deslizar troca de indicador), **soltar** fecha com um *fade* suave. Sob os indicadores, uma caixa do mesmo tamanho do detalhe lista até 3 efeitos ativos (nome, recurso ▲/▼, sols restantes, "+N more"); o detalhe aparece por cima dela. A caixa cresce conforme o número de efeitos dentro de uma região fixa, para a carta não mudar de tamanho; há 20 px até a carta. Detalhes: `ARCHITECTURE.md`, Passos 12 a 14.
 
-- Quatro indicadores, com O₂ e água separados no estado.
-- Duas escolhas por carta, custos visíveis e feedback.
-- 30 sols e 45 decisões por partida completa.
-- Consumo proporcional ao intervalo de tempo: em um sol com três cartas, cada carta contabiliza um terço do consumo diário.
-- Transferência de água entre reserva utilizável e blindagem, conservando massa.
-- Depósito externo finito: recuperar alimentos reduz a reserva desse depósito.
-- Bloqueio de transferências inviáveis e retirada de depósito vazio, sem avançar o tempo.
-- Vitória, interrupção por esgotamento de recurso essencial e reinício.
-- Links de referência e identificação dos parâmetros simulados na interface.
+Ainda não existem derrota por falta de recurso (a água pode chegar a zero em algumas partidas aleatórias), regras de dificuldade nem cartas com dados reais.
 
-### Parâmetros atuais — não confundir com requisitos científicos
+Para executar: abrir `index.html` no navegador. Não há servidor.
 
-| Parâmetro | Valor atual | Natureza |
+### Referência histórica: parâmetros do protótipo anterior
+
+O protótipo removido (commit `45928f0`, branch `prototype`) usava os valores abaixo. Os estoques iniciais foram reaproveitados em `indicators.js` e os consumos/produções em `flows.js` (a energia +40 kWh/sol virou painéis +100 só de dia e tarde, menos consumo de 60).
+
+| Parâmetro | Valor | Natureza |
 | --- | --- | --- |
 | Duração do sol | 24,6597 h | Aproximação astronômica |
 | O₂ inicial | 60 kg | Escolha de protótipo |
@@ -108,29 +109,13 @@ Acesse `http://localhost:8000/entry.html`. O arquivo principal **não se chama `
 | Água na blindagem inicial | 1.600 kg | Escolha de protótipo; separada dos 600 kg |
 | Energia inicial / capacidade | 240 / 300 kWh | Escolha de protótipo |
 | Alimentos secos iniciais | 100 kg | Escolha de protótipo |
-| Alimentos no depósito externo | 30 kg | Escolha de protótipo |
 | O₂ por pessoa/dia terrestre | 0,84 kg | Referência de um estudo de suporte à vida, sob suas premissas |
 | Sólidos alimentares por pessoa/dia terrestre | 0,62 kg | Referência do mesmo estudo |
-| Produção de O₂ | 3 kg/sol | Simulada; equipamento ainda não dimensionado |
-| Perda líquida de água | 4 kg/sol | Simulada; recuperação não modelada explicitamente |
-| Saldo elétrico antes das cartas | +40 kWh/sol | Simulado; soma geração menos demanda |
-| Custos e bônus das cartas | Ver `engine.js` | Balanceamento ilustrativo |
+| Produção de O₂ | 3 kg/sol | Simulada |
+| Perda líquida de água | 4 kg/sol | Simulada |
+| Saldo elétrico | +40 kWh/sol | Simulado |
 
-Os coeficientes por dia terrestre são multiplicados por `SOL_HOURS / 24`. Para quatro pessoas, isso corresponde a cerca de 3,45 kg O₂ e 2,55 kg de sólidos alimentares por sol. Em 30 sols, são aproximadamente 103,6 kg O₂ e 76,4 kg de sólidos alimentares, antes de produção, perdas e eventos.
-
-### Limitações conhecidas para a próxima análise
-
-- Apenas seis modelos de carta repetidos em sequência determinística; sem sorteio condicionado, cadeias narrativas ou consequências persistentes.
-- A blindagem pode ser redistribuída, mas ainda não participa de eventos solares ou de uma condição de vitória. Seu benefício estratégico está incompleto.
-- A barra visual de blindagem satura em 10 g/cm²; a massa interna pode continuar aumentando. Isso merece revisão de capacidade e comunicação.
-- Não há medição nem cálculo de dose, estufa funcional, CO₂, saúde individual ou temperatura.
-- Reator e painéis são apenas um saldo elétrico agregado. Não há potência individual, curva solar, eficiência ou limites de carga/descarga.
-- A energia de uma ação é descontada antes do saldo do intervalo; o esgotamento só é verificado depois. Uma versão física mais completa deve verificar disponibilidade ao longo do tempo e limites instantâneos.
-- A manutenção de O₂ concede um bônus instantâneo; não representa ainda seis horas de parada e reparo de um equipamento.
-- A água é uma perda líquida simplificada; não existem reservatórios de água residual nem modelo de tratamento.
-- Não existem APIs conectadas, dados ao vivo, persistência, backend, autenticação ou implantação pública.
-- Os limites de encerramento são regras simplificadas, não limites fisiológicos validados.
-- Acessibilidade, compreensão e duração ainda precisam de testes com crianças.
+Os coeficientes por dia terrestre eram multiplicados por `SOL_HOURS / 24`: para quatro pessoas, cerca de 3,45 kg O₂ e 2,55 kg de sólidos alimentares por sol.
 
 ## 6. Fontes oficiais do desafio e uso esperado
 
@@ -190,30 +175,38 @@ Prioridade analítica anteriormente sugerida: DONKI → toolkit alimentar CSA �
 - Mostrar claramente quando um valor é simulado. Usar unidades reais não torna um número medido.
 - Preservar massa nas transferências e contabilizar fluxos pelo tempo decorrido.
 - Não penalizar recurso em cada carta como se cada uma durasse um sol completo.
-- Construir eventual nova arquitetura conforme a próxima solicitação; o protótipo não exige framework.
+- Construir passo a passo, conforme cada solicitação, sem framework. Registrar cada passo em `ARCHITECTURE.md`.
 
 ## 9. Git, validação e próximos passos
 
 - Repositório local: esta pasta (`repo`), dentro de `NASA_Hackathon`.
 - `origin`: `https://github.com/victormorenodev/next-frontier-nasa.git`.
 - `main` começou com um HTML contendo apenas H1.
-- `prototype` contém o protótipo simples; commit de implementação: `45928f0`.
+- `prototype` contém o protótipo simples anterior (commit `45928f0`). O trabalho atual é o recomeço do zero, na branch `dev`.
 - Na última tentativa, push falhou por falta de autenticação HTTPS; `gh auth status` informou ausência de login. Não presumir publicação remota. Verificar novamente antes de afirmar que algo está no GitHub.
 - Nenhum site foi publicado pelo Sites; os arquivos são locais.
-
-Validações já executadas: sintaxe JavaScript, abertura/renderização inicial no Chromium, inspeção visual móvel, `git diff --check` e verificações via Node para 45 cartas, consumo fracionado, conservação de água, vitória, derrota e bloqueio de alterações após encerramento. As verificações de motor foram executadas pontualmente e não estão versionadas como suíte de testes.
 
 Comandos básicos:
 
 ```bash
-node --check engine.js
-node --check app.js
+node --check indicators.js
+node --check mission.js
+node --check flows.js
+node --check cards.js
+node --check deck.js
+node --check card-ui.js
+node --check ui.js
+node tests/indicators.test.js
+node tests/mission.test.js
+node tests/flows.test.js
+node tests/deck.test.js
 git diff --check
 git status --short
-git branch --show-current
 ```
 
-Próxima análise recomendada: verificar se cada um dos quatro indicadores tem um papel estratégico real; dimensionar fluxos de energia e suporte à vida; definir os eventos e a utilidade do abrigo; depois testar a duração e compreensão com o público. Esses são próximos passos sugeridos, não autorização para implementar toda essa expansão sem solicitação.
+Os testes rodam no Node apenas como ferramenta de desenvolvimento; o jogo não depende do Node.
+
+Próxima análise recomendada: verificar se cada um dos cinco indicadores tem um papel estratégico real; dimensionar fluxos de energia e suporte à vida; definir os eventos e a utilidade do abrigo; depois testar a duração e compreensão com o público. Esses são próximos passos sugeridos, não autorização para implementar toda essa expansão sem solicitação.
 
 ## 10. Documentos anteriores
 

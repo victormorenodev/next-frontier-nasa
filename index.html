@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" data-period="day">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1b1a30">
+  <title>Next Frontier</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Sky behind everything: one layer per part of the day, faded in by html[data-period]. -->
+  <div class="sky" aria-hidden="true">
+    <div class="sky-layer sky-day"></div>
+    <div class="sky-layer sky-afternoon"></div>
+    <div class="sky-layer sky-night"></div>
+  </div>
+
+  <main>
+    <!-- Mission bar: current sol, part of the day, and the button to end the mission. -->
+    <header class="topbar">
+      <p class="sol" title="A sol is a day on Mars">
+        <!-- One icon per part of the day; CSS shows the one that matches html[data-period]. -->
+        <svg class="sky-icon icon-day" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+        <svg class="sky-icon icon-afternoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17a5 5 0 0 1 10 0"/><path d="M2 17h20M4 21h16M12 6v3M5.6 10.6l1.8 1.8M18.4 10.6l-1.8 1.8"/></svg>
+        <svg class="sky-icon icon-night" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3.5v2M16 4.5h2"/></svg>
+        <span><strong id="sol">Sol 1</strong><small id="period">Daytime</small></span>
+      </p>
+      <button class="end-button" id="end-mission" type="button">End mission</button>
+    </header>
+
+    <section class="indicators" id="indicators" aria-label="Base indicators"></section>
+    <!-- Info box under the indicators: shows the active effects; while an indicator is held,
+         its detail covers this box (same size), so no extra space is needed. -->
+    <div class="readout" id="readout">
+      <section class="effects-box" aria-labelledby="effects-title">
+        <h2><span id="effects-title">Active effects</span><span class="more" id="active-more"></span></h2>
+        <ul id="active-effects"></ul>
+      </section>
+      <section class="detail empty" id="detail" aria-live="polite"></section>
+    </div>
+
+    <!-- The mission card (portrait, 3:4). card-ui.js draws its front and back. -->
+    <div class="card-area">
+      <section class="card-slot" id="card" aria-label="Mission card"></section>
+    </div>
+  </main>
+
+  <!-- Asks before ending, so a stray tap does not end the mission. -->
+  <dialog class="confirm" id="end-dialog" aria-labelledby="end-title">
+    <h2 id="end-title">End the mission?</h2>
+    <p>The crew stops here. You can start a new mission after.</p>
+    <div class="confirm-actions">
+      <button type="button" id="end-cancel" autofocus>Keep playing</button>
+      <button type="button" id="end-confirm" class="danger">End mission</button>
+    </div>
+  </dialog>
+
+  <!-- Classic scripts (no modules) so the game works by opening this file directly. -->
+  <script src="indicators.js"></script>
+  <script src="mission.js"></script>
+  <script src="flows.js"></script>
+  <script src="cards.js"></script>
+  <script src="deck.js"></script>
+  <script src="card-ui.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>
