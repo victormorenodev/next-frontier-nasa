@@ -1,19 +1,12 @@
-/* Deck: checks card data, shuffles and builds the 45-card deck of a mission.
+/* Deck: checks card data, shuffles and builds a shuffled deck sized to the mission event schedule.
    No DOM here, so it also runs in Node for tests. */
 (function (root) {
   'use strict';
 
-  const node = typeof module !== 'undefined' && module.exports;
-  const Indicators = node ? require('./indicators.js') : root.Indicators;
+  const Indicators = root.Indicators;
 
-  const DECK_SIZE = 45;
-  const DIFFICULTIES = {easy: 'Easy', medium: 'Medium', hard: 'Hard'};
-  // Time a card takes. `thirds` feeds Mission.advance; `label` is what the player reads.
-  const TIMES = {
-    '1/3': {thirds: 1, label: '⅓ sol'},
-    '2/3': {thirds: 2, label: '⅔ sol'},
-    '1':   {thirds: 3, label: '1 sol'}
-  };
+  const DECK_SIZE = GameData.mission.totalSols;
+  const DIFFICULTIES = {easy: GameData.interface?.easy || 'Easy', medium: GameData.interface?.medium || 'Medium', hard: GameData.interface?.hard || 'Hard'};
   const SIDES = ['left', 'right'];
 
   // Returns a list of problems with a card (empty list = card is fine).
@@ -22,7 +15,6 @@
     const need = (ok, msg) => { if (!ok) problems.push(`${card && card.id}: ${msg}`); };
     need(card && typeof card.id === 'string' && card.id, 'missing id');
     need(card.difficulty in DIFFICULTIES, `difficulty must be one of ${Object.keys(DIFFICULTIES).join(', ')}`);
-    need(card.time in TIMES, `time must be one of ${Object.keys(TIMES).map(t => `'${t}'`).join(', ')}`);
     need(typeof card.description === 'string' && card.description, 'missing description');
     need(typeof card.image === 'string' && card.image, 'missing image');
     need(card.source && card.source.institution && /^https?:\/\//.test(card.source.url || ''), 'source needs institution and http(s) url');
@@ -71,13 +63,12 @@
     while (deck.length < size) {
       const round = shuffle(cards, random);
       const last = deck[deck.length - 1];
-      if (last && round[0].id === last.id) [round[0], round[1]] = [round[1], round[0]];
+      if (GameData.mission.avoidConsecutive && last && round[0].id === last.id) [round[0], round[1]] = [round[1], round[0]];
       deck.push(...round.slice(0, size - deck.length));
     }
     return deck;
   }
 
-  const api = {DECK_SIZE, DIFFICULTIES, TIMES, validateCard, shuffle, createDeck};
-  if (node) module.exports = api;
-  else root.Deck = api;
+  const api = {DECK_SIZE, DIFFICULTIES, validateCard, shuffle, createDeck};
+   root.Deck = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

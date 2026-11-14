@@ -20,7 +20,7 @@
   const STEADY = 0.005;
   const trendOf = n => (n > STEADY ? 'up' : n < -STEADY ? 'down' : 'flat');
   const ARROWS = {up: '▲', down: '▼', flat: '■'};
-  const TREND_WORDS = {up: 'going up', down: 'going down', flat: 'steady'};
+  const TREND_WORDS = Object.fromEntries(['up','down','flat'].map(k=>[k,Copy(k)]));
 
   const row = document.getElementById('indicators');
   const detail = document.getElementById('detail');
@@ -39,8 +39,10 @@
       tile.type = 'button';
       tile.className = 'tile';
       tile.dataset.id = ind.id;
+      document.documentElement.style.setProperty('--' + ind.id, ind.color);
+      tile.style.setProperty('--c', ind.color);
       tile.setAttribute('aria-controls', 'detail');
-      tile.innerHTML = `<span class="fill"></span><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[ind.id]}</svg>` +
+      tile.innerHTML = `<span class="fill"></span><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[ind.icon]}</svg>` +
         '<span class="trend" aria-hidden="true"></span>';
       row.append(tile);
     });
@@ -78,14 +80,14 @@
     if (!items.length) {
       const none = document.createElement('li');
       none.className = 'none';
-      none.textContent = 'No active effects';
+      none.textContent = Copy("noEffects");
       activeList.append(none);
       return;
     }
     items.slice(0, MAX_EFFECTS).forEach(a => {
       const li = document.createElement('li');
       const rates = Object.entries(a.rates);
-      const left = a.thirdsLeft === Infinity ? 'always' : `${solsText(a.thirdsLeft)} left`;
+      const left = a.thirdsLeft === Infinity ? Copy("always") : `${solsText(a.thirdsLeft)} left`;
       const name = a.note || rates.map(([q]) => Indicators.QUANTITIES[q].name).join(' + ');
       li.innerHTML = '<span class="ae-name"></span>' +
         '<span class="ae-marks">' + rates.map(([q, n]) => `<span class="ae-dot" style="--c: var(--${q})"></span>` +
@@ -183,48 +185,85 @@
   row.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
 
   // ── Mission flow: deck, answers, end ────────────────────
+  const intro = document.getElementById('mission-intro');
+  const briefing = document.getElementById('briefing');
+  const game = document.getElementById('game');
+  let introDrag = null;
+
   const endButton = document.getElementById('end-mission');
   const dialog = document.getElementById('end-dialog');
   const cardUI = CardUI.create(document.getElementById('card'), {onAnswer, onNext});
+  let savedSide = null;
   let deck = [];
   let index = 0;
+  let schedule = [];
+  let eventIndex = 0;
+  const background = document.getElementById('sol-transition');
+  const solNotice = document.getElementById('sol-notice');
 
-  // New game: fresh indicators, Sol 1 and a newly shuffled deck.
   function startMission() {
-    state = Indicators.createState();
-    mission = Mission.createMission();
-    flows = Flows.createFlows();
-    deck = Deck.createDeck(CardData.CARDS);
-    index = 0;
+    if (window.savedMission) {
+      localStorage.removeItem('next-frontier-save');
+      sessionStorage.setItem('next-frontier-start', 'yes');
+      location.reload();
+      return;
+    }
+    intro.hidden = true;
+    game.hidden = false;
+    background.hidden = true;
+    solNotice.textContent = Copy("missionProgress");
+    adopt(Engine.start());
     render();
     renderMission();
-    cardUI.showFront(deck[0], 1, deck.length);
+    showSol();
   }
 
-  // An answer: (1) its effect right now, (2) its lasting changes are recorded,
-  // (3) the card's time passes third by third — the crew breathes, eats, the panels charge…
+  function showSol() {
+    const total = schedule[mission.sol - 1];
+    savedSide = null;
+    cardUI.showFront(deck[index], eventIndex + 1, total);
+    save();
+  }
+
   function onAnswer(side) {
+    if (mission.ended) return;
     const card = deck[index], answer = card[side];
-    const thirds = Deck.TIMES[card.time].thirds;
     const before = state;
-    state = Indicators.apply(state, answer.effects);
-    flows = Flows.addAnswer(flows, answer, mission.elapsed);
-    const passed = Flows.passTime(state, flows, mission.elapsed, thirds);
-    bumpChanged(before, state);                       // pulse what the answer itself changed
-    state = passed.state;
-    flows = passed.flows;
-    mission = Mission.advance(mission, thirds);       // time of day moves on
+    adopt(Engine.answer(snapshot(), side));
+    bumpChanged(before, state);
     render();
-    renderMission();
-    cardUI.showBack(card, side, index === deck.length - 1, passed.happened);
+    const last = eventIndex + 1 === schedule[mission.sol - 1];
+    cardUI.showBack(card, side, last, []);
+    savedSide = side; save();
   }
 
+  function snapshot() { return {state,mission,flows,deck,index,schedule,eventIndex,savedSide}; }
+  function adopt(value) { ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=value); }
   function onNext() {
-    index++;
-    if (index < deck.length) { cardUI.showFront(deck[index], index + 1, deck.length); return; }
-    mission = Mission.endMission(mission, 'complete');
+    const before=state;
+    const result=Engine.next(snapshot());
+    if (result.snapshot.mission===mission && result.snapshot.index===index) return;
+    adopt(result.snapshot);
+    if (!result.newSol) { showSol(); return; }
+    const passed=result;
+    bumpChanged(before,state);
+    render();
+    // Only the sky changes: the game stays visible throughout the turnover.
+    const arrivals = passed.happened.map(h => h.note || Copy("suppliesUpdated"));
+    solNotice.textContent = arrivals.join(' · ') || Copy("missionProgress");
     renderMission();
+    if (!mission.ended) showSol();
+    else save();
+
+    // Decorative only: the next sol is already playable while the light fades.
+    background.hidden = true;
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      void background.offsetWidth; // restart even when sols advance quickly
+      background.hidden = false;
+    }
   }
+
+  background.addEventListener('animationend', () => { background.hidden = true; });
 
   // Briefly pulses the indicators an answer changed, so kids see where the effect went.
   function bumpChanged(before, after) {
@@ -237,10 +276,6 @@
     });
   }
 
-  const PERIOD_NAMES = {day: 'Daytime', afternoon: 'Afternoon', night: 'Night'};
-  const THEME_COLORS = {day: '#fbe7bd', afternoon: '#ec8a52', night: '#1b1a30'};
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-
   // Time in words, from thirds of a sol: 82 → "27⅓ sols", 3 → "1 sol".
   function solsText(thirds) {
     const whole = Math.floor(thirds / 3), part = ['', '⅓', '⅔'][thirds % 3];
@@ -248,19 +283,15 @@
   }
 
   function renderMission() {
-    // Sol count and the sky: day → afternoon → night, then the next sol.
-    document.getElementById('sol').textContent = `Sol ${mission.sol}`;
-    document.getElementById('period').textContent = PERIOD_NAMES[mission.period];
-    document.documentElement.dataset.period = mission.period;
-    themeMeta.setAttribute('content', THEME_COLORS[mission.period]);
+    document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.TOTAL_SOLS});
     endButton.disabled = mission.ended;
     if (!mission.ended) return;
     const done = mission.reason === 'complete';
     cardUI.showMessage(
-      done ? 'Mission complete!' : 'Mission ended',
-      done ? `You answered all ${deck.length} cards. The crew lived ${solsText(mission.elapsed)} on Mars.`
-           : `You ended the mission on Sol ${mission.sol}.`,
-      'New mission',
+      done ? Copy("completeTitle") : Copy("endedTitle"),
+      done ? Copy("completeBody", {totalSols: Mission.TOTAL_SOLS, events: index})
+           : Copy("endedBody", {sol: mission.sol}),
+      Copy("newMission"),
       () => { startMission(); endButton.focus(); });
   }
 
@@ -268,12 +299,77 @@
   document.getElementById('end-cancel').addEventListener('click', () => dialog.close());
   document.getElementById('end-confirm').addEventListener('click', () => {
     dialog.close();
-    mission = Mission.endMission(mission, 'quit');
+    adopt(Engine.end(snapshot()));
+    save();
     renderMission();
   });
   // Tapping outside the box closes it, like "Keep playing".
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
 
+  function beginFromIntro() {
+    if (intro.hidden) return;
+    introDrag = null;
+    briefing.style.transform = '';
+    if ((stored || window.invalidSavedMission) && !confirm(Copy("replaceSave"))) return;
+    startMission();
+    document.querySelector('#card .answer')?.focus({preventScroll: true});
+  }
+
+  document.getElementById('start-mission').addEventListener('click', beginFromIntro);
+  briefing.addEventListener('pointerdown', e => {
+    if (e.button > 0 || e.target.closest('button, a')) return;
+    introDrag = {id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, horizontal: false};
+  });
+  briefing.addEventListener('pointermove', e => {
+    if (!introDrag || introDrag.id !== e.pointerId) return;
+    const dx = e.clientX - introDrag.x, dy = e.clientY - introDrag.y;
+    if (!introDrag.horizontal) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { introDrag = null; return; }
+      if (Math.abs(dx) < 10) return;
+      introDrag.horizontal = true;
+      try { briefing.setPointerCapture(e.pointerId); } catch (_) { /* pointer released */ }
+      briefing.classList.add('dragging');
+    }
+    introDrag.dx = dx;
+    briefing.style.transform = `translateX(${dx * 0.35}px) rotate(${dx / 60}deg)`;
+  });
+  briefing.addEventListener('pointerup', e => {
+    if (!introDrag || introDrag.id !== e.pointerId) return;
+    const begin = introDrag.horizontal && Math.abs(introDrag.dx) >= Math.min(80, briefing.offsetWidth * 0.22);
+    introDrag = null;
+    briefing.classList.remove('dragging');
+    briefing.style.transform = '';
+    if (begin) beginFromIntro();
+  });
+  briefing.addEventListener('pointercancel', () => {
+    introDrag = null;
+    briefing.classList.remove('dragging');
+    briefing.style.transform = '';
+  });
+  intro.addEventListener('keydown', e => {
+    if (intro.hidden || e.target.closest('a')) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      beginFromIntro();
+    }
+  });
+
+  function save() {
+    try { localStorage.setItem('next-frontier-save', JSON.stringify({version:1,data:GameData,state,mission,flows,deck,index,schedule,eventIndex,savedSide}, (k,v)=>v===Infinity?'__infinity':v)); }
+    catch (_) { solNotice.textContent = Copy("storageUnavailable"); }
+  }
+  const stored = window.savedMission;
+  if (stored) {
+    const button = document.createElement('button'); button.className='start-mission'; button.textContent=Copy("continueMission");
+    button.onclick=()=>{ ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=stored); intro.hidden=true;game.hidden=false;render();renderMission(); if(!mission.ended) {const side=savedSide;cardUI.showFront(deck[index],eventIndex+1,schedule[mission.sol-1]);if(side)cardUI.showBack(deck[index],side,eventIndex+1===schedule[mission.sol-1],[]);} };
+    document.getElementById('start-mission').before(button);
+  }
+  window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
   buildTiles();
-  startMission();
+  try {
+    if (sessionStorage.getItem('next-frontier-start') === 'yes') {
+      sessionStorage.removeItem('next-frontier-start');
+      startMission();
+    }
+  } catch (_) { /* The game remains playable when browser storage is disabled. */ }
 })();

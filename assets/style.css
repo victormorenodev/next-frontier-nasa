@@ -30,61 +30,13 @@ body {
   font: 18px/1.4 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* ── Sky: time of day in the background ────────────
-   Three fixed layers, one per part of the sol. Only the one matching html[data-period]
-   is visible; switching fades between them (gradients themselves cannot be animated). */
-.sky { position: fixed; inset: 0; z-index: -1; }
-.sky-layer {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 1.2s ease;
-}
-/* Day: warm cream, sun glow from the top right. */
-.sky-day {
-  background:
-    radial-gradient(circle at 88% 4%, #fff9e8 0, #ffe9a8 14%, transparent 42%),
-    linear-gradient(165deg, #fff7e2 0%, #fbe7bd 48%, #f2cf92 100%);
-}
-/* Afternoon: orange, the sun going down at the bottom left. */
-.sky-afternoon {
-  background:
-    radial-gradient(circle at 12% 100%, #ffe1a0 0, #ffb86b 18%, transparent 55%),
-    linear-gradient(200deg, #f7b26e 0%, #ec8a52 45%, #b9584c 100%);
-}
-/* Night: dark blue-violet with a few stars. */
-.sky-night {
-  background:
-    radial-gradient(1.5px 1.5px at 18% 12%, #fff9 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 72% 8%, #fff8 50%, transparent 51%),
-    radial-gradient(1px 1px at 45% 22%, #fff7 50%, transparent 51%),
-    radial-gradient(1px 1px at 88% 30%, #fff6 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 8% 40%, #fff6 50%, transparent 51%),
-    linear-gradient(180deg, #0c0b1f 0%, #1b1a30 55%, #2c2550 100%);
-}
-html[data-period="day"] .sky-day,
-html[data-period="afternoon"] .sky-afternoon,
-html[data-period="night"] .sky-night { opacity: 1; }
-
-/* Colours of things drawn straight on the sky (mission bar). Panels and cards keep their own. */
-html[data-period="day"] {
-  --page-text: #3a2a12;
-  --page-muted: #7a6040;
-  --page-danger: #b8341f;
-  --sky-icon: #e08a1e;
-}
-html[data-period="afternoon"] {
-  --page-text: #2e1206;
-  --page-muted: #5e2a12;
-  --page-danger: #7d150b;
-  --sky-icon: #fff2c8;
-}
-html[data-period="night"] {
+:root {
   --page-text: #f7f1e6;
   --page-muted: #bdb7d6;
   --page-danger: #ff8a7a;
-  --sky-icon: #dfe6ff;
+  --sky-icon: #e99870;
 }
+body { background: radial-gradient(ellipse at top, #352846, #141326 80%); }
 
 /* Column filling the screen height: indicators and readout on top, card area takes the rest. */
 main {
@@ -115,8 +67,8 @@ main {
   color: var(--page-text);
 }
 .sky-icon {
-  display: none;
-  width: 48px;                   /* big and clear: it tells the time of day at a glance */
+  display: block;
+  width: 48px;                   /* Mars icon */
   height: 48px;
   flex-shrink: 0;
   fill: none;
@@ -125,9 +77,6 @@ main {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-html[data-period="day"] .icon-day,
-html[data-period="afternoon"] .icon-afternoon,
-html[data-period="night"] .icon-night { display: block; }
 .sol strong { display: block; font-size: 24px; line-height: 1.1; }
 .sol small { display: block; font-size: 14px; font-weight: 600; color: var(--page-muted); }
 
@@ -448,15 +397,6 @@ html[data-period="night"] .icon-night { display: block; }
 .difficulty[data-level="medium"] { --d: var(--energy); }
 .difficulty[data-level="hard"]   { --d: var(--danger); }
 .count { color: var(--muted); font-variant-numeric: tabular-nums; }
-.card-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 700;
-  color: var(--text);
-}
-.card-time svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-
 .card-image {
   flex: 1 1 auto;
   min-height: 0;
@@ -657,4 +597,160 @@ html[data-period="night"] .icon-night { display: block; }
 @media (prefers-reduced-motion: reduce) {
   .tile, .tile .fill, .detail, .detail.empty, .card3d, .card-inner, .answer, .sky-layer { transition: none; }
   .card3d.deal, .tile.bump, #active-effects li { animation: none; }
+}
+
+/* A new sol sweeps warm daylight from right to left, then settles back to night.
+   This layer sits behind every control and never intercepts input. */
+body { isolation: isolate; }
+main { position: relative; z-index: 1; }
+.sol-transition[hidden] { display: none; }
+.sol-transition {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.sol-transition::before {
+  content: '';
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(ellipse at 50% 75%, #e6bfa34d 0%, #b8806533 30%, transparent 70%),
+    linear-gradient(120deg, #241c39, #634350 50%, #342541);
+  animation: sol-turnover 0.45s ease-in-out both;
+}
+@keyframes sol-turnover {
+  0% { opacity: 0; transform: translateX(60%); }
+  40% { opacity: 0.12; }
+  100% { opacity: 0; transform: translateX(-60%); }
+}
+.quiet-sol .card-text { margin: auto 0; font-size: clamp(20px, 5vw, 28px); text-align: center; }
+#sol-notice { max-width: 250px; }
+@media (prefers-reduced-motion: reduce) {
+  .sol-transition::before { animation: none; opacity: 0; }
+}
+
+/* Mission briefing: the game starts only after a click or horizontal swipe. */
+[hidden] { display: none !important; }
+.mission-intro {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+}
+.briefing {
+  width: min(100%, 540px);
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  border-radius: 24px;
+  background: var(--tile);
+  box-shadow: 0 20px 70px #0003;
+  touch-action: pan-y;
+  transition: transform 0.2s ease;
+}
+.briefing.dragging { transition: none; user-select: none; }
+.briefing-image { display: block; width: 100%; height: clamp(135px, 27svh, 240px); object-fit: cover; object-position: center 62%; pointer-events: none; }
+.briefing-content { padding: 22px 26px; }
+.briefing-eyebrow { margin: 0 0 8px; color: #efb98e; font-size: 12px; font-weight: 750; letter-spacing: 0.08em; text-transform: uppercase; }
+.briefing h1 { margin: 0 0 14px; font-size: clamp(25px, 6vw, 34px); line-height: 1.1; }
+.briefing-content > p:not(.briefing-eyebrow):not(.briefing-hint) { font-size: 16px; line-height: 1.5; margin: 0 0 14px; }
+.start-mission { display: flex; align-items: center; justify-content: center; gap: 16px; width: 100%; min-height: 52px; margin-top: 20px; border: 0; border-radius: 14px; background: #f4ba87; color: #2b1c24; font: inherit; font-weight: 800; cursor: pointer; }
+.start-mission:hover { background: #ffd0a6; }
+.start-mission:focus-visible { outline: 3px solid var(--text); outline-offset: 4px; }
+.briefing-hint { margin: 10px 0 16px; color: var(--muted); text-align: center; font-size: 13px; }
+@media (max-width: 359px), (max-height: 740px) {
+  .briefing-content { padding: 16px 18px; }
+  .briefing-image { height: 130px; }
+  .briefing-content > p:not(.briefing-eyebrow):not(.briefing-hint) { font-size: 14px; margin-bottom: 10px; }
+  .briefing h1 { margin-bottom: 10px; }
+  .start-mission { margin-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .briefing { transition: none; } }
+
+.briefing-figure { margin: 0; }
+.briefing-figure figcaption { padding: 8px 16px 0; color: var(--muted); font-size: 11px; line-height: 1.4; }
+
+/* Tablets: use the available screen instead of a phone-sized column at the top. */
+@media (min-width: 768px) and (min-height: 700px) {
+  main {
+    --readout-h: 136px;
+    width: 88%;
+    max-width: 800px;
+    height: min(100svh, 1400px);
+    margin-block: max(0px, calc((100svh - 1400px) / 2));
+    padding: clamp(32px, 4svh, 64px) 24px;
+  }
+  .topbar, .indicators { max-width: 640px; }
+  .topbar { margin-bottom: 20px; }
+  .sol { gap: 14px; }
+  .sky-icon { width: 60px; height: 60px; }
+  .sol strong { font-size: 32px; }
+  .sol small { font-size: 17px; }
+  .end-button { min-height: 54px; padding-inline: 22px; font-size: 18px; border-radius: 28px; }
+  .indicators { gap: 16px; }
+  .tile { border-radius: 22px; }
+  .tile .trend { right: 9px; bottom: 7px; font-size: 18px; }
+  .readout { margin-top: 18px; }
+  .effects-box, .detail { padding: 12px 18px; }
+  .effects-box h2 { font-size: 16px; margin-bottom: 5px; }
+  #active-effects li { height: 27px; font-size: 17px; }
+  .detail h2 { font-size: 21px; margin-bottom: 5px; }
+  .detail .label, .detail .of { font-size: 16px; }
+  .detail .amount { font-size: 38px; }
+  .detail .unit { font-size: 23px; }
+  .detail .bar { margin-top: 8px; height: 10px; }
+  .card-area { margin-top: 24px; place-items: center; }
+}
+
+/* Card typography follows the card's width, including tablet landscape. */
+@container card (min-width: 400px) {
+  .face { padding: 18px; }
+  .back { padding: 22px; }
+  .card-top { font-size: 16px; margin-bottom: 12px; }
+  .card-text { font-size: clamp(20px, 4.2cqw, 25px); line-height: 1.4; margin-block: 16px; }
+  .answers { gap: 12px; }
+  .answer { min-height: 60px; font-size: clamp(17px, 3.6cqw, 21px); padding: 10px 12px; }
+  .chosen-label { font-size: 16px; }
+  .chosen { font-size: 26px; margin-bottom: 12px; }
+  .effects li { font-size: 18px; padding: 8px 4px; }
+  .effects .amount { font-size: 19px; }
+  .effects .name small { font-size: 13px; }
+  .source { font-size: 17px; }
+  .mock-note { font-size: 14px; }
+  .next { min-height: 58px; font-size: 21px; }
+}
+
+/* The mission briefing grows with the tablet layout too. */
+@media (min-width: 768px) and (min-height: 700px) {
+  .mission-intro { padding: 32px; }
+  .briefing { width: min(88vw, 800px); border-radius: 30px; }
+  .briefing-image { height: clamp(240px, 30svh, 420px); }
+  .briefing-figure figcaption { padding: 12px 28px 0; font-size: 14px; }
+  .briefing-content { padding: 32px 40px; }
+  .briefing-eyebrow { font-size: 16px; margin-bottom: 12px; }
+  .briefing h1 { font-size: 44px; margin-bottom: 22px; }
+  .briefing-content > p:not(.briefing-eyebrow):not(.briefing-hint) { font-size: 22px; line-height: 1.5; margin-bottom: 20px; }
+  .start-mission { min-height: 66px; margin-top: 28px; font-size: 23px; border-radius: 18px; }
+  .briefing-hint { font-size: 17px; margin: 16px 0 0; }
+}
+
+@media (min-width: 768px) and (min-height: 700px) and (max-height: 899px) {
+  .mission-intro { padding-block: 24px; }
+  .briefing-image { height: 180px; }
+  .briefing-content { padding: 24px 32px; }
+  .briefing h1 { font-size: 36px; margin-bottom: 16px; }
+  .briefing-content > p:not(.briefing-eyebrow):not(.briefing-hint) { font-size: 18px; margin-bottom: 14px; }
+  .start-mission { min-height: 58px; margin-top: 20px; font-size: 21px; }
+}
+
+@media (max-width: 359px) and (max-height: 600px) {
+  .briefing-image { height: 90px; }
+  .briefing-content { padding: 12px 16px; }
+  .briefing-figure figcaption { padding-top: 6px; font-size: 10px; }
+  .briefing-eyebrow { font-size: 11px; margin-bottom: 6px; }
+  .briefing h1 { font-size: 24px; margin-bottom: 8px; }
+  .briefing-content > p:not(.briefing-eyebrow):not(.briefing-hint) { line-height: 1.35; margin-bottom: 8px; }
+  .start-mission { min-height: 48px; margin-top: 10px; }
+  .briefing-hint { margin: 8px 0 0; }
 }

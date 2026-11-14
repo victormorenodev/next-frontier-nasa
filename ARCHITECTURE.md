@@ -11,6 +11,17 @@ Documento vivo: cresce a cada passo do jogo. Registra **o que existe agora**, po
 | Público de 7 a 12 anos (lema de interface) | Ícones antes de texto, alvos grandes, alto contraste, mouse e toque com o mesmo comportamento |
 | Quantidades com significado físico | Cada quantidade tem unidade (`unit`) e nome da unidade por extenso (`unitName`) |
 
+## Estrutura vigente — atualização de 14/11/2026
+
+Esta seção substitui as referências históricas abaixo a 30 sols, 45 cartas, 1–3 cartas por sol e períodos do dia.
+
+- A missão termina após concluir **40 sols**, incluindo o último sol inteiro.
+- Cada sol sorteia **1 evento (80%)** ou **2 eventos (20%)**, conforme definido pelo usuário. Não há sols sem cartas.
+- As cartas não têm duração individual. Resolver eventos não avança o relógio; concluir o sol contabiliza uma vez o consumo, a produção e os efeitos agendados, com 1 ou 2 eventos.
+- Não há períodos jogáveis de manhã/tarde/noite. Ao passar de sol, apenas o background anima uma virada de dia com luz quente atravessando o céu e voltando ao fundo escuro. Cartas e indicadores permanecem visíveis, sem tela de transição nem órbita em primeiro plano. Respeitar movimento reduzido.
+- O baralho é dimensionado pelo total de eventos sorteados nos 40 sols (40 a 80 cartas). As cartas se repetem ao longo da missão; continua sem cartas iguais consecutivas.
+- O motor de fluxos conserva terços de sol apenas como unidade interna de integração; a energia solar é um orçamento diário distribuído nesses passos.
+
 ## Arquivos
 
 | Arquivo | Camada | Papel |
@@ -21,7 +32,7 @@ Documento vivo: cresce a cada passo do jogo. Registra **o que existe agora**, po
 | `mission.js` | Lógica | Estado da missão: sol atual, se acabou e por quê. Sem DOM. Expõe `Mission` |
 | `flows.js` | Lógica | Consumo e produção ao longo do tempo, e efeitos das respostas que duram ou vêm depois. Sem DOM. Expõe `Flows` |
 | `cards.js` | Dados | As cartas (por enquanto, 10 de teste). Expõe `CardData` |
-| `deck.js` | Lógica | Valida cartas, embaralha e monta o baralho de 45. Sem DOM. Expõe `Deck` |
+| `deck.js` | Lógica | Valida cartas, embaralha e monta o baralho conforme os eventos dos 40 sols. Sem DOM. Expõe `Deck` |
 | `card-ui.js` | Interface | Desenha a carta (frente e costas), o giro e o arrastar. Expõe `CardUI` |
 | `images/` | Imagens | Imagens das cartas (`mock-card.svg` é a imagem de teste) |
 | `ui.js` | Interface | Barra da missão, indicadores (hover/toque/foco) e o fluxo do jogo (começar, responder, próxima carta, fim) |
@@ -604,3 +615,70 @@ Depois, abra `index.html` com duplo clique e confira os contêineres, o hover e 
 ## Ainda não existe
 
 Derrota por falta de recurso, regras de dificuldade e cartas reais. Cada um entra aqui quando for construído.
+
+## Passo 15 — Missão de 60 sols e eventos por sol
+
+`Mission.eventsForSol(random)` sorteia 0/1/2 eventos. `ui.js` monta um cronograma de 60 posições no início e pede ao `Deck` o número exato de cartas. `eventIndex` conta os eventos do sol atual; `index` conta cartas da missão. A última resposta de um sol mostra **End sol**; com dois eventos, a primeira mostra **Next event**.
+
+`CardUI.showQuiet(sol)` reutiliza o arrastar e os controles de teclado da carta para o aviso **No events today**. Um cancelamento de ponteiro nunca confirma o avanço. O fim de qualquer sol chama `Flows.passTime(..., 3)` uma única vez, seguido de `Mission.advance`. Após o sol 60 a missão termina com `reason: 'complete'`, sem mostrar Sol 61. Efeitos atrasados que chegam aparecem na transição.
+
+O overlay `#sol-transition` bloqueia entradas durante uma órbita CSS de 1 segundo; notificações de efeitos agendados estendem a pausa para 1,8 s. Com movimento reduzido não há órbita nem espera, exceto 1,2 s para essas notificações. A barra mostra **Sol N / 60**, com fundo fixo. Os campos `time`, `Deck.TIMES`, os períodos da missão e o tema por período foram removidos. A geração de energia mantém o orçamento simulado de 100 kWh/sol, distribuído uniformemente nos passos internos (consumo-base de 60 kWh/sol).
+
+As seções Passos 1–14 são histórico de implementação; as regras deste passo prevalecem.
+
+## Passo 16 — Virada de sol apenas no background
+
+A transição orbital em primeiro plano foi substituída por uma camada decorativa fixa atrás do jogo (`#sol-transition`, `aria-hidden`, sem interceptar ponteiros). Um gradiente quente atravessa o fundo e desaparece em 1 segundo, sugerindo a virada do dia; cartas e indicadores ficam visíveis durante toda a animação. Não existem mais Sol/Marte desenhados na transição nem mensagem central. Avisos de efeitos agendados aparecem em `#sol-notice`, abaixo do contador da missão, com anúncio acessível. A contagem e o consumo de recursos permanecem iguais ao Passo 15. Movimento reduzido desativa a animação do fundo.
+
+## Passo 17 — Transição de fundo mais suave
+
+A virada de sol passou a durar 1,6 s, com cores menos saturadas, pico de opacidade de 0,35 e deslocamento horizontal de apenas ±8% (antes ±25%). A curva de aceleração e desaceleração é suave e simétrica. O tempo de transição em `ui.js` acompanha a animação; notificações continuam com 1,8 s e movimento reduzido permanece respeitado.
+
+## Passo 18 — Avanço imediato e fundo discreto
+
+A passagem de sol atualiza o contador e mostra a próxima carta imediatamente. A animação do fundo é apenas decorativa, dura 450 ms, chega a 0,12 de opacidade e não desloca o cenário. Não existem mais bloqueio de entrada nem timer de espera; `animationend` esconde a camada. Avançar rapidamente reinicia a animação. Avisos de efeitos agendados permanecem abaixo do contador, sem atrasar o jogo. Com movimento reduzido, a camada não aparece.
+
+## Passo 19 — 40 sols, sempre com eventos
+
+A duração confirmada é de **40 sols**. `Mission.eventsForSol` retorna 1 com probabilidade de 80% e 2 com probabilidade de 20%; nunca retorna zero. `showSol` sempre mostra uma carta de evento. O cronograma dimensiona um baralho de 40 a 80 cartas, com repetições em rodadas embaralhadas; a mesma carta não aparece duas vezes seguidas. A missão só termina após concluir o sol 40. Contador e mensagem final acompanham a nova duração. O avanço continua imediato e o efeito de fundo permanece discreto e sem bloqueio.
+
+## Passo 20 — Luz da direita para a esquerda
+
+O gradiente da virada de sol agora atravessa o background da direita para a esquerda (`translateX(60%)` até `translateX(-60%)`). Mantém 450 ms, opacidade máxima de 0,12 e avanço imediato do jogo. Apenas a camada de luz se move; cartas e indicadores ficam no lugar. Movimento reduzido continua desativando o efeito.
+
+## Passo 21 — Briefing antes da missão
+
+`index.html` começa com `#mission-intro`: imagem local `images/conceptual_outpost.jpeg`, texto curto em inglês, botão **Start mission**, dica de arrastar e link para o documento NASA *Moon to Mars Architecture Definition Document*, revisão C (dezembro de 2025). O texto adapta os temas de habitação, saúde da equipe e resposta a emergências em Marte (casos UC-H-103 M, UC-H-107 M e UC-H-108 M, página impressa 129); quatro astronautas, duração de 40 sols e cartas são regras do jogo, não requisitos da NASA.
+
+`#game` fica oculto e a missão não é inicializada até o jogador clicar ou arrastar horizontalmente o briefing em qualquer direção. O gesto exige 22% da largura (máximo 80 px), distingue rolagem vertical e cancela sem iniciar em `pointercancel`. Setas do teclado também iniciam; o botão funciona com Enter/espaço. Ao iniciar, o foco vai à primeira resposta. Novas missões após o fim reiniciam diretamente o jogo. O briefing usa CSS responsivo e não depende de rede, inclusive para a imagem; apenas o link de referência abre um documento externo.
+
+A imagem do briefing usa `<figure>` e legenda abaixo, sem link: **Image credit: NASA — First Humans on Mars (artist’s concept).** Origem conferida no NASA Science Photojournal, imagem PIA23302: https://science.nasa.gov/photojournal/first-humans-on-mars-artists-concept/.
+
+Por solicitação do usuário, a frase e o link “Inspired by NASA’s Moon to Mars architecture” foram removidos da tela inicial; o crédito da imagem permanece. O documento continua como referência do texto na documentação interna.
+
+## Passo 22 — Layout ampliado para tablets
+
+Em telas com pelo menos 768 × 700 px, a coluna do jogo ocupa 88% da largura até 800 px, e a barra/indicadores vão até 640 px. A altura acompanha a tela até 1.400 px; acima disso, o conjunto fica centralizado verticalmente. Indicadores, textos, detalhes e botões aumentam, e a carta fica centralizada no espaço restante. Uma container query amplia a tipografia e os controles de cartas com pelo menos 400 px de largura, incluindo o verso. O layout de celular mantém suas regras.
+
+Validado no Chromium via `file://` em 1032×1376, 1024×1366, 1366×1024, 768×1024, 375×667 e 320×568: sem transbordamento horizontal/vertical, frente e verso dentro da carta e sem erros JavaScript. Em 1032×1376, a carta mede aproximadamente 670×893 px, texto de 25 px e botões de pelo menos 60 px.
+
+## Passo 23 — Apresentação ampliada para tablets
+
+O briefing usa até 800 px de largura nos tablets, imagem de até 420 px de altura, título de 44 px, texto de 22 px e botão de 66 px, centralizado na tela. Em tablets com altura de 700–899 px, reduz a imagem e os espaçamentos para caber em paisagem. Celulares baixos usam apresentação compacta, preservando o texto e botão de pelo menos 48 px.
+
+Conferido no Chromium via `file://` em 1032×1376, 1366×1024, 768×1024, 1024×768, 768×700, 375×667 e 320×568: imagem carregada, conteúdo sem transbordamento e botão iniciando a missão.
+
+## Motor com JSONs
+
+Dados de missão, recursos, fluxos e cartas migrados para data/. Bootstrap carrega os dados por HTTP e inicializa módulos em src/. Salvamento versionado usa localStorage e preserva os dados da partida. CSS movido para assets/. README descreve execução e GitHub Pages. A implementação foi complementada pela migração dos textos e pela validação descrita abaixo.
+
+
+## Configuração, ações e persistência
+
+A fonte editável é `data/`: missão, recursos/indicadores, fluxos, cartas e interface. `src/bootstrap.js` carrega e valida os dados por HTTP, preenche o briefing e inicializa os módulos. Não existe build obrigatório. Os desenhos dos ícones, layout, animações e gestos continuam no código; identificadores e cores dos indicadores vêm dos dados. Consumos de referência usam coeficiente por tripulante/dia terrestre, convertido a partir da tripulação e duração do sol configuradas.
+
+`src/engine.js` centraliza ações puras (`start`, `answer`, `next`, `end`) sobre snapshots. A resposta é aplicada uma vez e `next` só avança depois de uma resposta. O consumo ocorre após o último evento do sol. A UI renderiza o snapshot e salva após cada ação; cenas transitórias não são persistidas.
+
+O slot `next-frontier-save` contém versão, dados completos usados pela partida, recursos, relógio, cronograma, ordem das cartas, posição, resposta e fluxos pendentes. Valores infinitos de duração usam um marcador no JSON. Ao continuar, os dados do save prevalecem para essa partida; começar novamente recarrega os dados atuais. Saves incompatíveis são preservados até confirmação de substituição. Outra aba que salva suspende a interface antiga.
+
+Validação: `npm test` cobre indicadores, missão, fluxos, baralho, JSONs e ações/saves. Teste real no Chromium por HTTP confirmou início, escolha, recarga, retorno pelo verso sem reaplicar efeitos e conclusão da missão no sol 40, sem erros JavaScript. O workflow GitHub Pages executa testes e publica somente arquivos de execução, sem documentos internos ou ferramentas. Publicação remota ainda não realizada.

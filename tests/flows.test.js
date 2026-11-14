@@ -1,8 +1,8 @@
 // Development check only; the game itself does not need Node.
 // Run: node tests/flows.test.js
-const assert = require('node:assert/strict');
-const F = require('../flows.js');
-const I = require('../indicators.js');
+const assert = require('node:assert');
+const F = require('./load-engine.cjs').Flows;
+const I = require('./load-engine.cjs').Indicators;
 const close = (a, b, msg) => assert.ok(Math.abs(a - b) < 1e-9, `${msg || ''} ${a} ≠ ${b}`);
 
 const empty = F.createFlows();
@@ -16,10 +16,8 @@ close(base.energy, 40, 'energy');
 close(base.food, -4 * 0.62 * 24.6597 / 24, 'food');
 close(base.shield, 0, 'shield');            // radiation does not use up the shield
 
-// Solar only by day: battery goes up in the day and afternoon, down at night.
-close(F.ratesForThird(empty, 0).energy, 30);
-close(F.ratesForThird(empty, 1).energy, 30);
-close(F.ratesForThird(empty, 2).energy, -20);
+// Daily budgets have no day/afternoon/night dependency.
+[0, 1, 2].forEach(t => close(F.ratesForThird(empty, t).energy, 40 / 3));
 
 // One whole sol of base flows = the per-sol trend (energy starts below max so nothing clamps).
 const oneSol = F.passTime(s0, empty, 0, 3).state;

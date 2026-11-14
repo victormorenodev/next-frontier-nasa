@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "node tests/mission.test.js && node tests/indicators.test.js && node tests/flows.test.js && node tests/deck.test.js && node tests/data.test.cjs && node tests/engine.test.cjs"
+  }
+}

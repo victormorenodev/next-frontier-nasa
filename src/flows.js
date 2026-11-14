@@ -1,7 +1,7 @@
 /* Flows: what the base uses and makes as time passes, and how card answers change that.
    No DOM here, so it also runs in Node for tests.
 
-   Time runs in THIRDS of a sol (see mission.js): third 0 of each sol is day, 1 afternoon, 2 night.
+   Time runs in THIRDS of a sol (see mission.js): these are internal integration steps, without visible day periods.
    Every third, each active flow adds its share to the quantities (Indicators.apply clamps 0..max).
 
    Three kinds of flow:
@@ -11,27 +11,16 @@
 (function (root) {
   'use strict';
 
-  const node = typeof module !== 'undefined' && module.exports;
-  const Indicators = node ? require('./indicators.js') : root.Indicators;
+  const Indicators = root.Indicators;
 
   const THIRDS = 3;
-  const CREW = 4;
-  const SOL_HOURS = 24.6597;                 // NASA Mars24
+  const CREW = GameData.mission.crew;
+  const SOL_HOURS = GameData.mission.solHours;                 // NASA Mars24
   const perSolFromEarthDay = perDay => perDay * SOL_HOURS / 24;
 
   // Base flows. `kind`: 'reference' = from a published source (see CLAUDE.md §7),
-  // 'simulated' = invented for the prototype. `periods` = parts of the sol when it runs
-  // (default: all three); its per-sol amount is split evenly over those parts.
-  const BASE_FLOWS = [
-    {id: 'breathing',     quantity: 'oxygen', perSol: -CREW * perSolFromEarthDay(0.84), kind: 'reference',
-      note: '4 astronauts breathe (0.84 kg O₂ per person per Earth day, NASA NTRS 20160005782)'},
-    {id: 'oxygen-maker',  quantity: 'oxygen', perSol: 3,    kind: 'simulated', note: 'Machine that makes oxygen'},
-    {id: 'eating',        quantity: 'food',   perSol: -CREW * perSolFromEarthDay(0.62), kind: 'reference',
-      note: '4 astronauts eat (0.62 kg dry food per person per Earth day, NASA NTRS 20160005782)'},
-    {id: 'water-loss',    quantity: 'water',  perSol: -4,   kind: 'simulated', note: 'Recycling does not get every drop back'},
-    {id: 'solar-panels',  quantity: 'energy', perSol: 100,  kind: 'simulated', periods: [0, 1], note: 'Only while the Sun is up'},
-    {id: 'base-power',    quantity: 'energy', perSol: -60,  kind: 'simulated', note: 'Lights, heaters, computers'}
-  ];
+  // 'simulated' = invented for the prototype. Daily budgets are split over three internal steps.
+  const BASE_FLOWS = GameData.flows.map(f => ({...f, perSol: f.amount * (f.basis === 'perCrewEarthDay' ? CREW * SOL_HOURS / 24 : 1)}));
 
   function createFlows() {
     return {ongoing: [], later: []};
@@ -53,11 +42,10 @@
 
   // Change of each quantity during one third `t` (the third that starts at time t).
   function ratesForThird(flows, t) {
-    const part = t % THIRDS, out = {};
+    const out = {};
     const add = (q, n) => { out[q] = (out[q] || 0) + n; };
     BASE_FLOWS.forEach(f => {
-      const periods = f.periods || [0, 1, 2];
-      if (periods.includes(part)) add(f.quantity, f.perSol / periods.length);
+      add(f.quantity, f.perSol / THIRDS);
     });
     flows.ongoing.forEach(o => {
       if (t >= o.start && t < o.end) Object.entries(o.rates).forEach(([q, n]) => add(q, n / THIRDS));
@@ -101,6 +89,5 @@
   }
 
   const api = {THIRDS, CREW, SOL_HOURS, BASE_FLOWS, createFlows, addAnswer, ratesForThird, ratesPerSol, active, passTime};
-  if (node) module.exports = api;
-  else root.Flows = api;
+   root.Flows = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

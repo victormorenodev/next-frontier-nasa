@@ -8,29 +8,8 @@
   // Each quantity the base keeps track of, with its unit (`unit` short, `unitName` in words).
   // Start/max values come from the earlier prototype (see CLAUDE.md §5): prototype choices,
   // not measured equipment. `max` is the storage capacity used to draw how full it is.
-  const QUANTITIES = {
-    // Oxygen is stored as a mass: consumption references are in kg per person per day.
-    oxygen: {name: 'Oxygen', unit: 'kg',     unitName: 'kilograms',             start: 60,  max: 60},
-    // Tank holds more than the start amount, so water moved back from the shield fits (mass kept).
-    water:  {name: 'Water',  unit: 'L',      unitName: 'liters',                start: 600, max: 700},
-    // Shield = water spread around the shelter, as mass per area (1 g/cm² = 10 kg/m²).
-    // It is not a dose: it does not say how much radiation is blocked.
-    shield: {name: 'Shield', unit: 'g/cm²',  unitName: 'grams per square centimeter', start: 8, max: 10},
-    // Energy stored in the battery (kWh), not power (kW).
-    energy: {name: 'Energy', unit: 'kWh',    unitName: 'kilowatt-hours',        start: 240, max: 300},
-    // Dry food mass.
-    food:   {name: 'Food',   unit: 'kg',     unitName: 'kilograms of dry food', start: 100, max: 100}
-  };
-
-  // The five indicators shown to the player, one per quantity, in screen order.
-  // (The code still allows an indicator with several parts; none uses it now.)
-  const INDICATORS = [
-    {id: 'oxygen', name: 'Oxygen Level',     parts: ['oxygen']},
-    {id: 'water',  name: 'Water Stock',      parts: ['water']},
-    {id: 'shield', name: 'Radiation Shield', parts: ['shield']},
-    {id: 'energy', name: 'Energy Supply',    parts: ['energy']},
-    {id: 'food',   name: 'Food Stock',       parts: ['food']}
-  ];
+  const QUANTITIES = GameData.resources.quantities;
+  const INDICATORS = GameData.resources.indicators;
 
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
@@ -75,6 +54,5 @@
   }
 
   const api = {QUANTITIES, INDICATORS, createState, change, apply, level, read};
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else root.Indicators = api;
+   root.Indicators = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -5,7 +5,6 @@
 
   const DRAG_START_PX = 8;       // smaller moves count as a tap, not a drag
   const ANSWER_SHARE = 0.28;     // drag past 28% of the card width to answer
-  const CLOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
   const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 100 ? 1 : 0});
 
   // Which indicator colour each quantity uses (one indicator per quantity).
@@ -34,9 +33,8 @@
     // Front parts
     const top = el('div', 'card-top');
     const difficulty = el('span', 'difficulty');
-    const time = el('span', 'card-time');           // how long this card takes
     const count = el('span', 'count');
-    top.append(difficulty, time, count);
+    top.append(difficulty, count);
     const image = el('img', 'card-image');
     const text = el('p', 'card-text');
     const answers = el('div', 'answers');
@@ -47,11 +45,11 @@
     front.append(top, image, text, answers);
 
     // Back parts
-    const chosenLabel = el('p', 'chosen-label', 'You chose');
+    const chosenLabel = el('p', 'chosen-label', Copy("youChose"));
     const chosen = el('h2', 'chosen');
     const effects = el('ul', 'effects');
     const source = el('p', 'source');
-    const mockNote = el('p', 'mock-note', 'Test card: these numbers are not real.');
+    const mockNote = el('p', 'mock-note', Copy("mockNote"));
     const nextBtn = el('button', 'next');
     nextBtn.type = 'button';
     back.append(chosenLabel, chosen, effects, source, mockNote, nextBtn);
@@ -77,8 +75,10 @@
     // Keyboard: arrows answer like the buttons.
     document.addEventListener('keydown', e => {
       if (phase !== 'front' || document.querySelector('dialog[open]')) return;
-      if (e.key === 'ArrowLeft') answer('left');
-      if (e.key === 'ArrowRight') answer('right');
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        answer(e.key === 'ArrowLeft' ? 'left' : 'right');
+      }
     });
 
     // ── Drag to answer (mouse, finger or pen) ──
@@ -109,7 +109,12 @@
       else { card3d.style.transform = ''; highlight(null); }
     };
     card3d.addEventListener('pointerup', endDrag);
-    card3d.addEventListener('pointercancel', endDrag);
+    card3d.addEventListener('pointercancel', () => {
+      drag = null;
+      card3d.classList.remove('dragging');
+      card3d.style.transform = '';
+      highlight(null);
+    });
 
     // Only the visible face can be reached with Tab or a screen reader.
     function setFace(isBack) {
@@ -119,7 +124,12 @@
 
     // ── What ui.js calls ──
     function showFront(card, number, total) {
-      slot.classList.remove('ended');
+      drag = null;
+      card3d.style.transform = '';
+      card3d.classList.remove('dragging');
+      slot.classList.remove('ended', 'quiet-sol');
+      difficulty.hidden = false;
+      image.hidden = false;
       slot.classList.add('has-card');
       if (!card3d.isConnected) slot.replaceChildren(card3d);
       const hadFocus = slot.contains(document.activeElement);
@@ -135,9 +145,7 @@
 
       difficulty.textContent = Deck.DIFFICULTIES[card.difficulty];
       difficulty.dataset.level = card.difficulty;
-      time.innerHTML = `${CLOCK}<span>${Deck.TIMES[card.time].label}</span>`;
-      time.title = 'Time this card takes';
-      count.textContent = `${number} / ${total}`;
+      count.textContent = Copy("eventCount", {number,total});
       image.src = card.image;
       image.alt = card.imageAlt || '';
       text.textContent = card.description;
@@ -171,10 +179,6 @@
       const picked = card[side];
       chosen.textContent = picked.label;
       effects.replaceChildren();
-      // Time comes first: every answer uses some of the sol.
-      const timeRow = el('li', 'time');
-      timeRow.append(el('span', 'name', 'Time'), el('b', 'amount', Deck.TIMES[card.time].label));
-      effects.append(timeRow);
       // Now: immediate changes.
       const now = Object.entries(picked.effects || {});
       now.forEach(([key, amount]) => effects.append(effectRow(key, amount, '')));   // no hint: it is right now
@@ -185,14 +189,14 @@
       (picked.later || []).forEach(l => Object.entries(l.effects).forEach(([key, amount]) =>
         effects.append(effectRow(key, amount, '', `in ${solsText(l.after)}${l.note ? ` · ${l.note}` : ''}`, 'later'))));
       if (!now.length && !(picked.ongoing || []).length && !(picked.later || []).length) {
-        effects.append(el('li', 'none', 'No change to the base.'));
+        effects.append(el('li', 'none', Copy("noChange")));
       }
       // Things planned earlier that happened while this card's time passed.
       (happened || []).forEach(h => Object.entries(h.effects).forEach(([key, amount]) =>
         effects.append(effectRow(key, amount, '', `just happened${h.note ? ` · ${h.note}` : ''}`, 'happened'))));
 
       // Institution only; it links to the full reference.
-      source.replaceChildren('Source: ');
+      source.replaceChildren(Copy("source"));
       const link = el('a', null, card.source.institution);
       link.href = card.source.url;
       link.target = '_blank';
@@ -200,7 +204,7 @@
       source.append(link);
 
       mockNote.hidden = !card.mock;
-      nextBtn.textContent = isLast ? 'Finish' : 'Next card';
+      nextBtn.textContent = isLast ? Copy("endSol") : Copy("nextEvent");
       setFace(true);
       inner.classList.add('flipped');
       phase = 'back';
@@ -222,4 +226,4 @@
   }
 
   root.CardUI = {create};
-})(this);
+})(globalThis);

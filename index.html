@@ -1,31 +1,38 @@
 <!DOCTYPE html>
-<html lang="en" data-period="day">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1b1a30">
   <title>Next Frontier</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <!-- Sky behind everything: one layer per part of the day, faded in by html[data-period]. -->
-  <div class="sky" aria-hidden="true">
-    <div class="sky-layer sky-day"></div>
-    <div class="sky-layer sky-afternoon"></div>
-    <div class="sky-layer sky-night"></div>
-  </div>
+  <section class="mission-intro" id="mission-intro" aria-labelledby="intro-title">
+    <article class="briefing" id="briefing">
+      <figure class="briefing-figure">
+        <img class="briefing-image" src="images/conceptual_outpost.jpeg" alt="An imagined Mars base with habitats, a rover and astronauts on the orange surface" draggable="false">
+        <figcaption><span data-copy="html2"></span></figcaption>
+      </figure>
+      <div class="briefing-content">
+        <p class="briefing-eyebrow"><span data-copy="html3"></span></p>
+        <h1 id="intro-title"><span data-copy="html4"></span></h1>
+        <p><span data-copy="html5"></span><strong><span data-copy="html6"></span></strong><span data-copy="html7"></span></p>
+        <p><span data-copy="html8"></span></p>
+        <button id="start-mission" class="start-mission" type="button"><span data-copy="html9"></span><span aria-hidden="true">→</span></button>
+        <p class="briefing-hint"><span data-copy="html10"></span></p>
+      </div>
+    </article>
+  </section>
 
-  <main>
-    <!-- Mission bar: current sol, part of the day, and the button to end the mission. -->
+  <main id="game" hidden>
+    <!-- Mission bar: current sol, and the button to end the mission. -->
     <header class="topbar">
       <p class="sol" title="A sol is a day on Mars">
-        <!-- One icon per part of the day; CSS shows the one that matches html[data-period]. -->
-        <svg class="sky-icon icon-day" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
-        <svg class="sky-icon icon-afternoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17a5 5 0 0 1 10 0"/><path d="M2 17h20M4 21h16M12 6v3M5.6 10.6l1.8 1.8M18.4 10.6l-1.8 1.8"/></svg>
-        <svg class="sky-icon icon-night" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 3.5v2M16 4.5h2"/></svg>
-        <span><strong id="sol">Sol 1</strong><small id="period">Daytime</small></span>
+        <svg class="sky-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-30 12 12)"/></svg>
+        <span><strong id="sol"><span data-copy="html11"></span></strong><small id="sol-notice" role="status" aria-live="polite"><span data-copy="html12"></span></small></span>
       </p>
-      <button class="end-button" id="end-mission" type="button">End mission</button>
+      <button class="end-button" id="end-mission" type="button"><span data-copy="html13"></span></button>
     </header>
 
     <section class="indicators" id="indicators" aria-label="Base indicators"></section>
@@ -33,7 +40,7 @@
          its detail covers this box (same size), so no extra space is needed. -->
     <div class="readout" id="readout">
       <section class="effects-box" aria-labelledby="effects-title">
-        <h2><span id="effects-title">Active effects</span><span class="more" id="active-more"></span></h2>
+        <h2><span id="effects-title"><span data-copy="html14"></span></span><span class="more" id="active-more"></span></h2>
         <ul id="active-effects"></ul>
       </section>
       <section class="detail empty" id="detail" aria-live="polite"></section>
@@ -45,23 +52,20 @@
     </div>
   </main>
 
+  <!-- Decorative day turnover, always behind the game. -->
+  <div id="sol-transition" class="sol-transition" aria-hidden="true" hidden></div>
+
   <!-- Asks before ending, so a stray tap does not end the mission. -->
   <dialog class="confirm" id="end-dialog" aria-labelledby="end-title">
-    <h2 id="end-title">End the mission?</h2>
-    <p>The crew stops here. You can start a new mission after.</p>
+    <h2 id="end-title"><span data-copy="html15"></span></h2>
+    <p><span data-copy="html16"></span></p>
     <div class="confirm-actions">
-      <button type="button" id="end-cancel" autofocus>Keep playing</button>
-      <button type="button" id="end-confirm" class="danger">End mission</button>
+      <button type="button" id="end-cancel" autofocus><span data-copy="html17"></span></button>
+      <button type="button" id="end-confirm" class="danger"><span data-copy="html18"></span></button>
     </div>
   </dialog>
 
   <!-- Classic scripts (no modules) so the game works by opening this file directly. -->
-  <script src="indicators.js"></script>
-  <script src="mission.js"></script>
-  <script src="flows.js"></script>
-  <script src="cards.js"></script>
-  <script src="deck.js"></script>
-  <script src="card-ui.js"></script>
-  <script src="ui.js"></script>
+  <script type="module" src="src/bootstrap.js"></script>
 </body>
 </html>

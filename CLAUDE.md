@@ -1,6 +1,21 @@
+## Atualização de arquitetura
+
+O jogo agora usa HTTP, módulos em `src/`, JSONs em `data/` e CSS em `assets/`. A regra histórica de abrir por file:// foi substituída. Consulte README.md. Textos e imagens da apresentação ficam em data/interface.json; parâmetros científicos em data/flows.json. `npm test` valida os dados e o motor. Persistência local versionada guarda o estado e os dados usados pela partida. Não reintroduzir parâmetros duplicados nos módulos.
+
 # Next Frontier — contexto para Claude
 
 Este documento transfere o contexto de produto, pesquisa e implementação para o próximo agente. Leia-o junto com `ARCHITECTURE.md` e o código antes de sugerir alterações. Está escrito em português, idioma utilizado pelo responsável pelo projeto; **o jogo em si é em inglês**.
+
+## Estrutura vigente — atualização de 14/11/2026
+
+Esta seção substitui as referências históricas abaixo a 30 sols, 45 cartas, 1–3 cartas por sol e períodos do dia.
+
+- A missão termina após concluir **40 sols**, incluindo o último sol inteiro.
+- Cada sol sorteia **1 evento (80%)** ou **2 eventos (20%)**, conforme definido pelo usuário. Não há sols sem cartas.
+- As cartas não têm duração individual. Resolver eventos não avança o relógio; concluir o sol contabiliza uma vez o consumo, a produção e os efeitos agendados, com 1 ou 2 eventos.
+- Não há períodos jogáveis de manhã/tarde/noite. Ao passar de sol, apenas o background anima uma virada de dia com luz quente atravessando o céu e voltando ao fundo escuro. O próximo sol aparece e fica jogável imediatamente; a luz discreta do fundo dura 450 ms, sem bloquear entradas. Cartas e indicadores permanecem visíveis, sem tela de transição nem órbita em primeiro plano. Respeitar movimento reduzido.
+- O baralho é dimensionado pelo total de eventos sorteados nos 40 sols (40 a 80 cartas). As cartas se repetem ao longo da missão; continua sem cartas iguais consecutivas.
+- O motor de fluxos conserva terços de sol apenas como unidade interna de integração; a energia solar é um orçamento diário distribuído nesses passos.
 
 ## 1. Origem e objetivo
 

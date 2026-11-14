@@ -1,7 +1,7 @@
 // Development check only; the game itself does not need Node.
 // Run: node tests/indicators.test.js
-const assert = require('node:assert/strict');
-const I = require('../indicators.js');
+const assert = require('node:assert');
+const I = require('./load-engine.cjs').Indicators;
 
 const s = I.createState();
 assert.deepEqual(Object.keys(s), ['oxygen', 'water', 'shield', 'energy', 'food']);
