@@ -7,6 +7,7 @@ const moduleURL = file => {
 };
 const names=['categories','mission','resources','flows','cards','interface','glossary'];
 try {
+ await import(moduleURL('./loading.js'));
  const {validateData, validateSave, migrateShieldSave} = await import(moduleURL('./validation.js'));
  const data=validateData(Object.fromEntries(await Promise.all(names.map(async name=>{
   const response=await fetch(new URL(`../data/${name}.json`,import.meta.url), {cache:'no-store'});
@@ -40,7 +41,12 @@ try {
  if(window.invalidSavedMission){const p=document.createElement('p');p.textContent=Copy('invalidSave');document.getElementById('start-mission').before(p)}
  globalThis.CardData={CARDS:GameData.cards};
  for(const file of ['indicators','mission','flows','deck','engine','icons','display','glossary','audio','card-images','card-ui','tutorial','ui'])await import(moduleURL(`./${file}.js`));
+ await globalThis.screenStartup;
+ await Loading.ready();
+ Loading.hide();
 }catch(error){
+ if (globalThis.Loading) Loading.hide();
+ else { document.getElementById('loading-screen').hidden=true; document.body.removeAttribute('aria-busy'); }
  console.error(error);
  document.getElementById('main-menu').hidden=true;
  document.getElementById('mission-intro').hidden=false;

@@ -29,6 +29,8 @@ O bootstrap lê **sete JSONs** em paralelo: categories, mission, resources, flow
 
 Ordem dos módulos: indicators → mission → flows → deck → engine → icons → display → glossary → audio → card-images → card-ui → tutorial → ui. São módulos nativos com APIs em globalThis; a ordem importa. HTML e CSS/bootstrap compartilham versão v, propagada aos módulos; JSONs usam cache: no-store. HTTP obrigatório; sem framework/build. Caminhos atendem também hospedagem em subdiretório.
 
+Uma camada opaca “Loading…” cobre o carregamento inicial e as transições de tela, incluindo a recarga ao substituir uma missão salva. Bloqueia interação com as telas cobertas e aguarda imagens visíveis por até quatro segundos, liberando a interface também quando uma imagem falha. Movimento reduzido mantém o indicador estático.
+
 ## Navegação e início
 
 Menu centralizado mobile-first com Start New Mission, Continue mission, Glossary, Credits e som. Continue exige save válido em andamento. Nova missão abre briefing NASA; botão, arrasto ou setas levam ao seletor Welcome, Captain!. MARINER 4 é easy, OPPORTUNITY é hard. Arrastar o painel à esquerda/direita escolhe respectivamente easy/hard, com movimento e realce antes de soltar; gesto curto/cancelado não inicia. Botões/setas também funcionam.

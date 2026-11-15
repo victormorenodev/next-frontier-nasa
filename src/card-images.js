@@ -5,7 +5,8 @@ globalThis.CardImages = {
   return card.imageById ? ['jpg','png','jpeg'].map(ext => `images/cards/${encodeURIComponent(card.imageId ?? card.id)}.${ext}`) : [card.image];
  },
  show(image,card,onStatus) {
-  let cancelled=false,timer;
+  let cancelled=false,timer,settle;
+  image.loadingReady=new Promise(resolve=>{settle=resolve;});
   image.src=this.placeholder;image.alt='Image not available yet.';onStatus(false);
   const attempt=async()=>{
    for(const path of this.candidates(card)){
@@ -15,11 +16,12 @@ globalThis.CardImages = {
     const probe=new Image();
     const loaded=await new Promise(resolve=>{probe.onload=()=>resolve(true);probe.onerror=()=>resolve(false);probe.src=url.href;});
     if(cancelled)return;
-    if(loaded){image.src=url.href;image.alt=card.imageAlt||'';onStatus(true);return;}
+    if(loaded){image.src=url.href;image.alt=card.imageAlt||'';onStatus(true);settle();return;}
    }
+   settle();
    timer=setTimeout(attempt,15000);
   };
   attempt();
-  return ()=>{cancelled=true;clearTimeout(timer);};
+  return ()=>{cancelled=true;settle();clearTimeout(timer);};
  }
 };
