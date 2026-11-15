@@ -61,7 +61,7 @@ A Página2 usa pares resposta 1 // resposta 2 com unidades; a Página1 aceita ba
 
 ## Imagens e apresentação das cartas
 
-CardImages procura `images/cards/{imageId ?? id}.jpg`, `.png`, `.jpeg` quando imageById é true; cartas antigas sem isso usam image. Há 28 arquivos distintos válidos para os 31 eventos. Sem imagem decodificável, mostra placeholder.svg e legenda/alt Image not available yet.; tenta novamente em 15 s enquanto a frente estiver aberta. Cada tentativa usa URL nova para evitar cache negativo. Cancelamento ao trocar carta/face impede resposta assíncrona trocando a imagem seguinte.
+CardImages procura `images/cards/{imageId ?? id}.jpg`, `.png`, `.jpeg` quando imageById é true; cartas antigas sem isso usam image. Há 28 arquivos distintos válidos para os 31 eventos. Sem imagem decodificável, mostra placeholder.svg e legenda/alt Image not available yet.; tenta novamente em 15 s enquanto a frente estiver aberta. Cada tentativa usa URL nova para evitar cache negativo. Durante cada tentativa, o painel da imagem exibe “Loading image…” com indicador animado (estático com movimento reduzido) e aria-busy. Sucesso aguarda a decodificação; falha encerra o indicador e mantém o placeholder até a próxima tentativa. Cancelamento ao trocar carta/face impede resposta assíncrona trocando a imagem seguinte.
 
 A legenda descreve o arquivo e sempre termina com Image source:; quando informado, exibe link com domínio e abertura em nova aba. Sem origem, mantém o rótulo vazio. Para saves de mesmo ID/caminho, legenda/alt atuais têm prioridade; link de imagem vem separado de Source. A correspondência exata entre alguns arquivos e páginas informadas não foi certificada.
 
