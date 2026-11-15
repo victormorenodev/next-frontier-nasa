@@ -16,7 +16,7 @@ Abra **http://127.0.0.1:8000/**. São módulos JavaScript nativos e JSONs por fe
 
 ## Jogar
 
-O menu tem **Start New Mission**, **Continue mission**, **Glossary**, **Credits** e controle de som, sem botão de sair. Continue fica desativado quando não há missão válida em andamento no navegador.
+O menu tem **Start New Mission**, **Continue mission**, **Glossary** e controle de som (Credits está oculto), sem botão de sair. Continue fica desativado quando não há missão válida em andamento no navegador.
 
 Start New Mission abre o briefing com imagem NASA e crédito. Botão, arrasto ou setas levam à seleção **Welcome, Captain!**. Arrastar à esquerda escolhe Operation Steins; à direita, Operation Gate. Botões e setas também funcionam. O seletor de consumo acelerado foi retirado; novas missões usam consumo normal.
 

@@ -1183,9 +1183,9 @@
     "sourceDescription": "\"The Vapor Compression Distillation (VCD) machine that recycles urine and wastewater is clogged with heavy deposits!\"",
     "image": "images/cards/12.jpg",
     "imageById": true,
-    "imageCaption": "An illustration of a future space base.",
-    "imageAlt": "An illustration of a future space base.",
-    "imageSource": "https://www.boletin.upiita.ipn.mx/Articulos/Detalle/85",
+    "imageCaption": "An astronaut holds a machine part inside a space station.",
+    "imageAlt": "An astronaut holds a machine part inside a space station.",
+    "imageSource": "https://www.nasa.gov/wp-content/uploads/2015/11/iss021e032275.jpg?resize=2000,1366",
     "sourceReferenceText": "",
     "left": {
       "label": "Clean the recycler",

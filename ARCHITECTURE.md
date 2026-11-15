@@ -33,7 +33,7 @@ Uma camada opaca “Loading…” cobre o carregamento inicial e as transições
 
 ## Navegação e início
 
-Menu centralizado mobile-first com Start New Mission, Continue mission, Glossary, Credits e som. Continue exige save válido em andamento. Nova missão abre briefing NASA; botão, arrasto ou setas levam ao seletor Welcome, Captain!. Operation Steins é easy, Operation Gate é hard. Arrastar o painel à esquerda/direita escolhe respectivamente easy/hard, com movimento e realce antes de soltar; gesto curto/cancelado não inicia. Botões/setas também funcionam.
+Menu centralizado mobile-first com Start New Mission, Continue mission, Glossary e som (Credits está oculto). Continue exige save válido em andamento. Nova missão abre briefing NASA; botão, arrasto ou setas levam ao seletor Welcome, Captain!. Operation Steins é easy, Operation Gate é hard. Arrastar o painel à esquerda/direita escolhe respectivamente easy/hard, com movimento e realce antes de soltar; gesto curto/cancelado não inicia. Botões/setas também funcionam.
 
 O briefing/seletor não substitui o save; escolher modo substitui sem confirmação. Se GameData veio de um save, a UI recarrega usando sessionStorage para transportar a escolha e iniciar com CurrentGameData. Novas missões passam `dailyCostResource: null`, sem seletor de consumo acelerado. End mission mantém diálogo de confirmação.
 

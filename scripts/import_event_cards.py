@@ -91,7 +91,7 @@ PAGE1_EDITORIAL = {
  '9': ('A dust storm is coming. Save power or keep all work going?', 'Save battery power', 'Keep working', 'A dust storm sweeps across Mars.'),
  '10': ('Dust covers our solar panels. Save power or use the reserves?', 'Turn off extras', 'Keep systems on', 'A dusty solar panel on Mars.'),
  '11': ('A solar flare is coming. Use the shelter or work outside?', 'Use the shelter', 'Keep working outside', 'A bright eruption rises from the surface of the Sun.'),
- '12': ('The water recycler is clogged. Clean it or keep it running?', 'Clean the recycler', 'Keep it running', 'An illustration of a future space base.'),
+ '12': ('The water recycler is clogged. Clean it or keep it running?', 'Clean the recycler', 'Keep it running', 'An astronaut holds a machine part inside a space station.'),
  '13': ('The water recycler stopped. Use reserves or run it anyway?', 'Use stored water', 'Run it anyway', 'A technician works on life-support equipment.'),
  '25': ('Space radiation threatens the crew. Save power or boost protection?', 'Save battery power', 'Boost protection', 'An illustration of solar particles reaching Mars.'),
 }
