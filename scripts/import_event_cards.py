@@ -64,7 +64,7 @@ def convert_page2(source):
   category=row['Category'].strip().lower()
   source_url=row['Sources'].strip();image_source=row['Imagem da carta'].strip()
   card=dict(id=card_id,category=category,probability=1/counts[category],difficulty=row['Difficulty'].strip().lower(),
-   description=description,sourceDescription=row['Card Description'].strip(),image=f'images/cards/{card_id}.jpg',imageById=True,
+   description=description,sourceDescription=row['Card Description'].strip(),image=f'images/cards/{card_id}.webp',imageById=True,
    imageCaption=caption,imageAlt=caption,imageSource=image_source,
    sourceSideEffects=row['Side effects'].strip(),sourceNotes=row['Extra informations'].strip(),sourceVerified=row['Source Verified?'].strip().upper()=='TRUE')
   if source_url:
@@ -140,7 +140,7 @@ def convert_page1(source):
   card_id=row['Id'].strip();description,left,right,caption=PAGE1_EDITORIAL[card_id]
   card=dict(id=card_id,sourceCardId=card_id,catalogSheet='page1',category=row['Category'].strip().lower(),
    difficulty=row['Dificuldade do evento'].strip().lower(),description=description,sourceDescription=row['Descrição da carta'].strip(),
-   image=f'images/cards/{card_id}.jpg',imageById=True,imageCaption=caption,imageAlt=caption,imageSource=row['Imagem da carta'].strip(),
+   image=f'images/cards/{card_id}.webp',imageById=True,imageCaption=caption,imageAlt=caption,imageSource=row['Imagem da carta'].strip(),
    sourceReferenceText=row['Referência'].strip())
   ref=reference(row['Referência'])
   if card_id=='8' and ref:
