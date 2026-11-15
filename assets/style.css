@@ -1182,7 +1182,7 @@ main {
   .menu-dialog p { margin-bottom: 10px; font-size: 14px; }
 }
 
-/* Easy onboarding highlights real elements without sending choices to the engine. */
+/* Onboarding highlights real elements without sending choices to the engine. */
 .tutorial-dialog { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); overflow: hidden; touch-action: pan-y; }
 .tutorial-dialog::backdrop { background: transparent; }
 .tutorial-spotlight { position: fixed; pointer-events: none; border: 3px solid #f3ce9d; border-radius: 18px; box-shadow: 0 0 0 150vmax #101324c9, 0 0 20px #f3ce9d55; }
@@ -1202,7 +1202,11 @@ main {
 @media (prefers-reduced-motion: reduce) { .card3d.tutorial-demo { animation: none; } }
 
 @media (max-width: 700px) and (orientation: portrait) {
-  #game.tutorial-card-step > .card-area { margin-top: 76px; }
+  #game.tutorial-card-step > .card-area { margin-top: calc(76px + var(--tutorial-card-offset, 0px)); }
 }
 
 .tutorial-header, .tutorial-footer { justify-content: flex-end; }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  #game.tutorial-card-step #effect-panel { display: none; }
+}

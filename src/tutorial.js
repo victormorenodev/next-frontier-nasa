@@ -3,7 +3,7 @@
   'use strict';
 
   function create({demonstrate, onFinish}) {
-    const dialog = document.getElementById('easy-tutorial');
+    const dialog = document.getElementById('mission-tutorial');
     const spotlight = dialog.querySelector('.tutorial-spotlight');
     const panel = dialog.querySelector('.tutorial-panel');
     const title = document.getElementById('tutorial-title');
@@ -13,13 +13,20 @@
 
     function position() {
       if (!dialog.open) return;
-      const rect = steps[index].target.getBoundingClientRect();
+      let rect = steps[index].target.getBoundingClientRect();
       const margin = 16, padding = steps[index].demo ? 20 : 7;
       const gap = padding + 10;
       const width = document.documentElement.clientWidth, height = window.innerHeight;
+      const pw = panel.offsetWidth, ph = panel.offsetHeight;
+      if (steps[index].demo && window.matchMedia('(max-width: 700px) and (orientation: portrait)').matches) {
+        const area = steps[index].target.closest('.card-area');
+        const previous = parseFloat(area.style.getPropertyValue('--tutorial-card-offset')) || 0;
+        const offset = Math.max(0, margin + ph + gap - (rect.top - previous));
+        area.style.setProperty('--tutorial-card-offset', `${offset}px`);
+        rect = steps[index].target.getBoundingClientRect();
+      }
       const left = Math.max(4, rect.left - padding), top = Math.max(4, rect.top - padding);
       spotlight.style.cssText = `left:${left}px;top:${top}px;width:${Math.min(width - left - 4, rect.width + 2 * padding)}px;height:${Math.min(height - top - 4, rect.height + 2 * padding)}px;`;
-      const pw = panel.offsetWidth, ph = panel.offsetHeight;
       const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
       const cx = clamp(rect.left + rect.width / 2 - pw / 2, margin, width - pw - margin);
       const cy = clamp(rect.top + rect.height / 2 - ph / 2, margin, height - ph - margin);
@@ -101,5 +108,5 @@
     };
   }
 
-  root.EasyTutorial = {create};
+  root.MissionTutorial = {create};
 })(globalThis);

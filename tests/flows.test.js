@@ -69,7 +69,7 @@ assert.deepEqual(F.active(flows, 0).map(a => [a.note, a.thirdsLeft]), [['Dusty p
 assert.deepEqual(F.active(flows, 4).map(a => a.thirdsLeft), [5, Infinity]);
 assert.deepEqual(F.active(flows, 9).map(a => a.note), ['New plants', 'Forever']);   // dust over, plants started
 
-// Display FIFO spans ongoing and scheduled effects without cancelling simulation.
+// The real FIFO spans ongoing and scheduled effects and cancels the oldest.
 let queue = F.createFlows();
 queue = F.addAnswer(queue, {ongoing: [{rates: {water: -1}, note: 'First', for: 10}]}, 0);
 queue = F.addAnswer(queue, {later: [{effects: {food: 2}, note: 'Second', after: 5}]}, 0);
@@ -78,8 +78,8 @@ queue = F.addAnswer(queue, {ongoing: [{rates: {energy: -1}, note: 'Fourth', for:
 const visibleQueue = f => [...f.ongoing, ...f.later].filter(o => !o.panelHidden)
   .sort((a, b) => a.panelOrder - b.panelOrder).map(o => o.note);
 assert.deepEqual(visibleQueue(queue), ['Second', 'Third', 'Fourth']);
-assert.equal(queue.ongoing.find(o => o.note === 'First').panelHidden, true);
-close(F.ratesPerSol(queue, 0).water, base.water - 1);
+assert.equal(queue.ongoing.find(o => o.note === 'First'), undefined);
+close(F.ratesPerSol(queue, 0).water, base.water);
 const expiredQueue = F.passTime(s0, queue, 0, 3).flows;
 assert.deepEqual(visibleQueue(expiredQueue), ['Second', 'Fourth']);
 assert.deepEqual(visibleQueue(JSON.parse(JSON.stringify(expiredQueue))), ['Second', 'Fourth']);
@@ -113,5 +113,25 @@ for (const selected of ['oxygen','water','shield','energy','food']) {
 }
 close(normal.energy, 40);
 close(normal.water, -4);
+
+// A discarded scheduled event never fires, and discarded rates never reappear.
+let planned = F.createFlows();
+for (let i=0;i<4;i++) planned=F.addAnswer(planned,{later:[{after:1,effects:i===0?{shield:-8}:{food:1},note:`Event ${i}`}]},0);
+assert.equal(planned.later.length,3);
+const deliveries=F.passTime(s0,planned,0,3);
+assert.deepEqual(deliveries.happened.map(o=>o.note),['Event 1','Event 2','Event 3']);
+assert.equal(deliveries.state.shield,s0.shield);
+// Legacy hidden flows are cancelled on reads, integration, and restore normalization.
+const legacyQueue={ongoing:[{rates:{water:-1000},start:0,end:30,panelHidden:true,panelOrder:1}],later:[{effects:{shield:-8},at:1,panelHidden:true,panelOrder:2}]};
+close(F.ratesPerSol(legacyQueue,0).water,base.water);
+assert.equal(F.active(legacyQueue,0).length,0);
+const migrated=F.limitEffects(legacyQueue,0);
+assert.deepEqual(migrated.ongoing,[]);assert.deepEqual(migrated.later,[]);
+const restored=F.passTime(s0,legacyQueue,0,3);
+close(restored.state.water,s0.water+base.water);assert.equal(restored.state.shield,s0.shield);
+// One answer can create more than three effects: only the newest three survive.
+const batch=F.addAnswer(F.createFlows(),{ongoing:Array.from({length:5},(_,i)=>({rates:{water:-i},for:5,note:`Rate ${i}`}))},0);
+assert.deepEqual(visibleQueue(batch),['Rate 2','Rate 3','Rate 4']);
+close(F.ratesPerSol(batch,0).water,base.water-9);
 
 console.log('flows: ok');

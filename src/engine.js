@@ -11,6 +11,8 @@ globalThis.Engine = {
       index: 0, eventIndex: 0, schedule, savedSide: null};
   },
   checkFailure(snapshot) {
+    const flows = Flows.limitEffects(snapshot.flows, snapshot.mission.elapsed);
+    if (flows !== snapshot.flows) snapshot = {...snapshot, flows};
     if (snapshot.mission.ended) return snapshot;
     const failedResource = Indicators.depleted(snapshot.state);
     return failedResource ? {...snapshot, mission: {...Mission.endMission(snapshot.mission, 'failed'), failedResource}} : snapshot;

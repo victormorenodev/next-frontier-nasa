@@ -60,7 +60,7 @@ O workflow **Publish game** está em `.github/workflows/pages.yml`: testa e publ
 
 ## Painel de efeitos no Hard
 
-O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito retira o ícone mais antigo e desloca os demais para a esquerda. Ícones retirados não voltam quando outro efeito termina; os efeitos continuam na simulação até seu término. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
+O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito remove o efeito mais antigo e seu ícone, deslocando os demais para a esquerda. O efeito retirado é cancelado: suas taxas futuras param e mudanças agendadas ainda não aplicadas são descartadas. Alterações já causadas nos recursos não são revertidas; efeitos removidos não voltam quando outro termina. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
 
 ## Life Support no Easy
 
@@ -97,7 +97,7 @@ A imagem mantém proporção sem corte e o botão Start New Mission fica fora de
 
 A entrada normal abre um menu com Next Frontier e os botões **Start New Mission**, **Continue mission** e **Credits**, sem botão de sair. Continue mission fica visível, mas desativado quando não há save válido no localStorage (inclusive se o armazenamento estiver indisponível ou o save for inválido), acompanhado de “No saved mission yet.”. O fundo `assets/images/mars-menu.svg` deriva do estilo geométrico de Marte e inclui habitats, antenas e painéis solares; o fundo durante a missão permanece o anterior.
 
-Start New Mission abre o briefing da nova missão; Continue mission retoma diretamente a fase e o modo salvos, sem passar pelo briefing. A continuação não aparece mais como botão dentro do briefing. Nessa tela foram removidos o rótulo “Next Frontier · Mission briefing” e o parágrafo “Look after…”. Novas missões Easy mostram o tutorial descrito abaixo; Hard não tem tutorial. Créditos abrem um diálogo com a atribuição da imagem NASA e das ilustrações geradas.
+Start New Mission abre o briefing da nova missão; Continue mission retoma diretamente a fase e o modo salvos, sem passar pelo briefing. A continuação não aparece mais como botão dentro do briefing. Nessa tela foram removidos o rótulo “Next Frontier · Mission briefing” e o parágrafo “Look after…”. Novas missões Easy e Hard mostram o tutorial descrito abaixo. Créditos abrem um diálogo com a atribuição da imagem NASA e das ilustrações geradas.
 
 O menu não altera nem apaga o save. Continuar restaura a missão existente; escolher uma nova missão mantém o fluxo atual. A recarga interna usada para iniciar uma nova missão com dados atuais mantém a seleção de modo/consumo e vai direto ao jogo. Se a inicialização falhar, o aviso e Try again continuam acessíveis na tela de briefing. Textos novos ficam em `data/interface.json`; a navegação e os diálogos ficam em `src/ui.js`.
 
@@ -105,12 +105,16 @@ O menu é mobile-first e usa uma única coluna centralizada horizontal e vertica
 
 Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os links de CSS e bootstrap no HTML usam a mesma versão de assets (`v`). O bootstrap propaga essa versão aos módulos (inclusive validation) e busca os JSONs com `cache: no-store`. Ao mudar a versão de assets em uma entrega, atualizar os dois links do HTML juntos. Os snapshots de regras das missões salvas continuam preservados; os textos atuais seguem prioritários.
 
-## Mini tutorial do Easy
+## Mini tutorial dos modos Easy e Hard
 
-- Cada nova missão Easy mostra cinco etapas sobre a interface real: Life Support, Radiation Shield, Energy Supply, Food Stock e a carta. Hard e Continue mission entram diretamente no jogo.
+- Cada nova missão Easy mostra cinco etapas sobre a interface real: Life Support, Radiation Shield, Energy Supply, Food Stock e a carta. Hard tem sete: os cinco indicadores físicos separados, o painel de efeitos e a carta. Continue mission entra diretamente na partida, sem repetir o tutorial.
 - Indicadores reutilizam as descrições e previsões dos detalhes existentes, com realce de um indicador por vez. Na última etapa, a carta demonstra continuamente um pequeno arrasto nos dois sentidos, preenchendo o botão correspondente como no arrasto real, sem selecionar alternativas. Respeitar movimento reduzido.
 - Next, deslize horizontal em qualquer sentido ou setas avançam. A última etapa usa Let’s play!. Skip tutorial fica disponível desde o início; Escape também pula. O foco e os cliques da partida ficam bloqueados pelo diálogo modal.
 - O tutorial não altera recursos, relógio, baralho, escolhas nem efeitos. A missão inicial é salva antes dele. Recarregar e continuar não repete o tutorial; não existe progresso de tutorial persistido.
 - `src/tutorial.js` controla a apresentação, o realce e os gestos. Textos em `data/interface.json`; as explicações dos recursos continuam nas fontes já existentes. Conferir posicionamento em celular/tablet e mudança de orientação, sem cobrir o elemento realçado.
 
 O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.
+
+No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do painel, sem criar efeitos fictícios. Explica alterações por sol e eventos agendados, sem explicar a remoção de efeitos pela fila. Em celulares em retrato, somente no passo da carta o painel é ocultado temporariamente para manter a carta legível; ao concluir ou pular, ele reaparece sem alterar os efeitos.
+
+A fila limita os próprios efeitos contínuos/agendados a três, nos dois modos; o painel continua exclusivo do Hard. Remover o mais antigo cancela suas contribuições futuras, sem desfazer o passado. Saves antigos têm efeitos `panelHidden` descartados na retomada, e a fila normalizada é salva. O tutorial não explica essa regra de remoção.
