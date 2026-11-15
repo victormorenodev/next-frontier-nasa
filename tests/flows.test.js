@@ -9,12 +9,12 @@ const multiplier = require('../data/mission.json').dailyCostMultiplier ?? 1;
 const empty = F.createFlows();
 const s0 = I.createState();
 
-// Base trend per sol: O₂ 3 − 3.45, water −4, energy +40, food −2.55 (4 crew, sol = 24.6597 h).
+// Author-defined total losses per sol for the four-person base; no automatic production.
 const base = F.ratesPerSol(empty, 0);
-close(base.oxygen, 3 - multiplier * 4 * 0.84 * 24.6597 / 24, 'oxygen');
-close(base.water, -4 * multiplier, 'water');
-close(base.energy, 100 - 60 * multiplier, 'energy');
-close(base.food, -multiplier * 4 * 0.62 * 24.6597 / 24, 'food');
+close(base.oxygen, -3.5 * multiplier, 'oxygen');
+close(base.water, -10 * multiplier, 'water');
+close(base.energy, -5 * multiplier, 'energy');
+close(base.food, -2.6 * multiplier, 'food');
 close(base.shield, 0, 'shield');            // radiation does not use up the shield
 
 // Daily budgets have no day/afternoon/night dependency.
@@ -29,7 +29,7 @@ let flows = F.addAnswer(empty, {ongoing: [{rates: {energy: -30}, for: 3}]}, 0);
 close(F.ratesPerSol(flows, 0).energy, base.energy - 30);
 close(F.ratesPerSol(flows, 9).energy, base.energy);
 let r = F.passTime(s0, flows, 0, 9);
-close(r.state.energy, Math.max(0, Math.min(300, s0.energy + 3 * (base.energy - 30))), 'three dusty sols');
+close(r.state.energy, Math.max(0, Math.min(I.QUANTITIES.energy.max, s0.energy + 3 * (base.energy - 30))), 'three dusty sols');
 assert.equal(r.flows.ongoing.length, 0);    // finished changes are dropped
 
 // Delayed start: plants give food only after 3 sols, for 2 sols.
@@ -54,8 +54,8 @@ close(r2.state.food - r.state.food, 6 + base.food / 3, 'later fired once');
 assert.deepEqual(empty, {ongoing: [], later: []});
 
 // Stores never go above their capacity or below zero.
-const full = F.passTime(s0, F.addAnswer(empty, {later: [{after: 0, effects: {food: 50}}]}, 0), 0, 1).state;
-assert.equal(full.food, 100);
+const full = F.passTime(s0, F.addAnswer(empty, {later: [{after: 0, effects: {food: 1000}}]}, 0), 0, 1).state;
+assert.equal(full.food, I.QUANTITIES.food.max);
 const drained = F.passTime(s0, F.addAnswer(empty, {ongoing: [{rates: {oxygen: -1000}}]}, 0), 0, 3).state;
 assert.equal(drained.oxygen, 0);
 
@@ -111,8 +111,13 @@ for (const selected of ['oxygen','water','shield','energy','food']) {
   assert.equal(advanced.flows.dailyCostResource, selected);
   close(advanced.state.water, s0.water + rates.water);
 }
-close(normal.energy, 40);
-close(normal.water, -4);
+close(normal.energy, -5);
+close(normal.water, -10);
+close(normal.oxygen, -3.5);
+close(normal.food, -2.6);
+close(normal.shield, 0);
+const ordinarySol = F.passTime(s0, F.createFlows(null), 0, 3).state;
+for (const key of Object.keys(normal)) close(ordinarySol[key] - s0[key], normal[key], key);
 
 // A discarded scheduled event never fires, and discarded rates never reappear.
 let planned = F.createFlows();

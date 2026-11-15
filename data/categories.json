@@ -12,12 +12,12 @@
   {
     "id": "exploration",
     "name": "Exploration",
-    "probability": 0.2
+    "probability": 0.15
   },
   {
     "id": "science",
     "name": "Science",
-    "probability": 0.15
+    "probability": 0.2
   },
   {
     "id": "emergency",

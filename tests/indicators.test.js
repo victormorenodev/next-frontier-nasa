@@ -13,7 +13,7 @@ assert.deepEqual(
 Object.values(I.QUANTITIES).forEach(q => assert.ok(q.unitName && q.start <= q.max));
 
 // Changes stay between 0 and max and never mutate the old state.
-assert.equal(I.change(s, 'energy', 500).energy, 300);
+assert.equal(I.change(s, 'energy', 2000).energy, 1480);
 assert.equal(I.change(s, 'energy', -500).energy, 0);
 assert.equal(s.energy, 240);
 assert.equal(s.shield,80);assert.equal(I.QUANTITIES.shield.max,100);
@@ -33,11 +33,11 @@ assert.deepEqual(view.map(i => [i.id, i.name]), [
 view.forEach(i => { assert.equal(i.parts.length, 1); assert.equal(i.parts[0].id, i.id); });
 const energy = view.find(i => i.id === 'energy');
 assert.equal(energy.parts[0].unit, 'kWh');
-assert.equal(energy.level, .8);
+assert.equal(energy.level, 240 / 1480);
 
 // Oxygen and water are separate indicators now: low oxygen shows on Oxygen Level only.
 const lowO2 = I.read(I.change(s, 'oxygen', -54));
-assert.ok(Math.abs(lowO2.find(i => i.id === 'oxygen').level - .1) < 1e-9);
-assert.equal(lowO2.find(i => i.id === 'water').level, 600 / 700);
+assert.ok(Math.abs(lowO2.find(i => i.id === 'oxygen').level - 6 / 200) < 1e-9);
+assert.equal(lowO2.find(i => i.id === 'water').level, 600 / 1900);
 
 console.log('indicators: ok');

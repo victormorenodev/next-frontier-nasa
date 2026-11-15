@@ -87,7 +87,7 @@
 
     // ── Drag to answer (mouse, finger or pen) ──
     card3d.addEventListener('pointerdown', e => {
-      if (phase !== 'front' || handlers.canAnswer?.() === false || e.button > 0) return;
+      if (e.target.closest('.glossary-term, a') || phase !== 'front' || handlers.canAnswer?.() === false || e.button > 0) return;
       drag = {id: e.pointerId, x: e.clientX, dx: 0, moving: false};
     });
     card3d.addEventListener('pointermove', e => {
@@ -128,6 +128,7 @@
 
     // ── What ui.js calls ──
     function showFront(card, number, total) {
+      Glossary.close();
       drag = null;
       card3d.style.transform = '';
       card3d.classList.remove('dragging');
@@ -150,10 +151,17 @@
       image.alt = card.imageAlt || '';
       const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&c.image===card.image);
       caption.textContent=(card.imageCaption ?? currentCard?.imageCaption ?? '').trim();
-      caption.hidden=!caption.textContent;
+      caption.append(` ${Copy('imageSourceLabel')}`);
+      const imageSource=card.imageSource ?? currentCard?.imageSource ?? (card.source?.kind==='image' ? card.source.url : '');
+      if(imageSource){
+        const link=el('a',null,new URL(imageSource).hostname.replace(/^www\./,''));
+        link.href=imageSource;link.target='_blank';link.rel='noopener noreferrer';caption.append(link);
+      }
+      caption.hidden=false;
       text.textContent = card.description;
       leftBtn.textContent = `← ${card.left.label}`;
       rightBtn.textContent = `${card.right.label} →`;
+      [caption,text,leftBtn,rightBtn].forEach(node => Glossary.decorate(node));
       highlight(null);
       setFace(false);
       phase = 'front';
@@ -188,6 +196,7 @@
     }
 
     function showBack(card, side, isLast, happened, beforeState) {
+      Glossary.close();
       const picked = card[side];
       chosen.textContent = picked.label;
       const explanation = typeof picked.description === 'string' ? picked.description.trim() : '';
@@ -210,16 +219,18 @@
       (happened || []).forEach(h => Object.entries(h.effects).forEach(([key, amount]) =>
         effects.append(effectRow(key, amount, '', `just happened${h.note ? ` · ${h.note}` : ''}`, 'happened'))));
 
-      // Institution only; it links to the full reference.
-      source.replaceChildren(Copy(card.source.kind === 'image' ? 'imageSourceLabel' : 'source'));
-      const link = el('a', null, card.source.institution);
-      link.href = card.source.url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      source.append(link);
+      // References belong on the back; image attribution belongs in the caption.
+      source.replaceChildren();
+      source.hidden=!card.source || card.source.kind==='image';
+      if(!source.hidden){
+        source.append(Copy('source'));
+        const link=el('a',null,card.source.institution);
+        link.href=card.source.url;link.target='_blank';link.rel='noopener noreferrer';source.append(link);
+      }
 
       mockNote.hidden = !card.mock;
       nextBtn.textContent = isLast ? Copy("endSol") : Copy("nextEvent");
+      [chosen,choiceDescription,effects].forEach(node => Glossary.decorate(node));
       setFace(true);
       inner.classList.add('flipped');
       phase = 'back';
@@ -227,6 +238,7 @@
     }
 
     function showMessage(title, body, buttonLabel, onClick, ending = 'quit', imagePath = null) {
+      Glossary.close();
       phase = 'message';
       slot.classList.remove('has-card');
       slot.classList.add('ended');

@@ -27,7 +27,7 @@ O₂, água, energia e comida usam unidades físicas nos dois modos; Shield usa 
 
 Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Qualquer recurso zerado encerra a missão com “Mission Failed”.
 
-As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 35%, Maintenance 25%, Exploration 20%, Science 15%, Emergency 5%. No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
+As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 35%, Maintenance 25%, Exploration 15%, Science 20%, Emergency 5%. No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
 
 Na frente, cada imagem tem legenda. No verso, a explicação da escolha aparece somente se preenchida; os resultados mostram ícones e nomes dos recursos. Dificuldade e número de eventos não aparecem na HUD.
 
@@ -123,7 +123,7 @@ As telas finais sem imagem (e o fallback de carregamento) usam título e descri�
 
 O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
 
-Antes de escolher o modo, **Faster daily use** permite selecionar um recurso ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+O seletor Faster daily use foi removido da interface. Novas missões usam consumo normal (`dailyCostResource: null`). O motor ainda entende o multiplicador e o recurso selecionado em saves antigos, preservando o comportamento com que começaram. Shield continua sem consumo diário.
 
 A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
 
@@ -157,7 +157,7 @@ No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do pai
 
 ## Catálogo atual de eventos
 
-As novas missões usam as 13 cartas do CSV e as imagens `images/cards/1.jpg` a `13.jpg` (6 e 12 são PNG). As influências são percentuais da capacidade máxima do recurso, convertidos antes do jogo para unidades de simulação (físicas nos estoques e pontos percentuais em Shield): `efeito = percentual × capacidade / 100`. Por exemplo, 15 pontos de Oxygen equivalem a 9 kg; 15 de Water, 105 L; 15 de Energy, 45 kWh. As capacidades atuais não foram alteradas pelas notas laterais da planilha.
+As novas missões usam as 13 cartas do CSV e as imagens `images/cards/1.jpg` a `13.jpg` (6 e 12 são PNG). As influências são percentuais da capacidade máxima do recurso, convertidos antes do jogo para unidades de simulação (físicas nos estoques e pontos percentuais em Shield): `efeito = percentual × capacidade / 100`. Por exemplo, 15 pontos de Oxygen equivalem a 30 kg; 15 de Water, 285 L; 15 de Energy, 222 kWh. As capacidades atuais foram definidas pelo autor, independentemente das notas laterais da planilha.
 
 Os valores da primeira resposta vão para left e os da segunda para right. O arquivo usa barra invertida como separador; o importador também aceita `/`. Esses efeitos são imediatos. Influências vazias são zero; não há durações ou taxas criadas para preencher lacunas. O JSON guarda `effectPercentages` para auditoria, mas o motor aplica apenas `effects`, em unidades físicas dos estoques e pontos percentuais de Shield.
 
@@ -174,8 +174,34 @@ Continuar missões antigas preserva o baralho salvo, inclusive cartas mock. Inic
 
 ## Shield em porcentagem
 
-Shield vai de **0 a 100% no Easy e no Hard**, começando em **80%**. É um índice de proteção do jogo, não g/cm², dose ou porcentagem garantida de radiação bloqueada. Os demais recursos mantêm suas unidades físicas internas e a apresentação de cada modo. No Easy, Shield é a exceção à regra de números sem %.
+Shield vai de **0 a 100% no Easy e no Hard**, começando em **75% no Easy e 50% no Hard**. É um índice de proteção do jogo, não g/cm², dose ou porcentagem garantida de radiação bloqueada. Os demais recursos mantêm suas unidades físicas internas e a apresentação de cada modo. No Easy, Shield é a exceção à regra de números sem %.
 
 Os valores de Shield das cartas são pontos percentuais: −5 muda 80% para 75%. O estado mantém frações, mas a interface arredonda para inteiros; previsões e números de variação comparam os inteiros exibidos. Não há consumo diário de Shield por radiação.
 
 Saves antigos em g/cm² são convertidos automaticamente, preservando a proporção da capacidade: 8 de 10 vira 80%. A conversão inclui efeitos das cartas, efeitos pendentes e destaques já salvos, sem reaplicar escolhas ou alterar os outros recursos.
+
+## Capacidades e partida em andamento
+
+Novas missões usam os máximos O₂ 200 kg, água 1900 L, comida seca 235 kg, energia 1480 kWh e Shield 100 pontos. Os estoques iniciais são 75% dos máximos no Easy e 50% no Hard; as perdas diárias seguem a seção abaixo. São parâmetros de balanceamento, não dimensionamento científico. Efeitos percentuais das cartas foram recalculados com essas capacidades. Partidas em andamento preservam seu snapshot de capacidades e cartas.
+
+O único slot de localStorage guarda somente a última missão em andamento. Iniciar outra missão substitui esse slot; terminar com sucesso, falhar ou desistir remove o save. A tela final continua visível na sessão atual, mas não é retomada após recarregar. Saves antigos já encerrados são descartados na inicialização e não habilitam Continue mission. Nenhum histórico de partidas é armazenado.
+
+## Perdas diárias atuais
+
+Em novas missões, o saldo-base por sol da base inteira de quatro pessoas é O₂ −3,5 kg, água −10 L, energia −5 kWh e comida seca −2,6 kg. Shield não perde pontos diariamente. `data/flows.json` usa `basis: perSol` e `kind: simulated`: são valores de balanceamento definidos pelo autor, sem multiplicação adicional por tripulação ou duração do sol. Não há produção automática de oxigênio ou energia compensando essas perdas. Efeitos das cartas continuam adicionais. Novas missões aplicam esses valores sem multiplicador; saves antigos com consumo acelerado conservam seu ajuste. Saves em andamento preservam seus fluxos anteriores.
+
+## Recursos iniciais por modo
+
+`mission.difficulties.easy.initialResourceFraction` é 0,75; Hard usa 0,5. `Engine.start` multiplica a capacidade de cada recurso pela fração do modo, incluindo Shield, sem arredondar o estado. Easy começa com O₂ 150 kg, água 1425 L, comida 176,25 kg, energia 1110 kWh e Shield 75 pontos. Hard começa com O₂ 100 kg, água 950 L, comida 117,5 kg, energia 740 kWh e Shield 50 pontos. Life Support inicia em 75 no Easy. Valores start em resources.json são apenas o fallback para configurações antigas sem a fração; não determinam os estoques das novas missões atuais. A regra só é aplicada ao iniciar: continuar restaura os valores salvos sem recalcular.
+
+## Glossário
+
+Glossary no menu inicial abre os dez termos de `data/glossary.json`, com nomes e definições em inglês simples. O glossário atual é usado também para partidas antigas, sem alterar seus dados de simulação. `src/glossary.js` destaca aliases completos, sem diferenciar maiúsculas, em legendas, enunciados, alternativas e descrições/efeitos do verso. Usa nós de texto, sem interpretar HTML; aliases mais longos têm prioridade. Os termos recebem cor e sublinhado pontilhado. Hover, toque ou foco de teclado mostram a definição em um popover acima da interface. Escape, toque fora ou mudança de carta fecham; consultar um termo não escolhe uma resposta nem inicia arrasto. A lista do menu tem rolagem interna em telas pequenas. Fontes e URLs não são anotadas.
+
+## Seleção das missões MARINER 4 e OPPORTUNITY
+
+O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard aparece como OPPORTUNITY, com recursos em 50%. A tela conserva as indicações Easy/Hard e de idade para esclarecer a dificuldade. Arrastar o painel para a esquerda escolhe MARINER 4; para a direita, OPPORTUNITY. O painel acompanha o gesto e realça a alternativa ao ultrapassar o limiar; soltar antes dele ou cancelar não inicia missão. Toques nos botões e setas de teclado continuam disponíveis. Faster daily use foi retirado da tela: novas missões usam consumo normal. Saves existentes conservam seus ajustes e IDs internos easy/hard.
+
+## Fontes das cartas e das imagens
+
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.

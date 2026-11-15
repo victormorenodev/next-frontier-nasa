@@ -13,7 +13,8 @@
         "easy",
         "medium"
       ],
-      "display": "percentage"
+      "display": "percentage",
+      "initialResourceFraction": 0.75
     },
     "hard": {
       "allowedCardDifficulties": [
@@ -21,7 +22,8 @@
         "medium",
         "hard"
       ],
-      "display": "physical"
+      "display": "physical",
+      "initialResourceFraction": 0.5
     }
   },
   "dailyCostMultiplier": 3

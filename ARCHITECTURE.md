@@ -46,8 +46,8 @@ Configuração padrão: 4 astronautas, 40 sols, 80% de um evento e 20% de dois. 
 | --- | ---: |
 | Routine | 35% |
 | Maintenance | 25% |
-| Exploration | 20% |
-| Science | 15% |
+| Exploration | 15% |
+| Science | 20% |
 | Emergency | 5% |
 
 Cada evento consome dois sorteios independentes: categoria e carta dentro dela. Probabilidades são frações de 0 a 1; categorias somam 1 e cartas somam 1 por categoria, com tolerância 1e-9. Não há rodadas balanceadas nem proibição de repetição consecutiva. Probabilidade zero desabilita a seleção.
@@ -120,13 +120,13 @@ Nome, cor e descrição vêm de `data/resources.json` → `easyLifeSupport`; a c
 
 ## Finais por esgotamento e multiplicador de teste
 
-`Indicators.depleted` encontra o primeiro recurso interno em zero na ordem de `resources.quantities` (oxygen, water, shield, energy, food). Não usa os números arredondados do Easy. `Engine.checkFailure` aplica a regra às escolhas e à retomada de saves ativos antigos com estoque zerado. Missões já encerradas preservam seu final.
+`Indicators.depleted` encontra o primeiro recurso interno em zero na ordem de `resources.quantities` (oxygen, water, shield, energy, food). Não usa os números arredondados do Easy. `Engine.checkFailure` aplica a regra às escolhas e à retomada de saves ativos antigos com estoque zerado. Saves de missões já encerradas são descartados no bootstrap.
 
 `Flows.passTime(..., {stopOnEmpty: true})` verifica após o saldo de cada terço interno e após cada efeito agendado. Ao zerar, interrompe a integração, mantém consequências não executadas e retorna `failedResource` e `thirdsPassed`. Não existe período jogável novo: são passos internos da resolução diária. `Engine.next` salva o tempo efetivamente integrado e conserva o sol em que houve falha, sem avançar para outro evento. A falha prevalece inclusive no sol 40. Previsões usam a mesma interrupção, sem alterar o estado real. Chamadas sem a opção preservam a integração genérica dos fluxos.
 
-A UI mostra imediatamente a falha de uma escolha e salva o final, sem apresentar o verso como se a missão continuasse. Falhas durante a resolução diária usam a animação de recursos existente antes de mostrar o final. A tela usa `failedTitle` e `failedBody-*` de `interface.json`, com botão New mission. No Easy, failedResource oxygen/water seleciona o mesmo texto life-support; Hard conserva as cinco causas. O save guarda a causa física, validada contra um estoque realmente zerado, e retoma o mesmo final sem reaplicar efeitos. Encerramento manual e sucesso permanecem distintos.
+A UI mostra imediatamente a falha de uma escolha e salva o final, sem apresentar o verso como se a missão continuasse. Falhas durante a resolução diária usam a animação de recursos existente antes de mostrar o final. A tela usa `failedTitle` e `failedBody-*` de `interface.json`, com botão New mission. No Easy, failedResource oxygen/water seleciona o mesmo texto life-support; Hard conserva as cinco causas. O save guarda a causa física, validada contra um estoque realmente zerado, e mantém o final somente na sessão atual, removendo o save ao encerrar. Encerramento manual e sucesso permanecem distintos.
 
-`mission.dailyCostMultiplier` (opcional, positivo, padrão 1) multiplica somente os fluxos-base cujo amount é negativo. Está em 3 para teste, em ambos os modos, e novas missões aplicam o fator somente ao recurso escolhido em Faster daily use; Normal daily use é o padrão. Produção positiva e efeitos imediatos/contínuos/agendados das cartas não são multiplicados. Os coeficientes de referência em `flows.json` permanecem originais; o multiplicador é balanceamento de teste, não nova referência científica. Novas missões usam o valor atual; saves mantêm seu snapshot de dados. Remover o campo ou usar 1 restaura o consumo normal para novas missões. Blindagem não ganha consumo diário.
+`mission.dailyCostMultiplier` (opcional, positivo, padrão 1) multiplica somente os fluxos-base cujo amount é negativo. Está em 3 para teste, em ambos os modos, mas o seletor foi removido e novas missões usam consumo normal. Produção positiva e efeitos imediatos/contínuos/agendados das cartas não são multiplicados. Os coeficientes de referência em `flows.json` permanecem originais; o multiplicador é balanceamento de teste, não nova referência científica. Novas missões usam o valor atual; saves mantêm seu snapshot de dados. Remover o campo ou usar 1 restaura o consumo normal para novas missões. Blindagem não ganha consumo diário.
 
 As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado; o painel de efeitos fica oculto ao encerrar para reservar espaço ao final. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
 
@@ -134,7 +134,7 @@ As telas finais sem imagem (e o fallback de carregamento) usam título e descri�
 
 O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
 
-Antes de escolher o modo, **Faster daily use** permite selecionar um recurso ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+O seletor Faster daily use foi removido da interface. Novas missões usam consumo normal (`dailyCostResource: null`). O motor ainda entende o multiplicador e o recurso selecionado em saves antigos, preservando o comportamento com que começaram. Shield continua sem consumo diário.
 
 A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
 
@@ -186,14 +186,40 @@ Influências separadas por `\` ou `/` são pares da resposta 1/2. O importador u
 
 A primeira resposta é left e a segunda right. Rótulos e descrições da frente são curtos; as respostas completas ficam nas descrições do verso, com a menção da carta 10 a 15 kWh ajustada à bateria atual; `sourceResponse` e `sourceDescription` preservam os textos originais. A segunda resposta da carta 7 e as duas da 8 foram completadas por autorização. Não foram inventadas taxas, durações, colheitas ou SFX. Textos 8/10 evitam a capacidade de 15 kWh de outro equipamento; cartas 10/13 são independentes de uma escolha anterior, conforme o sorteio com reposição.
 
-Referências preenchidas no CSV usam `source.kind: reference`; quando só existe a origem da imagem, `source.kind: image` faz a UI mostrar Image source, sem apresentar o link como sustentação científica dos valores. `imageSource` preserva a origem informada para cada imagem. Os coeficientes de efeito são balanceamento do autor, não medições dos artigos citados. `source.kind`, `sourceDescription`, `sourceResponse`, `imageSource` e `effectPercentages` são opcionais para continuar validando saves anteriores.
+Referências preenchidas no CSV usam `source.kind: reference`; sem referência, o importador omite source e a UI oculta a linha no verso. Saves antigos com `source.kind: image` também têm essa linha ocultada. `imageSource` preserva a origem informada para cada imagem. Os coeficientes de efeito são balanceamento do autor, não medições dos artigos citados. `source.kind`, `sourceDescription`, `sourceResponse`, `imageSource` e `effectPercentages` são opcionais para continuar validando saves anteriores.
 
 A substituição afeta o catálogo de novas missões. Snapshots anteriores mantêm cartas, sequência e dados físicos salvos; o asset mock não é removido para não quebrar essas partidas. [Auditoria do conteúdo](docs/CARDS.md).
 
 ## Escala percentual de Shield e migração
 
-`resources.quantities.shield` usa `start: 80`, `max: 100`, `unit: %` e `unitName: percent`. Shield é um índice abstrato; os outros quatro recursos continuam físicos. `ResourceDisplay.read` arredonda Shield para inteiro com % em ambos os modos. Mudanças reais usam a diferença dos valores arredondados; frações permanecem no motor. Não se aplica conversão física de água para pontos do índice.
+`resources.quantities.shield` usa `max: 100`, `unit: %` e `unitName: percent`. Shield é um índice abstrato; os outros quatro recursos continuam físicos. `ResourceDisplay.read` arredonda Shield para inteiro com % em ambos os modos. Mudanças reais usam a diferença dos valores arredondados; frações permanecem no motor. Não se aplica conversão física de água para pontos do índice.
 
-O bootstrap valida o save antigo com `allowLegacyShield` e chama `migrateShieldSave` antes de importar o motor/UI. Para a unidade antiga g/cm², multiplica os valores de Shield por `100 / old.max`: estado, estoque inicial, cards/deck, efeitos imediatos, rates ongoing, later, fluxos-base e cardChanges. Copia os objetos sem mutar a origem nem aplicar o fator duas vezes a cartas compartilhadas. Percentuais originais de auditoria, relógio, sequência, dificuldade e resultados da missão são preservados. Infinity continua sendo serializado pelo marcador existente.
+O bootstrap valida o save antigo com `allowLegacyShield` e chama `migrateShieldSave` antes de importar o motor/UI. Para a unidade antiga g/cm², multiplica os valores de Shield por `100 / old.max`: estado, estoque inicial, cards/deck, efeitos imediatos, rates ongoing, later, fluxos-base e cardChanges. Copia os objetos sem mutar a origem nem aplicar o fator duas vezes a cartas compartilhadas. Percentuais originais de auditoria, relógio, sequência, dificuldade e resultados da missão em andamento são preservados. Infinity continua sendo serializado pelo marcador existente.
 
 O resultado é validado e salvo automaticamente; se a gravação falhar, a partida convertida continua disponível em memória. A migração é idempotente: saves com unidade % e capacidade 100 não são convertidos novamente. Novos dados exigem a escala percentual; a escala g/cm² é aceita somente para carregar e migrar saves antigos. O formato do slot continua na versão 1, discriminando a escala pela unidade/capacidade.
+
+## Capacidades e partida em andamento
+
+Novas missões usam os máximos O₂ 200 kg, água 1900 L, comida seca 235 kg, energia 1480 kWh e Shield 100 pontos. Os estoques iniciais são 75% dos máximos no Easy e 50% no Hard; as perdas diárias seguem a seção abaixo. São parâmetros de balanceamento, não dimensionamento científico. Efeitos percentuais das cartas foram recalculados com essas capacidades. Partidas em andamento preservam seu snapshot de capacidades e cartas.
+
+O único slot de localStorage guarda somente a última missão em andamento. Iniciar outra missão substitui esse slot; terminar com sucesso, falhar ou desistir remove o save. A tela final continua visível na sessão atual, mas não é retomada após recarregar. Saves antigos já encerrados são descartados na inicialização e não habilitam Continue mission. Nenhum histórico de partidas é armazenado.
+
+## Perdas diárias atuais
+
+Em novas missões, o saldo-base por sol da base inteira de quatro pessoas é O₂ −3,5 kg, água −10 L, energia −5 kWh e comida seca −2,6 kg. Shield não perde pontos diariamente. `data/flows.json` usa `basis: perSol` e `kind: simulated`: são valores de balanceamento definidos pelo autor, sem multiplicação adicional por tripulação ou duração do sol. Não há produção automática de oxigênio ou energia compensando essas perdas. Efeitos das cartas continuam adicionais. Novas missões aplicam esses valores sem multiplicador; saves antigos com consumo acelerado conservam seu ajuste. Saves em andamento preservam seus fluxos anteriores.
+
+## Recursos iniciais por modo
+
+`mission.difficulties.easy.initialResourceFraction` é 0,75; Hard usa 0,5. `Engine.start` multiplica a capacidade de cada recurso pela fração do modo, incluindo Shield, sem arredondar o estado. Easy começa com O₂ 150 kg, água 1425 L, comida 176,25 kg, energia 1110 kWh e Shield 75 pontos. Hard começa com O₂ 100 kg, água 950 L, comida 117,5 kg, energia 740 kWh e Shield 50 pontos. Life Support inicia em 75 no Easy. Valores start em resources.json são apenas o fallback para configurações antigas sem a fração; não determinam os estoques das novas missões atuais. A regra só é aplicada ao iniciar: continuar restaura os valores salvos sem recalcular.
+
+## Glossário
+
+Glossary no menu inicial abre os dez termos de `data/glossary.json`, com nomes e definições em inglês simples. O glossário atual é usado também para partidas antigas, sem alterar seus dados de simulação. `src/glossary.js` destaca aliases completos, sem diferenciar maiúsculas, em legendas, enunciados, alternativas e descrições/efeitos do verso. Usa nós de texto, sem interpretar HTML; aliases mais longos têm prioridade. Os termos recebem cor e sublinhado pontilhado. Hover, toque ou foco de teclado mostram a definição em um popover acima da interface. Escape, toque fora ou mudança de carta fecham; consultar um termo não escolhe uma resposta nem inicia arrasto. A lista do menu tem rolagem interna em telas pequenas. Fontes e URLs não são anotadas.
+
+## Seleção das missões MARINER 4 e OPPORTUNITY
+
+O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard aparece como OPPORTUNITY, com recursos em 50%. A tela conserva as indicações Easy/Hard e de idade para esclarecer a dificuldade. Arrastar o painel para a esquerda escolhe MARINER 4; para a direita, OPPORTUNITY. O painel acompanha o gesto e realça a alternativa ao ultrapassar o limiar; soltar antes dele ou cancelar não inicia missão. Toques nos botões e setas de teclado continuam disponíveis. Faster daily use foi retirado da tela: novas missões usam consumo normal. Saves existentes conservam seus ajustes e IDs internos easy/hard.
+
+## Fontes das cartas e das imagens
+
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.

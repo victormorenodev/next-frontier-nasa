@@ -5,7 +5,7 @@
       "unit": "kg",
       "unitName": "kilograms",
       "start": 60,
-      "max": 60,
+      "max": 200,
       "description": "Air for your crew to breathe."
     },
     "water": {
@@ -13,7 +13,7 @@
       "unit": "L",
       "unitName": "liters",
       "start": 600,
-      "max": 700,
+      "max": 1900,
       "description": "Water for your crew to drink and use in the base."
     },
     "shield": {
@@ -29,7 +29,7 @@
       "unit": "kWh",
       "unitName": "kilowatt-hours",
       "start": 240,
-      "max": 300,
+      "max": 1480,
       "description": "Stored power keeps the lights and machines running."
     },
     "food": {
@@ -37,7 +37,7 @@
       "unit": "kg",
       "unitName": "kilograms of dry food",
       "start": 100,
-      "max": 100,
+      "max": 235,
       "description": "Food gives your crew energy to work and explore."
     }
   },

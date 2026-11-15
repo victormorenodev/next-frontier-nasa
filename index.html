@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1b1a30">
   <title>Next Frontier</title>
-  <link rel="stylesheet" href="assets/style.css?v=20261115-shield-percent1">
+  <link rel="stylesheet" href="assets/style.css?v=20261115-card-sources1">
 </head>
 <body>
   <!-- Decorative view through the base window; never intercepts game input. -->
@@ -21,11 +21,17 @@
       <nav class="main-menu-actions" aria-label="Main menu">
         <button id="menu-start" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7z"/></svg><span data-copy="menuStart"></span><span class="menu-action-arrow" aria-hidden="true">→</span></button>
         <button id="menu-continue" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2 7M4 4v7h7M12 7v5l3 2"/></svg><span data-copy="continueMission"></span></button>
+        <button id="menu-glossary" type="button" aria-haspopup="dialog" aria-controls="glossary-dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v15M12 5C8 2 3 4 3 4v14s5-2 9 2c4-4 9-2 9-2V4s-5-2-9 1Z"/></svg><span data-copy="menuGlossary"></span></button>
         <button id="menu-credits" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><span data-copy="menuCredits"></span></button>
       </nav>
       <p id="menu-save-note" class="menu-save-note" data-copy="menuNoSave" hidden></p>
     </div>
   </section>
+  <dialog id="glossary-dialog" class="menu-dialog glossary-dialog" aria-labelledby="glossary-title">
+    <h2 id="glossary-title" data-copy="menuGlossary"></h2>
+    <dl id="glossary-list"></dl>
+    <button id="glossary-close" type="button" data-copy="menuBack" autofocus></button>
+  </dialog>
   <dialog id="credits-dialog" class="menu-dialog" aria-labelledby="credits-title">
     <h2 id="credits-title" data-copy="menuCredits"></h2>
     <p data-copy="creditsProject"></p>
@@ -53,14 +59,9 @@
       <p class="briefing-eyebrow" data-copy="html3"></p>
       <h1 id="difficulty-title" data-copy="difficultyTitle"></h1>
       <p class="difficulty-intro" data-copy="difficultyIntro"></p>
-      <div class="daily-cost-control">
-        <label for="daily-cost-resource" data-copy="dailyCostLabel"></label>
-        <select id="daily-cost-resource" aria-describedby="daily-cost-hint"><option value="" data-copy="dailyCostNormal"></option></select>
-        <small id="daily-cost-hint" data-copy="dailyCostHint"></small>
-      </div>
       <div class="difficulty-options">
-        <button type="button" class="difficulty-option" data-mode="easy"><span class="difficulty-symbol" aria-hidden="true">⚗</span><strong data-copy="difficultyEasy"></strong><span data-copy="difficultyEasyAge"></span><small data-copy="difficultyEasyHint"></small></button>
-        <button type="button" class="difficulty-option" data-mode="hard"><span class="difficulty-symbol" aria-hidden="true">✦</span><strong data-copy="difficultyHard"></strong><span data-copy="difficultyHardAge"></span><small data-copy="difficultyHardHint"></small></button>
+        <button type="button" class="difficulty-option" data-mode="easy"><span class="difficulty-symbol" aria-hidden="true">←</span><strong data-copy="difficultyEasy"></strong><span data-copy="difficultyEasyAge"></span><small data-copy="difficultyEasyHint"></small></button>
+        <button type="button" class="difficulty-option" data-mode="hard"><span class="difficulty-symbol" aria-hidden="true">→</span><strong data-copy="difficultyHard"></strong><span data-copy="difficultyHardAge"></span><small data-copy="difficultyHardHint"></small></button>
       </div>
       <button type="button" class="difficulty-back" id="difficulty-back" data-copy="difficultyBack"></button>
     </div>
@@ -129,6 +130,6 @@
   </dialog>
 
   <!-- Native modules and JSON data require an HTTP server. -->
-  <script type="module" src="src/bootstrap.js?v=20261115-shield-percent1"></script>
+  <script type="module" src="src/bootstrap.js?v=20261115-card-sources1"></script>
 </body>
 </html>

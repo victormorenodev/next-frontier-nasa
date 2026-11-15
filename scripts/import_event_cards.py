@@ -45,7 +45,7 @@ COMPLETED_RESPONSES = {
     ('8', 'right'): 'Keep charging the battery while watching the hot power lines.',
 }
 # Independent random draws must read sensibly without a preceding event, and the
-# station's 15 kWh example must not redefine this game's 300 kWh base battery.
+# station's 15 kWh example must not redefine this game's configured base battery.
 DISPLAY_DESCRIPTIONS = {
     '1': 'An oxygen tank is leaking. The air pressure is falling!',
     '2': 'The carbon dioxide filter broke. The crew has headaches.',
@@ -111,7 +111,7 @@ def convert(source):
             raise ValueError(f'Card {card_id}: expected one matching image, found {len(images)}')
         image_source = row['Imagem da carta'].strip()
         reference = row.get('Referência', '').strip()
-        source_url = reference or image_source
+        source_url = reference
         institution = INSTITUTIONS.get(urlparse(source_url).netloc, urlparse(source_url).netloc)
         card = {
             'id': card_id, 'category': category, 'probability': 1 / counts[category],
@@ -120,8 +120,9 @@ def convert(source):
             'sourceDescription': clean(row['Descrição da carta']),
             'image': images[0].relative_to(ROOT).as_posix(), 'imageAlt': caption, 'imageCaption': caption,
             'imageSource': image_source,
-            'source': {'institution': institution, 'url': source_url, 'kind': 'reference' if reference else 'image'},
         }
+        if reference:
+            card['source'] = {'institution': institution, 'url': reference, 'kind': 'reference'}
         pairs = {key: pair(row.get(column, ''), card_id, key) for key, column in COLUMNS.items()}
         for index, (side, label) in enumerate([('left', left_label), ('right', right_label)]):
             source_response = clean(row.get(f'Resposta {index + 1}', ''))

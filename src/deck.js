@@ -18,7 +18,7 @@
     need(typeof card.description === 'string' && card.description, 'missing description');
     need(typeof card.image === 'string' && card.image, 'missing image');
     need(card.imageCaption===undefined||typeof card.imageCaption==='string','imageCaption must be a string');
-    need(card.source && card.source.institution && /^https?:\/\//.test(card.source.url || ''), 'source needs institution and http(s) url');
+    need(card.source == null || card.source.institution && /^https?:\/\//.test(card.source.url || ''), 'source needs institution and http(s) url');
     SIDES.forEach(side => {
       const answer = card[side];
       need(answer && answer.label, `${side} answer needs a label`);

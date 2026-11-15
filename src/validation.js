@@ -13,8 +13,18 @@ export function validateData(d, {legacy = false, allowLegacyShield = false} = {}
     for(const id of ['easy','hard']){
       const mode=d.mission.difficulties[id];
       need(mode&&Array.isArray(mode.allowedCardDifficulties)&&mode.allowedCardDifficulties.length>0&&mode.allowedCardDifficulties.every(v=>['easy','medium','hard'].includes(v)),'mission.difficulties.'+id);
+      if(mode.initialResourceFraction!==undefined)need(finite(mode.initialResourceFraction)&&mode.initialResourceFraction>0&&mode.initialResourceFraction<=1,'mission.difficulties.'+id+'.initialResourceFraction');
       need(mode.display===(id==='easy'?'percentage':'physical'),'mission.difficulties.'+id+'.display');
       need(id!=='easy'||!mode.allowedCardDifficulties.includes('hard'),'easy mode cannot include hard cards');
+    }
+  }
+  if(d.glossary!==undefined){
+    need(Array.isArray(d.glossary)&&d.glossary.length>0,'glossary');
+    const ids=new Set(),aliases=new Set();
+    for(const entry of d.glossary){
+      need(entry&&typeof entry.id==='string'&&!ids.has(entry.id)&&typeof entry.term==='string'&&entry.term.trim()&&typeof entry.definition==='string'&&entry.definition.trim()&&Array.isArray(entry.aliases)&&entry.aliases.length>0,'glossary.entry');
+      ids.add(entry.id);
+      for(const alias of entry.aliases){need(typeof alias==='string'&&alias.trim()&&!aliases.has(alias.toLowerCase()),'glossary.alias');aliases.add(alias.toLowerCase());}
     }
   }
   const q=d.resources?.quantities; need(q&&Object.keys(q).length,'resources.quantities');
@@ -48,10 +58,13 @@ export function validateData(d, {legacy = false, allowLegacyShield = false} = {}
   }
   for(const c of d.cards){
     need(c.sourceDescription===undefined||typeof c.sourceDescription==='string','card '+c.id+'.sourceDescription');
-    need(c.imageSource===undefined||typeof c.imageSource==='string'&&/^https?:\/\//.test(c.imageSource),'card '+c.id+'.imageSource');
+    need(c.imageSource===undefined||c.imageSource===''||typeof c.imageSource==='string'&&/^https?:\/\//.test(c.imageSource),'card '+c.id+'.imageSource');
     need(c.imageCaption===undefined||typeof c.imageCaption==='string','card '+c.id+'.imageCaption');
-    need(c.description&&c.image&&['easy','medium','hard'].includes(c.difficulty)&&c.source?.institution&&/^https?:\/\//.test(c.source.url),'card '+c.id);
-    need(c.source.kind===undefined||['reference','image'].includes(c.source.kind),'card '+c.id+'.source.kind');
+    need(c.description&&c.image&&['easy','medium','hard'].includes(c.difficulty),'card '+c.id);
+    if(c.source!=null){
+      need(c.source.institution&&/^https?:\/\//.test(c.source.url),'card '+c.id+'.source');
+      need(c.source.kind===undefined||['reference','image'].includes(c.source.kind),'card '+c.id+'.source.kind');
+    }
     for(const side of ['left','right']){
       const a=c[side];need(a&&typeof a.label==='string','card '+c.id+'.'+side);need(a.description===undefined||typeof a.description==='string',c.id+'.'+side+'.description');need(a.sourceResponse===undefined||typeof a.sourceResponse==='string',c.id+'.'+side+'.sourceResponse');effects(a.effects||{},c.id+'.effects');
       if(a.effectPercentages!==undefined){

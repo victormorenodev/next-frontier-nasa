@@ -1,0 +1,90 @@
+[
+  {
+    "id": "moxie",
+    "term": "MOXIE",
+    "aliases": [
+      "MOXIE"
+    ],
+    "definition": "A machine that showed we can make oxygen from the air on Mars."
+  },
+  {
+    "id": "carbon-dioxide",
+    "term": "Carbon dioxide (CO₂)",
+    "aliases": [
+      "carbon dioxide",
+      "CO₂",
+      "CO2"
+    ],
+    "definition": "A gas that makes up most of the air on Mars."
+  },
+  {
+    "id": "solar-storm",
+    "term": "Solar storm",
+    "aliases": [
+      "solar storms",
+      "solar storm"
+    ],
+    "definition": "Strong activity on the Sun that can send dangerous particles into space."
+  },
+  {
+    "id": "radiation",
+    "term": "Radiation",
+    "aliases": [
+      "radiation"
+    ],
+    "definition": "Energy that can pass through materials and harm astronauts."
+  },
+  {
+    "id": "regolith",
+    "term": "Regolith",
+    "aliases": [
+      "regolith"
+    ],
+    "definition": "The dust, sand and small rocks covering the surface of Mars."
+  },
+  {
+    "id": "solar-panel",
+    "term": "Solar panel",
+    "aliases": [
+      "solar panels",
+      "solar panel"
+    ],
+    "definition": "Equipment that uses sunlight to make electricity."
+  },
+  {
+    "id": "greenhouse",
+    "term": "Greenhouse",
+    "aliases": [
+      "greenhouses",
+      "greenhouse"
+    ],
+    "definition": "A closed space where we can control conditions to grow plants."
+  },
+  {
+    "id": "water-recycling",
+    "term": "Water recycling",
+    "aliases": [
+      "water recycling",
+      "recycling water"
+    ],
+    "definition": "Cleaning used water so we can use it again."
+  },
+  {
+    "id": "habitat",
+    "term": "Habitat",
+    "aliases": [
+      "habitats",
+      "habitat"
+    ],
+    "definition": "A place built for astronauts to live and work safely."
+  },
+  {
+    "id": "bleo",
+    "term": "BLEO",
+    "aliases": [
+      "BLEO",
+      "beyond low Earth orbit"
+    ],
+    "definition": "Short for “Beyond Low Earth Orbit”: regions beyond low Earth orbit, including journeys to the Moon and Mars."
+  }
+]

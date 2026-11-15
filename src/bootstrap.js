@@ -5,7 +5,7 @@ const moduleURL = file => {
  if (assetVersion) url.searchParams.set('v', assetVersion);
  return url.href;
 };
-const names=['categories','mission','resources','flows','cards','interface'];
+const names=['categories','mission','resources','flows','cards','interface','glossary'];
 try {
  const {validateData, validateSave, migrateShieldSave} = await import(moduleURL('./validation.js'));
  const data=validateData(Object.fromEntries(await Promise.all(names.map(async name=>{
@@ -19,9 +19,13 @@ try {
   if(raw){
    window.invalidSavedMission=true;
    const stored=validateSave(JSON.parse(raw,(k,v)=>v==='__infinity'?Infinity:v));
-   window.savedMission=migrateShieldSave(stored,data.resources.quantities.shield);
+   if(stored.mission.ended){
+    localStorage.removeItem('next-frontier-save');
+   }else{
+    window.savedMission=migrateShieldSave(stored,data.resources.quantities.shield);
+   }
    window.invalidSavedMission=false;
-   if(window.savedMission!==stored){
+   if(window.savedMission && window.savedMission!==stored){
     try{localStorage.setItem('next-frontier-save',JSON.stringify(window.savedMission,(k,v)=>v===Infinity?'__infinity':v))}
     catch(error){console.warn('Converted Shield save could not be written',error)}
    }
@@ -35,7 +39,7 @@ try {
  for(const el of document.querySelectorAll('[data-copy]'))el.textContent=Copy(el.dataset.copy);
  if(window.invalidSavedMission){const p=document.createElement('p');p.textContent=Copy('invalidSave');document.getElementById('start-mission').before(p)}
  globalThis.CardData={CARDS:GameData.cards};
- for(const file of ['indicators','mission','flows','deck','engine','icons','display','card-ui','tutorial','ui'])await import(moduleURL(`./${file}.js`));
+ for(const file of ['indicators','mission','flows','deck','engine','icons','display','glossary','card-ui','tutorial','ui'])await import(moduleURL(`./${file}.js`));
 }catch(error){
  console.error(error);
  document.getElementById('main-menu').hidden=true;

@@ -24,7 +24,7 @@
         "shield": -5
       },
       "effects": {
-        "oxygen": 9,
+        "oxygen": 30,
         "shield": -5
       }
     },
@@ -37,7 +37,7 @@
         "shield": 5
       },
       "effects": {
-        "oxygen": -9,
+        "oxygen": -30,
         "shield": 5
       }
     }
@@ -67,8 +67,8 @@
         "energy": -10
       },
       "effects": {
-        "oxygen": 6,
-        "energy": -30
+        "oxygen": 20,
+        "energy": -148
       }
     },
     "right": {
@@ -80,7 +80,7 @@
         "shield": 10
       },
       "effects": {
-        "oxygen": -12,
+        "oxygen": -40,
         "shield": 10
       }
     }
@@ -220,11 +220,6 @@
     "imageAlt": "Plants grow inside a space experiment.",
     "imageCaption": "Plants grow inside a space experiment.",
     "imageSource": "https://www.space.com/38723-astronauts-farm-plants-install-garden-instrument.html",
-    "source": {
-      "institution": "Space.com",
-      "url": "https://www.space.com/38723-astronauts-farm-plants-install-garden-instrument.html",
-      "kind": "image"
-    },
     "left": {
       "label": "Plant lettuce",
       "description": "A lettuce crop begins growing.",
@@ -251,11 +246,6 @@
     "imageAlt": "Solar collectors at a power facility on Earth.",
     "imageCaption": "Solar collectors at a power facility on Earth.",
     "imageSource": "https://spinoff.nasa.gov/spinoff2002/er_7.html",
-    "source": {
-      "institution": "NASA Spinoff",
-      "url": "https://spinoff.nasa.gov/spinoff2002/er_7.html",
-      "kind": "image"
-    },
     "left": {
       "label": "Pause charging",
       "description": "Pause battery charging and let the power lines cool.",
@@ -282,11 +272,6 @@
     "imageAlt": "Dust over the surface of Mars.",
     "imageCaption": "Dust over the surface of Mars.",
     "imageSource": "https://science.nasa.gov/resource/martian-dust-storm/",
-    "source": {
-      "institution": "NASA",
-      "url": "https://science.nasa.gov/resource/martian-dust-storm/",
-      "kind": "image"
-    },
     "left": {
       "label": "Clean the panels",
       "description": "Send crew outside immediately to clean the solar panels!",
@@ -296,8 +281,8 @@
         "energy": 15
       },
       "effects": {
-        "oxygen": -9,
-        "energy": 45
+        "oxygen": -30,
+        "energy": 222
       }
     },
     "right": {
@@ -309,8 +294,8 @@
         "energy": -15
       },
       "effects": {
-        "oxygen": 6,
-        "energy": -45
+        "oxygen": 20,
+        "energy": -222
       }
     }
   },
@@ -325,11 +310,6 @@
     "imageAlt": "A dusty solar panel on Mars.",
     "imageCaption": "A dusty solar panel on Mars.",
     "imageSource": "https://www.jpl.nasa.gov/images/pia25286-insights-dusty-solar-panel/",
-    "source": {
-      "institution": "NASA JPL",
-      "url": "https://www.jpl.nasa.gov/images/pia25286-insights-dusty-solar-panel/",
-      "kind": "image"
-    },
     "left": {
       "label": "Turn off extras",
       "description": "Shut down non-vital habitat systems to save the remaining battery power.",
@@ -339,8 +319,8 @@
         "energy": 15
       },
       "effects": {
-        "oxygen": -6,
-        "energy": 45
+        "oxygen": -20,
+        "energy": 222
       }
     },
     "right": {
@@ -352,8 +332,8 @@
         "energy": -20
       },
       "effects": {
-        "oxygen": 9,
-        "energy": -60
+        "oxygen": 30,
+        "energy": -296
       }
     }
   },
@@ -368,11 +348,6 @@
     "imageAlt": "An illustration of a spacecraft near the Sun.",
     "imageCaption": "An illustration of a spacecraft near the Sun.",
     "imageSource": "https://www.space.com/solar-orbiter-takes-closest-look-at-sun",
-    "source": {
-      "institution": "Space.com",
-      "url": "https://www.space.com/solar-orbiter-takes-closest-look-at-sun",
-      "kind": "image"
-    },
     "left": {
       "label": "Use the shelter",
       "description": "Order the crew into the heavily shielded central storm shelter immediately!",
@@ -399,11 +374,6 @@
     "imageAlt": "An illustration of a space base.",
     "imageCaption": "An illustration of a space base.",
     "imageSource": "https://www.boletin.upiita.ipn.mx/Articulos/Detalle/85?utm_source=chatgpt.com",
-    "source": {
-      "institution": "IPN",
-      "url": "https://www.boletin.upiita.ipn.mx/Articulos/Detalle/85?utm_source=chatgpt.com",
-      "kind": "image"
-    },
     "left": {
       "label": "Flush the recycler",
       "description": "Flush the system immediately using extra water and high electrical power to clean it.",
@@ -413,8 +383,8 @@
         "water": -15
       },
       "effects": {
-        "energy": -45,
-        "water": -105
+        "energy": -222,
+        "water": -285
       }
     },
     "right": {
@@ -426,8 +396,8 @@
         "water": 20
       },
       "effects": {
-        "energy": 45,
-        "water": 140
+        "energy": 222,
+        "water": 380
       }
     }
   },
@@ -442,11 +412,6 @@
     "imageAlt": "A technician tests life-support equipment.",
     "imageCaption": "A technician tests life-support equipment.",
     "imageSource": "https://www.esa.int/fr/articles/about-us/who-we-are/member-states/belgium-francais/le-recyclage-de-l-eau-dans-l-espace",
-    "source": {
-      "institution": "ESA",
-      "url": "https://www.esa.int/fr/articles/about-us/who-we-are/member-states/belgium-francais/le-recyclage-de-l-eau-dans-l-espace",
-      "kind": "image"
-    },
     "left": {
       "label": "Use stored water",
       "description": "Open emergency stored water reserves to keep the base hydrated.",
@@ -456,8 +421,8 @@
         "water": 20
       },
       "effects": {
-        "food": -15,
-        "water": 140
+        "food": -35.25,
+        "water": 380
       }
     },
     "right": {
@@ -469,8 +434,8 @@
         "water": -25
       },
       "effects": {
-        "energy": -60,
-        "water": -175
+        "energy": -296,
+        "water": -475
       }
     }
   }

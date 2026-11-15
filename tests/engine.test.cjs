@@ -5,6 +5,14 @@ const fs=require('node:fs');const {validateSave}=await import('data:text/javascr
 const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface'].map(k=>[k,require('../data/'+k+'.json')]));
 let snapshot=Engine.start(()=>.99);assert.ok(snapshot.schedule.every(n=>n===2));
 assert.equal(snapshot.mission.difficulty,'hard');
+for(const [mode,fraction] of [['easy',.75],['hard',.5]]){
+ const started=Engine.start(()=>0,mode);
+ for(const [key,q] of Object.entries(data.resources.quantities))assert.equal(started.state[key],q.max*fraction,mode+' '+key);
+ const saved=JSON.parse(JSON.stringify({version:1,data,...started}));
+ saved.state.food-=.125;
+ assert.equal(validateSave(saved).state.food,started.state.food-.125);
+}
+
 for(let seed=0;seed<10;seed++){
  const easy=Engine.start(()=>seed/10,'easy');
  validateSave(JSON.parse(JSON.stringify({version:1,data,...easy})));

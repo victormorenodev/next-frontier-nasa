@@ -40,7 +40,7 @@ Mover água utilizável para a blindagem deve conservar a massa total, sem dupli
 
 ### Referência histórica: parâmetros do protótipo anterior
 
-O protótipo removido (commit `45928f0`, branch `prototype`) usava os valores abaixo. Os estoques iniciais foram reaproveitados nos dados atuais de recursos e fluxos. A geração solar atual é um orçamento de +100 kWh/sol, menos consumo de 60 kWh/sol, sem períodos jogáveis do dia.
+O protótipo removido (commit `45928f0`, branch `prototype`) usava os valores abaixo. Os estoques iniciais foram reaproveitados nos dados atuais de recursos e fluxos. A geração automática anterior de +100 kWh/sol e o consumo de 60 kWh/sol são históricos e foram substituídos pelo saldo-base atual.
 
 | Parâmetro | Valor | Natureza |
 | --- | --- | --- |
@@ -144,10 +144,16 @@ O catálogo atual tem 13 eventos fornecidos pelo autor. Links de referência e o
 
 Algumas narrativas tratam de remoção de CO₂, eletrólise e reciclagem. Seus deltas simplificados não implementam as reações químicas ou um balanço detalhado de massas desses equipamentos. Campos sem quantificação receberam zero por autorização; isso não demonstra que os problemas ou escolhas sejam fisicamente inofensivos. Não há dose humana nem morte inferida de um evento de radiação.
 
-As duas menções a uma reserva de 15 kWh foram retiradas da apresentação para não confundir um equipamento citado com a bateria de 300 kWh da base. O texto original permanece em sourceDescription e no CSV. [Registro editorial e conversões](CARDS.md).
+As duas menções a uma reserva de 15 kWh foram retiradas da apresentação para não confundir um equipamento citado com a bateria atual de 1480 kWh da base. O texto original permanece em sourceDescription e no CSV. [Registro editorial e conversões](CARDS.md).
 
 ## Shield percentual atual
 
-Shield é um índice de proteção de 0 a 100% nos dois modos, iniciado em 80%. Não é densidade superficial, dose nem porcentagem de radiação bloqueada; não permite inferir autonomia, proteção clínica ou conversão direta para massa de água. O modelo geométrico de 20 m² descrito acima é histórico e não governa mais o indicador atual.
+Shield é um índice de proteção de 0 a 100% nos dois modos, iniciado em 75% no Easy e 50% no Hard. Não é densidade superficial, dose nem porcentagem de radiação bloqueada; não permite inferir autonomia, proteção clínica ou conversão direta para massa de água. O modelo geométrico de 20 m² descrito acima é histórico e não governa mais o indicador atual.
 
 Os efeitos percentuais fornecidos pelo autor são somados em pontos do índice. Não existe desgaste diário por radiação. Saves antigos preservam o nível proporcional à antiga capacidade, sem apresentar essa normalização como cálculo físico de proteção. O₂, água, energia e alimento seco continuam nas unidades físicas já documentadas.
+
+## Saldo-base atual por sol
+
+Para a base de quatro pessoas, o autor definiu perdas líquidas de 3,5 kg de oxigênio, 10 L de água, 5 kWh de energia e 2,6 kg de comida seca por sol. Shield não tem desgaste diário. São parâmetros de balanceamento (`kind: simulated`), não novos coeficientes atribuídos à NASA. O₂ e comida são próximos dos totais históricos arredondados, mas os valores atuais são totais por sol (`perSol`), sem nova conversão de dia terrestre ou multiplicação por quatro. A produção automática anterior de O₂/energia foi removida para que o saldo real corresponda às perdas solicitadas. Efeitos de cartas e o multiplicador temporário selecionável continuam separados.
+
+Os estoques iniciais atuais são uma fração da capacidade por dificuldade: 75% no Easy e 50% no Hard, incluindo Shield. São escolhas de balanceamento, não estimativas científicas de autonomia. O estado físico conserva as frações de unidade.

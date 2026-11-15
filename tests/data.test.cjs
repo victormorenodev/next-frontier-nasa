@@ -1,17 +1,29 @@
 const assert=require('node:assert/strict');
 (async()=>{
 const fs=require('node:fs');const code=fs.readFileSync('src/validation.js','utf8');const {validateData,validateSave,migrateShieldSave}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
-const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface'].map(k=>[k,require('../data/'+k+'.json')]));
+const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface','glossary'].map(k=>[k,require('../data/'+k+'.json')]));
 validateData(data);
+assert.equal(data.glossary.length,10);
+assert.ok(data.cards.slice(0,6).every(c=>c.source?.kind==='reference'));
+assert.ok(data.cards.slice(6).every(c=>c.source===undefined));
+const missingSources=structuredClone(data);delete missingSources.cards[0].source;missingSources.cards[0].imageSource='';validateData(missingSources);
+
+for(const mutate of [d=>d.glossary[0].definition='',d=>d.glossary[0].aliases=[],d=>d.glossary[1].aliases=['MOXIE']]){const bad=structuredClone(data);mutate(bad);assert.throws(()=>validateData(bad));}
+
+for(const value of [0,-.1,1.1,'0.75',null]){
+ const bad=structuredClone(data);bad.mission.difficulties.easy.initialResourceFraction=value;assert.throws(()=>validateData(bad));
+}
+const previousSettings=structuredClone(data);delete previousSettings.mission.difficulties.easy.initialResourceFraction;delete previousSettings.mission.difficulties.hard.initialResourceFraction;validateData(previousSettings);
+
 for(const card of data.cards)for(const side of ['left','right']){
  const answer=card[side];assert.ok(answer.label&&answer.description);
  for(const key of Object.keys(data.resources.quantities))assert.ok(Math.abs((answer.effects[key]||0)-(answer.effectPercentages[key]||0)*data.resources.quantities[key].max/100)<1e-9,card.id+': '+side+' '+key);
 }
-assert.equal(data.cards.find(c=>c.id==='1').left.effects.oxygen,9);
-assert.equal(data.cards.find(c=>c.id==='1').right.effects.oxygen,-9);
+assert.equal(data.cards.find(c=>c.id==='1').left.effects.oxygen,30);
+assert.equal(data.cards.find(c=>c.id==='1').right.effects.oxygen,-30);
 assert.equal(data.cards.find(c=>c.id==='1').left.effects.shield,-5);
-assert.equal(data.cards.find(c=>c.id==='12').left.effects.water,-105);
-assert.equal(data.cards.find(c=>c.id==='13').right.effects.water,-175);
+assert.equal(data.cards.find(c=>c.id==='12').left.effects.water,-285);
+assert.equal(data.cards.find(c=>c.id==='13').right.effects.water,-475);
 assert.ok(data.cards.slice(2,8).every(c=>!Object.keys(c.left.effects).length&&!Object.keys(c.right.effects).length));
 const badConversion=structuredClone(data);badConversion.cards[0].left.effects.oxygen=15;assert.throws(()=>validateData(badConversion));
 const badSource=structuredClone(data);badSource.cards[0].source.kind='invented';assert.throws(()=>validateData(badSource));

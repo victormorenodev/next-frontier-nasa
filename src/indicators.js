@@ -6,8 +6,8 @@
   'use strict';
 
   // Each quantity the base keeps track of, with its unit (`unit` short, `unitName` in words).
-  // Start/max values come from the earlier prototype (see docs/RESEARCH.md, historical prototype parameters): prototype choices,
-  // not measured equipment. `max` is the storage capacity used to draw how full it is.
+  // Max values are game capacities, not measured equipment. Engine.start applies the
+  // configured fraction for the mode; start remains the fallback for legacy settings.
   const QUANTITIES = GameData.resources.quantities;
   const INDICATORS = GameData.resources.indicators;
 

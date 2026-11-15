@@ -317,7 +317,7 @@
   const background = document.getElementById('sol-transition');
   const solNotice = document.getElementById('sol-notice');
 
-  function startMission(difficulty = 'hard', dailyCostResource = document.getElementById('daily-cost-resource').value || null) {
+  function startMission(difficulty = 'hard', dailyCostResource = null) {
     clearTimeout(solTimer); solTransition=false;
     clearResourceHighlights(); cardChanges={};
     if (window.savedMission) {
@@ -485,13 +485,51 @@
     document.getElementById('difficulty-screen').hidden=false;
     document.querySelector('[data-mode="easy"]').focus({preventScroll:true});
   }
-  const dailyCostSelect = document.getElementById('daily-cost-resource');
-  document.getElementById('daily-cost-hint').textContent = Copy('dailyCostHint', {dailyCostMultiplier:CurrentGameData.mission.dailyCostMultiplier ?? 1});
-  Object.entries(CurrentGameData.resources.quantities).forEach(([key, resource]) => {
-    const option = document.createElement('option'); option.value = key;
-    const hasDailyCost = CurrentGameData.flows.some(flow => flow.quantity === key && flow.amount < 0);
-    option.textContent = hasDailyCost ? resource.name : `${resource.name} (${Copy('noDailyUse')})`;
-    dailyCostSelect.append(option);
+  const difficultyScreen = document.getElementById('difficulty-screen');
+  const difficultyPanel = difficultyScreen.querySelector('.difficulty-panel');
+  let difficultyDrag = null, suppressDifficultyClick = false;
+  const resetDifficultyDrag = () => {
+    difficultyDrag = null;
+    difficultyPanel.style.transform = '';
+    difficultyPanel.classList.remove('dragging');
+    difficultyScreen.querySelectorAll('[data-mode]').forEach(button => button.classList.remove('lean'));
+  };
+  difficultyPanel.addEventListener('pointerdown', e => {
+    if (e.button > 0 || e.target.closest('#difficulty-back')) return;
+    suppressDifficultyClick = false;
+    difficultyDrag = {id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,moving:false};
+  });
+  difficultyPanel.addEventListener('pointermove', e => {
+    if (!difficultyDrag || e.pointerId !== difficultyDrag.id) return;
+    const dx=e.clientX-difficultyDrag.x, dy=e.clientY-difficultyDrag.y;
+    if (!difficultyDrag.moving) {
+      if (Math.abs(dy)>8 && Math.abs(dy)>Math.abs(dx)) { resetDifficultyDrag(); return; }
+      if (Math.abs(dx)<8) return;
+      difficultyDrag.moving=true;
+      difficultyPanel.setPointerCapture(e.pointerId);
+      difficultyPanel.classList.add('dragging');
+    }
+    difficultyDrag.dx=dx;
+    difficultyPanel.style.transform=`translateX(${dx*.35}px) rotate(${dx/60}deg)`;
+    const past=Math.abs(dx)>Math.min(80,difficultyPanel.offsetWidth*.28);
+    difficultyScreen.querySelectorAll('[data-mode]').forEach(button=>button.classList.toggle('lean',past && button.dataset.mode===(dx<0?'easy':'hard')));
+  });
+  difficultyPanel.addEventListener('pointerup', e => {
+    if (!difficultyDrag || e.pointerId!==difficultyDrag.id) return;
+    const {dx,moving}=difficultyDrag;
+    const choose=moving && Math.abs(dx)>Math.min(80,difficultyPanel.offsetWidth*.28);
+    suppressDifficultyClick=moving;
+    resetDifficultyDrag();
+    if (choose) startMission(dx<0?'easy':'hard');
+  });
+  difficultyPanel.addEventListener('pointercancel',resetDifficultyDrag);
+  difficultyPanel.addEventListener('lostpointercapture',e=>{if(e.target===difficultyPanel)resetDifficultyDrag();});
+  difficultyPanel.addEventListener('click',e=>{
+    if (suppressDifficultyClick) { e.preventDefault();e.stopImmediatePropagation();suppressDifficultyClick=false; }
+  },true);
+  difficultyScreen.addEventListener('keydown',e=>{
+    if (!['ArrowLeft','ArrowRight'].includes(e.key)) return;
+    e.preventDefault();startMission(e.key==='ArrowLeft'?'easy':'hard');
   });
   document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
     startMission(button.dataset.mode);
@@ -541,7 +579,15 @@
   });
 
   function save() {
-    try { localStorage.setItem('next-frontier-save', JSON.stringify({version:1,data:GameData,state,mission,flows,deck,index,schedule,eventIndex,savedSide,cardChanges}, (k,v)=>v===Infinity?'__infinity':v)); }
+    try {
+      if (mission.ended) {
+        localStorage.removeItem('next-frontier-save');
+        document.getElementById('menu-continue').disabled = true;
+        document.getElementById('menu-save-note').hidden = false;
+      } else {
+        localStorage.setItem('next-frontier-save', JSON.stringify({version:1,data:GameData,state,mission,flows,deck,index,schedule,eventIndex,savedSide,cardChanges}, (k,v)=>v===Infinity?'__infinity':v));
+      }
+    }
     catch (_) { solNotice.textContent = Copy("storageUnavailable"); }
   }
   const stored = window.savedMission;
@@ -609,7 +655,7 @@
     if (pendingDifficulty) {
       sessionStorage.removeItem('next-frontier-start');
       const pending = pendingDifficulty.startsWith('{') ? JSON.parse(pendingDifficulty) : {difficulty:pendingDifficulty, dailyCostResource:null};
-      startMission(pending.difficulty==='easy'?'easy':'hard', pending.dailyCostResource ?? null);
+      startMission(pending.difficulty==='easy'?'easy':'hard');
     }
   } catch (_) { /* The game remains playable when browser storage is disabled. */ }
 })();
