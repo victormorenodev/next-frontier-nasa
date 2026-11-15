@@ -137,14 +137,16 @@ GameAudio é independente do motor e usa arquivos em sfx/:
 | Arquivo | Gatilho | Volume |
 | --- | --- | ---: |
 | button_clicking.mp3 | Toque/Enter/Espaço em indicador; resposta por botão/seta; avanço do verso | 0,55 |
-| card_swipe_v2.mp3 | Início da inclinação acima de 8 px, uma vez por gesto, inclusive cancelado | 0,7 |
+| card_swipe_v2.mp3 | Início da inclinação acima de 8 px e cada novo movimento com a carta segura: virada de direção de 24 px ou retomada de 24 px após 250 ms parada. Tremidas menores ficam em silêncio; vale também para gesto cancelado | 0,7 |
 | day_change_v2.mp3 | Final da passagem para um novo sol, se a missão não terminou | 0,7 |
 | main_track.mp3 | Música em loop | 0,4 |
 | spacecraft_bg.mp3 | Ambiente da nave em loop | 0,12 |
 
-Loops iniciam após interação autorizada pelo navegador e sobem de volume em 1,5 s. Os ouvintes permanecem ativos para retomar cada loop interrompido independentemente; uma tentativa pendente evita duplicar play. visibilitychange/pagehide/pageshow pausam ou tentam retomar. Desligar pausa também efeitos ativos; resolução de play pendente não reativa áudio desligado ou página oculta. O tutorial não toca swipe na demonstração.
+Tudo toca pela **Web Audio API**: os arquivos são baixados e decodificados uma vez ao carregar. Efeitos tocam na hora, cada um como uma fonte própria (repetições se sobrepõem), começando no primeiro trecho audível do arquivo: o silêncio inicial (abaixo de 2% do pico, menos 5 ms de margem) é pulado, cerca de 250 ms no clique. Loops usam `AudioBufferSourceNode.loop`, que emenda fim e início sem intervalo; só silêncio digital de codificação nas pontas (até 100 ms) fica fora do trecho em loop. Não voltar a `<audio loop>` nem a `cloneNode()`, que causavam pausa no loop e atraso nos cliques.
 
-bindToggle sincroniza os botões menu/HUD; `next-frontier-sound` guarda on/off separadamente do save. `loopVolumes()` ajuda na inspeção. Volumes são escolhas de apresentação, não parâmetros científicos.
+O contexto de áudio é retomado em interações autorizadas pelo navegador; então os loops começam e sobem de volume em 1,5 s. Os ouvintes permanecem ativos para retomar o contexto se o navegador o suspender ou interromper; cada loop tem uma única fonte, sem duplicação. visibilitychange/pagehide suspendem o contexto, mantendo a posição da música; pageshow e o retorno à aba tentam retomar. Desligar o som para loops e efeitos ativos; ligar de novo reinicia os loops com fade. O tutorial não toca swipe na demonstração.
+
+bindToggle sincroniza os botões menu/HUD; `next-frontier-sound` guarda on/off separadamente do save. `loopVolumes()` e `effectOffsets()` ajudam na inspeção. Volumes são escolhas de apresentação, não parâmetros científicos.
 
 ## Persistência e migração
 

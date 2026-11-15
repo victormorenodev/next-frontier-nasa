@@ -5,6 +5,25 @@
 
   const DRAG_START_PX = 8;       // smaller moves count as a tap, not a drag
   const ANSWER_SHARE = 0.28;     // drag past 28% of the card width to answer
+  // While the card is held, each new movement plays the swipe sound again: turning back by
+  // STROKE_PX, or moving STROKE_PX after resting for PAUSE_MS. Small finger wobble stays quiet.
+  const STROKE_PX = 24;
+  const PAUSE_MS = 250;
+
+  // Updates the drag's movement tracking for a new pointer position; true = a new stroke began.
+  function newStroke(drag, x, time) {
+    if (x === drag.lastX) return false;
+    let stroke = false;
+    if (time - drag.movedAt > PAUSE_MS) drag.restX = drag.lastX;           // moving again after a rest
+    if (drag.restX !== null && Math.abs(x - drag.restX) > STROKE_PX) {
+      stroke = true; drag.restX = null; drag.dir = Math.sign(x - drag.lastX); drag.far = x;
+    } else if ((x - drag.far) * drag.dir >= 0) drag.far = x;                // still going the same way
+    else if ((drag.far - x) * drag.dir > STROKE_PX) {                       // turned around
+      stroke = drag.restX === null; drag.dir = -drag.dir; drag.far = x;
+    }
+    drag.lastX = x; drag.movedAt = time;
+    return stroke;
+  }
   const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 1 ? 2 : Math.abs(n) < 100 ? 1 : 0});
 
   // Which indicator colour each quantity uses (one indicator per quantity).
@@ -109,10 +128,11 @@
       drag.dx = e.clientX - drag.x;
       if (!drag.moving && Math.abs(drag.dx) > DRAG_START_PX) {
         drag.moving = true;
+        Object.assign(drag, {dir: Math.sign(drag.dx), far: e.clientX, lastX: e.clientX, movedAt: e.timeStamp, restX: null});
         globalThis.GameAudio?.play('swipe');
         try { card3d.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ } // follow outside the card
         card3d.classList.add('dragging');
-      }
+      } else if (drag.moving && newStroke(drag, e.clientX, e.timeStamp)) globalThis.GameAudio?.play('swipe');
       if (!drag.moving) return;
       card3d.style.transform = `translateX(${drag.dx}px) rotate(${drag.dx / 18}deg)`;
       const past = Math.abs(drag.dx) > card3d.offsetWidth * ANSWER_SHARE;
