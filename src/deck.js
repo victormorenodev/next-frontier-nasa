@@ -1,4 +1,4 @@
-/* Deck: validates category/card probabilities and builds independent weighted draws.
+/* Deck: validates category/card probabilities and builds weighted draws without adjacent repeats.
    No DOM here, so it also runs in Node for tests. */
 (function (root) {
   'use strict';
@@ -41,7 +41,7 @@
     return problems;
   }
 
-  // Independent draws with replacement: category first, then a card in that category.
+  // Weighted category/card draws; the previous card is excluded from the next draw.
   function weightedPick(items, random) {
     const roll = random();
     if (!Number.isFinite(roll) || roll < 0 || roll >= 1) throw Error('Random must be in [0, 1)');
@@ -92,10 +92,23 @@
       cards=cards.map(card=>({...card,probability:card.probability/cards.filter(c=>c.category===card.category).reduce((sum,c)=>sum+c.probability,0)}));
     }
     const groups = new Map(categories.map(category => [category.id, cards.filter(card => card.category === category.id)]));
-    return Array.from({length: size}, () => {
-      const category = weightedPick(categories, random);
-      return weightedPick(groups.get(category.id), random);
-    });
+    const positiveCards = cards.filter(card => card.probability > 0 && categories.some(category => category.id === card.category && category.probability > 0));
+    if (size > 1 && positiveCards.length < 2) throw Error('At least two eligible cards are required to avoid consecutive repeats');
+    const deck = [];
+    for (let index = 0; index < size; index++) {
+      const previousId = deck.at(-1)?.id;
+      // Condition the original joint weights on excluding the previous event.
+      const options = categories.map(category => {
+        const members = groups.get(category.id).filter(card => card.id !== previousId && card.probability > 0);
+        const total = members.reduce((sum, card) => sum + card.probability, 0);
+        return {...category, members, total, probability: category.probability * total};
+      }).filter(category => category.probability > 0);
+      const total = options.reduce((sum, category) => sum + category.probability, 0);
+      const category = weightedPick(options.map(category => ({...category, probability: category.probability / total})), random);
+      const chosen = weightedPick(category.members.map(card => ({...card, probability: card.probability / category.total})), random);
+      deck.push(category.members.find(card => card.id === chosen.id));
+    }
+    return deck;
   }
 
   const api = {DECK_SIZE, DIFFICULTIES, validateCard, validateCategories, weightedPick, createDeck};

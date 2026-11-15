@@ -29,7 +29,7 @@ const badFlows = {...CARDS[0], right: {label: 'x', effects: {},
 assert.equal(D.validateCard(badFlows).length, 4);   // unknown quantity, for 0, after 0, empty effects
 
 
-// Two independent rolls per draw, with replacement, including consecutive repeats.
+// Two weighted rolls per draw, excluding the immediately previous event.
 const categories = require('../data/categories.json');
 const deck = D.createDeck(CARDS, 100000, seeded(42));
 const counts = {};
@@ -44,9 +44,11 @@ for (const category of categories) {
   }
 }
 const repeats=D.createDeck(CARDS,4,()=>0);
-assert.ok(repeats.every(c=>c.id===repeats[0].id));
+assert.ok(repeats.every((c,i)=>!i||c.id!==repeats[i-1].id));
+assert.equal(repeats[0].id,repeats[2].id);
+assert.ok(deck.every((c,i)=>!i||c.id!==deck[i-1].id));
 const only={...CARDS[0],category:'solo',probability:1};
-assert.equal(D.createDeck([only],5,()=>0,[{id:'solo',name:'Solo',probability:1}]).length,5);
+assert.throws(()=>D.createDeck([only],5,()=>0,[{id:'solo',name:'Solo',probability:1}]));
 let rolls=[0.35,0];
 assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].category,'maintenance');
 rolls=[.96,.5];
@@ -59,12 +61,16 @@ assert.equal(D.createDeck(disabled,1,()=>0,[{id:'solo',name:'Solo',probability:1
 // Filtering removes ineligible categories and renormalizes remaining probabilities.
 const fixtureCards=[{...CARDS[0],id:'safe',category:'safe',probability:1,difficulty:'easy'}, {...CARDS[0],id:'risk',category:'risk',probability:1,difficulty:'hard'}];
 const fixtureCategories=[{id:'safe',name:'Safe',probability:.2},{id:'risk',name:'Risk',probability:.8}];
-const easyDeck=D.createDeck(fixtureCards,20,()=>.99,fixtureCategories,['easy','medium']);
+const easyDeck=D.createDeck(fixtureCards,1,()=>.99,fixtureCategories,['easy','medium']);
 assert.ok(easyDeck.every(c=>c.id==='safe'));
 assert.throws(()=>D.createDeck(fixtureCards,1,()=>0,fixtureCategories,['medium']));
 assert.equal(fixtureCards[0].probability,1);
 const easyCatalog=D.createDeck(CARDS,1000,seeded(8),categories,['easy','medium']);
 assert.ok(easyCatalog.every(c=>c.difficulty!=='hard'));
+assert.ok(easyCatalog.every((c,i)=>!i||c.id!==easyCatalog[i-1].id));
+// A single-card category is excluded temporarily, rather than repeating or hanging.
+const alternating=D.createDeck(fixtureCards,6,()=>.99,fixtureCategories);
+assert.ok(alternating.every((c,i)=>!i||c.id!==alternating[i-1].id));
 assert.ok(new Set(D.createDeck(CARDS,20000,seeded(9),categories).map(c=>c.id)).size===31);
 
 // Shield is a 0–100 score; sheet p values are additive points.

@@ -15,13 +15,14 @@
   function endMission(mission, reason = 'quit') {
     return mission.ended ? mission : {...mission, ended: true, reason};
   }
+  const duration = mission => mission.totalSols ?? TOTAL_SOLS;
   function advance(mission) {
     if (mission.ended) return mission;
     const elapsed = mission.elapsed + THIRDS_PER_SOL;
-    const done = elapsed >= TOTAL_SOLS * THIRDS_PER_SOL;
-    return {...mission, elapsed, sol: Math.min(TOTAL_SOLS, mission.sol + 1),
+    const done = elapsed >= duration(mission) * THIRDS_PER_SOL;
+    return {...mission, elapsed, sol: Math.min(duration(mission), mission.sol + 1),
       ended: done, reason: done ? 'complete' : null};
   }
-  const api = {FIRST_SOL, TOTAL_SOLS, THIRDS_PER_SOL, EVENT_CHANCES, createMission, eventsForSol, advance, endMission};
+  const api = {FIRST_SOL, TOTAL_SOLS, THIRDS_PER_SOL, EVENT_CHANCES, createMission, eventsForSol, duration, advance, endMission};
    root.Mission = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

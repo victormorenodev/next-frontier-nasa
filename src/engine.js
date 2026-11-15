@@ -5,11 +5,12 @@ globalThis.Engine = {
     if (dailyCostResource !== null && (typeof dailyCostResource !== 'string' || !Object.hasOwn(Indicators.QUANTITIES, dailyCostResource))) throw Error('Unknown daily consumption resource');
     const settings=GameData.mission.difficulties?.[difficulty];
     const allowed=settings?.allowedCardDifficulties || (difficulty==='easy'?['easy','medium']:['easy','medium','hard']);
-    const schedule = Array.from({length: Mission.TOTAL_SOLS}, () => Mission.eventsForSol(random));
+    const totalSols = settings?.totalSols ?? Mission.TOTAL_SOLS;
+    const schedule = Array.from({length: totalSols}, () => Mission.eventsForSol(random));
     const state = settings?.initialResourceFraction === undefined
       ? Indicators.createState()
       : Object.fromEntries(Object.entries(Indicators.QUANTITIES).map(([key,q]) => [key, q.max * settings.initialResourceFraction]));
-    return {state, mission: {...Mission.createMission(), difficulty}, flows: Flows.createFlows(dailyCostResource),
+    return {state, mission: {...Mission.createMission(), difficulty, totalSols}, flows: Flows.createFlows(dailyCostResource),
       deck: Deck.createDeck(CardData.CARDS, schedule.reduce((a,b)=>a+b,0), random, GameData.categories, allowed),
       index: 0, eventIndex: 0, schedule, savedSide: null};
   },

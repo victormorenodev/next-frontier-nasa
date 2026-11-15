@@ -95,5 +95,8 @@ for(const oldMax of [10,32]){
  assert.equal(endedMigrated.state.shield,0);assert.equal(endedMigrated.mission.reason,'failed');
 }
 const badScale=structuredClone(data);badScale.resources.quantities.shield.max=99;assert.throws(()=>validateData(badScale));
+for (const value of [0, -1, 2.5, Infinity]) {
+ const invalidDuration=structuredClone(data);invalidDuration.mission.difficulties.easy.totalSols=value;assert.throws(()=>validateData(invalidDuration));
+}
 assert.throws(()=>validateSave({version:99}));console.log('data: ok');
 })().catch(e=>{console.error(e);process.exitCode=1});

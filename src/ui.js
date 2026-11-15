@@ -229,11 +229,11 @@
   // ── Mission flow: deck, answers, end ────────────────────
   const mainMenu = document.getElementById('main-menu');
   const intro = document.getElementById('mission-intro');
-  document.getElementById('menu-start').addEventListener('click', () => {
+  document.getElementById('menu-start').addEventListener('click', () => Loading.run(() => {
     mainMenu.hidden = true;
     intro.hidden = false;
     document.getElementById('start-mission').focus({preventScroll:true});
-  });
+  }));
   const creditsDialog = document.getElementById('credits-dialog');
   document.getElementById('menu-credits').addEventListener('click', () => creditsDialog.showModal());
   // Sound on/off: same setting for the menu button and the mission bar button.
@@ -267,13 +267,18 @@
   const solNotice = document.getElementById('sol-notice');
 
   function startMission(difficulty = 'hard', dailyCostResource = null) {
+    return Loading.run(() => startMissionReady(difficulty, dailyCostResource)).then(() => {
+      if (!game.hidden && !mission.ended) startTutorial();
+    });
+  }
+  function startMissionReady(difficulty, dailyCostResource) {
     clearTimeout(solTimer); solTransition=false;
     clearResourceHighlights(); cardChanges={};
     if (window.savedMission) {
       localStorage.removeItem('next-frontier-save');
       sessionStorage.setItem('next-frontier-start', JSON.stringify({difficulty, dailyCostResource}));
       location.reload();
-      return;
+      return false;
     }
     mainMenu.hidden = true;
     intro.hidden = true;
@@ -285,7 +290,6 @@
     render();
     renderMission();
     showSol();
-    startTutorial();
   }
 
   function showSol() {
@@ -394,7 +398,7 @@
   }
 
   function renderMission() {
-    document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.TOTAL_SOLS});
+    document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.duration(mission)});
     endButton.disabled = mission.ended;
     if (!mission.ended) return;
     const done = mission.reason === 'complete';
@@ -403,7 +407,7 @@
       ? 'life-support' : mission.failedResource;
     cardUI.showMessage(
       failed ? Copy("failedTitle") : done ? Copy("completeTitle") : Copy("endedTitle"),
-      failed ? Copy(`failedBody-${resource}`) : done ? Copy("completeBody", {totalSols: Mission.TOTAL_SOLS, events: index})
+      failed ? Copy(`failedBody-${resource}`) : done ? Copy("completeBody", {totalSols: Mission.duration(mission), events: index})
            : Copy("endedBody", {sol: mission.sol}),
       Copy("newMission"),
       showDifficultyScreen, failed ? resource : done ? 'complete' : 'quit',
@@ -425,7 +429,7 @@
     if (intro.hidden) return;
     introDrag = null;
     briefing.style.transform = '';
-    showDifficultyScreen();
+    Loading.run(showDifficultyScreen);
     document.querySelector('#card .answer')?.focus({preventScroll: true});
   }
 
@@ -484,10 +488,10 @@
     startMission(button.dataset.mode);
     document.querySelector('#card .answer')?.focus({preventScroll:true});
   }));
-  document.getElementById('difficulty-back').addEventListener('click',()=>{
+  document.getElementById('difficulty-back').addEventListener('click',()=>Loading.run(()=>{
     document.getElementById('difficulty-screen').hidden=true;intro.hidden=false;
     document.getElementById('start-mission').focus();
-  });
+  }));
   document.getElementById('start-mission').addEventListener('click', beginFromIntro);
   briefing.addEventListener('pointerdown', e => {
     if (e.button > 0 || e.target.closest('button, a')) return;
@@ -544,7 +548,7 @@
   continueButton.disabled = !stored;
   document.getElementById('menu-save-note').hidden = Boolean(stored);
   if (stored) {
-    continueButton.addEventListener('click', () => {
+    continueButton.addEventListener('click', () => Loading.run(() => {
       adopt(Engine.checkFailure(stored));
       if (mission.ended || flows !== stored.flows) save();
       mainMenu.hidden = true; intro.hidden = true; game.hidden = false;
@@ -559,7 +563,7 @@
           restoreResourceHighlights();
         }
       }
-    });
+    }));
   }
   window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ continueButton.disabled=true; game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
   missionTutorial = MissionTutorial.create({
@@ -599,7 +603,7 @@
     if (pendingDifficulty) {
       sessionStorage.removeItem('next-frontier-start');
       const pending = pendingDifficulty.startsWith('{') ? JSON.parse(pendingDifficulty) : {difficulty:pendingDifficulty, dailyCostResource:null};
-      startMission(pending.difficulty==='easy'?'easy':'hard');
+      globalThis.screenStartup = startMission(pending.difficulty==='easy'?'easy':'hard');
     }
   } catch (_) { /* The game remains playable when browser storage is disabled. */ }
 })();
