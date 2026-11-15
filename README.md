@@ -25,7 +25,7 @@ O briefing apresenta a missão e a imagem da NASA com crédito. Clique, arraste 
 
 A simulação usa unidades físicas nos dois modos. Easy arredonda apenas a exibição; as frações continuam acumulando. Previsões e variações reais refletem a diferença entre os inteiros exibidos antes e depois.
 
-Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Ainda não há derrota automática por falta de recursos.
+Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Qualquer recurso físico zerado encerra a missão com “Mission Failed”.
 
 As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 35%, Maintenance 25%, Exploration 20%, Science 15%, Emergency 5%. No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
 
@@ -62,7 +62,7 @@ Layout, animações, gestos, desenhos dos ícones e tipos de regras ficam em CSS
 
 O jogo salva automaticamente em um slot de localStorage, incluindo dificuldade, recursos, efeitos pendentes, fase da carta, sequência e dados usados pela missão. **Continue mission** restaura a partida sem reaplicar escolhas. Novas missões usam os dados atuais. Saves anteriores sem modo retomam em Hard; alterações de textos da interface podem aparecer também em partidas anteriores.
 
-O progresso fica no mesmo navegador e origem do site. Limpar os dados remove o save; armazenamento privado/desativado pode não persistir. Não há login nem sincronização entre dispositivos. Mudar o domínio não transfere o progresso. Quando outra aba altera o save, a aba antiga suspende ações até recarregar. Saves incompatíveis não são apagados automaticamente: a interface pede confirmação para substituir ao iniciar novamente.
+O progresso fica no mesmo navegador e origem do site. Limpar os dados remove o save; armazenamento privado/desativado pode não persistir. Não há login nem sincronização entre dispositivos. Mudar o domínio não transfere o progresso. Quando outra aba altera o save, a aba antiga suspende ações até recarregar. Saves incompatíveis não são apagados automaticamente: iniciar uma nova missão substitui o save ao escolher o modo, sem confirmação.
 
 ## Validar
 
@@ -96,3 +96,61 @@ Manter essa estrutura e verificar o resultado do deploy. O estado atual de dispo
 - [CLAUDE.md](CLAUDE.md): ponto de entrada para a mesma documentação, sem regras duplicadas.
 - [docs/RESEARCH.md](docs/RESEARCH.md): pesquisa, fontes e cuidados científicos.
 - [Histórico de implementação](docs/history/ARCHITECTURE.md) e [contexto anterior](docs/history/PROJECT_CONTEXT.md): versões arquivadas, não instruções atuais.
+
+## Painel de efeitos no Hard
+
+O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito remove o efeito mais antigo e seu ícone, deslocando os demais para a esquerda. O efeito retirado é cancelado: suas taxas futuras param e mudanças agendadas ainda não aplicadas são descartadas. Alterações já causadas nos recursos não são revertidas; efeitos removidos não voltam quando outro termina. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
+
+## Life Support no Easy
+
+No Easy, água e oxigênio aparecem juntos em **Life Support**, com uma cruz de saúde. São quatro indicadores na HUD; Hard continua com cinco. O número de 0 a 100 é o menor dos dois estoques proporcionais: oxigênio 60 e água 80 mostram Life Support 60. Água e oxigênio continuam separados na simulação e no save.
+
+O detalhe descreve o oxigênio que se respira e a água que se bebe e mostra o número combinado de Life Support e sua variação prevista após um sol, sem valores de estoque separados. O verso usa Life Support com “Changes water” ou “Changes oxygen”, identificando qual componente muda. Uma mudança no estoque não limitante pode não mudar o número da HUD. Nome, cor e descrição ficam em `data/resources.json` → `easyLifeSupport`.
+
+O índice simplifica a disponibilidade; não estima tempo de sobrevivência nem todo o suporte à vida real. Consulte o [cálculo e a compatibilidade](ARCHITECTURE.md#life-support-no-easy) e os [limites científicos](docs/RESEARCH.md#simplificação-visual-life-support-no-easy).
+
+## Finais da missão e teste de consumo
+
+Concluir os 40 sols sem zerar recursos mantém o final de sucesso. Zerar um recurso, por escolha ou durante a resolução diária, mostra **Mission Failed** e uma explicação específica. Easy tem quatro finais de falha: Life Support (oxigênio ou água), Radiation Shield, Energy Supply e Food Stock. Hard separa oxigênio e água, com cinco finais de falha. Encerrar manualmente continua mostrando Mission ended.
+
+Temporariamente, `data/mission.json` → `dailyCostMultiplier: 3` triplica o consumo-base de apenas um recurso escolhido para facilitar testes. No seletor Easy/Hard, escolher em Faster daily use o recurso ou Normal daily use para consumo normal. Produção e efeitos das cartas permanecem com seus valores próprios. Os coeficientes científicos originais em `flows.json` foram preservados. Para restaurar o consumo normal, usar 1 e começar uma nova missão; continuar um save preserva o multiplicador salvo (saves anteriores usam 1).
+
+Não há desgaste diário de blindagem: ela pode zerar por efeitos de cartas. O zero da derrota é o estoque físico real; um indicador Easy arredondado para zero ainda pode conter uma pequena reserva.
+
+As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado; o painel de efeitos fica oculto ao encerrar para reservar espaço ao final. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
+
+## Início de nova missão e seleção de consumo
+
+O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
+
+Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+
+A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
+
+## Imagens aprovadas das cartas de falha
+
+As seis artes em `images/endings/` são usadas integralmente nas cartas de falha, incluindo seus textos e ícones. Os caminhos ficam em `data/interface.json` → `endingImage-life-support`, `endingImage-oxygen`, `endingImage-water`, `endingImage-shield`, `endingImage-energy` e `endingImage-food`. Easy usa Life Support para oxigênio/água; Hard usa as imagens físicas separadas. Blindagem, energia e comida compartilham imagens entre os modos.
+
+A imagem mantém proporção sem corte e o botão Start New Mission fica fora dela. Título e descrição em HTML continuam disponíveis para leitores de tela; se a imagem falhar, aparecem com o ícone vetorial de fallback. Sucesso e encerramento manual mantêm suas telas com ícones vetoriais. `docs/previews/endings/` preserva os originais aprovados e os prompts. Nenhuma carta de falha entra no sorteio de eventos; a seleção decorre da causa de encerramento já salva.
+
+## Menu inicial
+
+A entrada normal abre um menu com Next Frontier e os botões **Start New Mission**, **Continue mission** e **Credits**, sem botão de sair. Continue mission fica visível, mas desativado quando não há save válido no localStorage (inclusive se o armazenamento estiver indisponível ou o save for inválido), acompanhado de “No saved mission yet.”. O fundo `assets/images/mars-menu.svg` deriva do estilo geométrico de Marte e inclui habitats, antenas e painéis solares; o fundo durante a missão permanece o anterior.
+
+Start New Mission abre o briefing da nova missão; Continue mission retoma diretamente a fase e o modo salvos, sem passar pelo briefing. A continuação não aparece mais como botão dentro do briefing. Nessa tela foram removidos o rótulo “Next Frontier · Mission briefing” e o parágrafo “Look after…”. Novas missões Easy e Hard mostram o tutorial descrito abaixo. Créditos abrem um diálogo com a atribuição da imagem NASA e das ilustrações geradas.
+
+O menu não altera nem apaga o save. Continuar restaura a missão existente; escolher uma nova missão mantém o fluxo atual. A recarga interna usada para iniciar uma nova missão com dados atuais mantém a seleção de modo/consumo e vai direto ao jogo. Se a inicialização falhar, o aviso e Try again continuam acessíveis na tela de briefing. Textos novos ficam em `data/interface.json`; a navegação e os diálogos ficam em `src/ui.js`.
+
+O menu é mobile-first e usa uma única coluna centralizada horizontal e verticalmente em celulares, tablets e desktop, em ambas as orientações. Título, textos dos botões e aviso de save são centralizados. A largura é limitada a 360 px na base e 440 px em telas a partir de 768 px com altura suficiente; telas baixas usam tipografia e espaçamentos compactos, preservando os alvos de toque e as safe areas. Ícones decorativos identificam as três ações. Os botões têm fundo sólido, foco visível e estado desativado explícito, sem depender de transparência sobre a paisagem.
+
+Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os links de CSS e bootstrap no HTML usam a mesma versão de assets (`v`). O bootstrap propaga essa versão aos módulos (inclusive validation) e busca os JSONs com `cache: no-store`. Ao mudar a versão de assets em uma entrega, atualizar os dois links do HTML juntos. Os snapshots de regras das missões salvas continuam preservados; os textos atuais seguem prioritários.
+
+## Tutorial da missão
+
+Ao iniciar uma nova missão, uma guia curta apresenta os indicadores e depois a carta. Easy usa quatro indicadores; Hard usa os cinco recursos separados e acrescenta uma etapa sobre o painel de efeitos antes da carta. As explicações usam as descrições e previsões já disponíveis nos detalhes dos recursos. A carta se move continuamente para os lados e preenche o botão correspondente como no arrasto real; nenhuma escolha é aplicada nessa demonstração. A etapa só termina por Let’s play! ou por pular.
+
+Toque em Next, deslize para qualquer lado ou use as setas para avançar; na última etapa, use Let’s play!. Skip tutorial está disponível desde a primeira etapa, e Escape também permite pular. Durante a guia, recursos e tempo ficam intactos. Continuar uma missão salva não repete o tutorial. No Hard, a explicação do painel mostra como consultar mudanças por sol e eventos agendados, sem explicações sobre a remoção de efeitos da fila.
+
+O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.
+
+No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do painel, sem criar efeitos fictícios. Explica alterações por sol e eventos agendados, sem explicar a remoção de efeitos pela fila. Em celulares em retrato, somente no passo da carta o painel é ocultado temporariamente para manter a carta legível; ao concluir ou pular, ele reaparece sem alterar os efeitos.

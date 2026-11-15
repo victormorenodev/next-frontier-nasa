@@ -21,15 +21,21 @@
   const activeList = document.getElementById('active-effects');
   const tablet = document.getElementById('effects-tablet');
   let effectsPage = 0;
-  const MAX_EFFECTS = 3;      // the effects box shows at most this many
+  const MAX_EFFECTS = Flows.MAX_EFFECTS;      // the effects box shows at most this many
+  let missionTutorial = null;
   let state;
   let mission;
   let flows;          // what the base uses and makes every sol, and answers still in effect
   let active = null;
   let pressing = null;   // pointer currently held on the indicator row
 
+  let tilesKey = '';
   function buildTiles() {
-    Indicators.INDICATORS.forEach(ind => {
+    const definitions = ResourceDisplay.indicators();
+    tilesKey = definitions.map(ind => ind.id).join(',');
+    row.replaceChildren();
+    row.style.setProperty('--indicator-count', definitions.length);
+    definitions.forEach(ind => {
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'tile';
@@ -46,7 +52,11 @@
   }
 
   function render() {
-    const view = Indicators.read(state);
+    if (tilesKey !== ResourceDisplay.indicators().map(ind => ind.id).join(',')) {
+      active = null;
+      buildTiles();
+    }
+    const view = Indicators.read(state, ResourceDisplay.indicators());
     const rates = Flows.ratesPerSol(flows, mission.elapsed);   // change per sol right now
     view.forEach(ind => {
       ind.parts.forEach(p => { p.rate = rates[p.id]; });
@@ -56,14 +66,79 @@
       // The arrow follows the indicator's lowest part (each indicator has one part now).
       const trend = trendOf(rates[ind.lowest]);
       tile.dataset.trend = trend;
-      tile.setAttribute('aria-label', `${ind.name}: ${ind.parts.map(p =>
+      tile.setAttribute('aria-label', ind.id === 'life-support' ? `${ind.name}: ${ResourceDisplay.round(ind.level * 100)} of 100` : `${ind.name}: ${ind.parts.map(p =>
         `${p.name} ${fmt(ResourceDisplay.read(p.id,p.value).value)} of ${ResourceDisplay.read(p.id,p.value).max} ${ResourceDisplay.read(p.id,p.value).unitName}, ${TREND_WORDS[trendOf(p.rate)]}`).join('; ')}`);
     });
     renderDetail(view.find(ind => ind.id === active));
     renderActive();
   }
 
+  const effectPanel = document.getElementById('effect-panel');
+  const effectSlots = document.getElementById('effect-slots');
+  function renderEffectPanel() {
+    effectPanel.hidden = mission.ended || (mission.difficulty || 'hard') !== 'hard';
+    if (effectPanel.hidden) return;
+    const now = mission.elapsed;
+    const items = [
+      ...flows.ongoing.filter(o => o.end > now).map(o => ({...o, amounts: o.rates, recurring: true})),
+      ...flows.later.map(o => ({...o, amounts: o.effects, start: o.at, recurring: false}))
+    ].filter(o => !o.panelHidden)
+      .sort((a, b) => (a.panelOrder || 0) - (b.panelOrder || 0))
+      .slice(-MAX_EFFECTS);
+    effectSlots.replaceChildren();
+    for (let i = 0; i < MAX_EFFECTS; i++) {
+      const item = items[i];
+      const slot = document.createElement('div'); slot.className = 'effect-slot';
+      effectSlots.append(slot);
+      if (!item) { slot.setAttribute('aria-label', Copy('effectEmpty')); continue; }
+      const name = item.note || Copy('effectFallback');
+      const button = document.createElement('button'); button.type = 'button';
+      button.className = 'effect-icon'; button.setAttribute('aria-label', name);
+      const tooltip = document.createElement('div'); tooltip.className = 'effect-tooltip';
+      tooltip.id = `effect-tip-${i}`; tooltip.setAttribute('role', 'tooltip');
+      button.setAttribute('aria-describedby', tooltip.id);
+      const heading = document.createElement('strong'); heading.textContent = name; tooltip.append(heading);
+      Object.entries(item.amounts).forEach(([key, amount]) => {
+        const ind = Indicators.INDICATORS.find(ind => ind.parts.includes(key));
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
+        svg.innerHTML = ICONS[ind.icon]; button.append(svg);
+        const line = document.createElement('p');
+        line.textContent = Copy(item.recurring ? 'effectRate' : 'effectOnce', {
+          resource: Indicators.QUANTITIES[key].name,
+          amount: `${amount > 0 ? '+' : ''}${fmt(amount)}`,
+          unit: Indicators.QUANTITIES[key].unit
+        }); tooltip.append(line);
+      });
+      const timing = document.createElement('p');
+      timing.textContent = item.start > now
+        ? Copy('effectStarts', {sols: solsText(item.start - now)})
+        : item.end === Infinity ? Copy('always') : Copy('tabletRemaining', {sols: solsText(item.end - now)});
+      tooltip.append(timing);
+      button.addEventListener('click', () => {
+        const open = slot.classList.contains('is-open');
+        effectSlots.querySelectorAll('.is-open').forEach(el => el.classList.remove('is-open'));
+        slot.classList.toggle('is-open', !open);
+        // Focus and hover must not keep the detail visible after a second tap.
+        effectPanel.classList.toggle('dismissed', open);
+      });
+      slot.append(button, tooltip);
+    }
+  }
+  document.addEventListener('pointerdown', event => {
+    if (!effectPanel.contains(event.target)) effectSlots.querySelectorAll('.is-open').forEach(el => el.classList.remove('is-open'));
+  });
+  effectPanel.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      effectSlots.querySelectorAll('.is-open').forEach(el => el.classList.remove('is-open'));
+      effectPanel.classList.add('dismissed');
+    }
+  });
+  effectPanel.addEventListener('pointerleave', () => effectPanel.classList.remove('dismissed'));
+  effectPanel.addEventListener('focusout', () => effectPanel.classList.remove('dismissed'));
+
   function renderActive() {
+    renderEffectPanel();
     const items = Flows.active(flows, mission.elapsed).reverse();
     const pages = Math.max(1, Math.ceil(items.length / MAX_EFFECTS));
     effectsPage = Math.min(effectsPage, pages - 1);
@@ -120,13 +195,29 @@
     detail.classList.toggle('empty', !ind);
     if (!ind) return;
     detail.replaceChildren();
+    detail.classList.toggle('life-support-detail', ind.id === 'life-support');
 
     detail.style.setProperty('--c', `var(--${ind.id})`);
     const title = document.createElement('h2');
     title.textContent = ind.name;
     const parts = document.createElement('div');parts.className = 'parts';
     parts.style.setProperty('--n', ind.parts.length);
-    const forecast=Flows.passTime(state,flows,mission.elapsed,Mission.THIRDS_PER_SOL).state;
+    const forecast=Flows.passTime(state,flows,mission.elapsed,Mission.THIRDS_PER_SOL,{stopOnEmpty:true}).state;
+    if (ind.id === 'life-support') {
+      const definition = ResourceDisplay.indicators()[0];
+      const description = document.createElement('p'); description.className = 'resource-description';
+      description.textContent = definition.description;
+      const delta = ResourceDisplay.indicatorChange(definition, state, forecast);
+      const change = document.createElement('p'); change.className = 'resource-change';
+      change.dataset.trend = trendOf(delta);
+      change.textContent = Copy(delta === 0 ? 'resourceSteady' : delta < 0 ? 'resourceLoseEasy' : 'resourceGainEasy', {amount: fmt(Math.abs(delta))});
+      const value = document.createElement('div'); value.className = 'value';
+      const amount = document.createElement('strong'); amount.className = 'amount';
+      amount.textContent = fmt(ResourceDisplay.round(ResourceDisplay.level(definition, state) * 100));
+      value.append(amount);
+      detail.append(title, description, value, change);
+      return;
+    }
     ind.parts.forEach(p=>{
       const part=document.createElement('div');
       const description=document.createElement('p');description.className='resource-description';
@@ -197,14 +288,24 @@
   row.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
 
   // ── Mission flow: deck, answers, end ────────────────────
+  const mainMenu = document.getElementById('main-menu');
   const intro = document.getElementById('mission-intro');
+  document.getElementById('menu-start').addEventListener('click', () => {
+    mainMenu.hidden = true;
+    intro.hidden = false;
+    document.getElementById('start-mission').focus({preventScroll:true});
+  });
+  const creditsDialog = document.getElementById('credits-dialog');
+  document.getElementById('menu-credits').addEventListener('click', () => creditsDialog.showModal());
+  document.getElementById('credits-close').addEventListener('click', () => creditsDialog.close());
+  creditsDialog.addEventListener('click', event => { if (event.target === creditsDialog) creditsDialog.close(); });
   const briefing = document.getElementById('briefing');
   const game = document.getElementById('game');
   let introDrag = null;
 
   const endButton = document.getElementById('end-mission');
   const dialog = document.getElementById('end-dialog');
-  const cardUI = CardUI.create(document.getElementById('card'), {onAnswer, onNext});
+  const cardUI = CardUI.create(document.getElementById('card'), {onAnswer, onNext, canAnswer: () => !missionTutorial?.active});
   let solTransition = false;
   let solTimer;
   let cardChanges = {};
@@ -216,24 +317,26 @@
   const background = document.getElementById('sol-transition');
   const solNotice = document.getElementById('sol-notice');
 
-  function startMission(difficulty = 'hard') {
+  function startMission(difficulty = 'hard', dailyCostResource = document.getElementById('daily-cost-resource').value || null) {
     clearTimeout(solTimer); solTransition=false;
     clearResourceHighlights(); cardChanges={};
     if (window.savedMission) {
       localStorage.removeItem('next-frontier-save');
-      sessionStorage.setItem('next-frontier-start', difficulty);
+      sessionStorage.setItem('next-frontier-start', JSON.stringify({difficulty, dailyCostResource}));
       location.reload();
       return;
     }
+    mainMenu.hidden = true;
     intro.hidden = true;
     document.getElementById('difficulty-screen').hidden=true;
     game.hidden = false;
     background.hidden = true;
     solNotice.textContent = Copy("missionProgress");
-    adopt(Engine.start(Math.random,difficulty));
+    adopt(Engine.start(Math.random,difficulty,dailyCostResource));
     render();
     renderMission();
     showSol();
+    startTutorial();
   }
 
   function showSol() {
@@ -244,13 +347,14 @@
   }
 
   function onAnswer(side) {
-    if (mission.ended || solTransition) return;
+    if (mission.ended || solTransition || missionTutorial?.active) return;
     const card = deck[index], answer = card[side];
     const before = state;
     adopt(Engine.answer(snapshot(), side));
     cardChanges=Object.fromEntries(Object.keys(state).filter(q=>state[q]!==before[q]).map(q=>[q,state[q]-before[q]]));
     bumpChanged(before, state, true);
     render();
+    if (mission.ended) { save(); renderMission(); return; }
     const last = eventIndex + 1 === schedule[mission.sol - 1];
     cardUI.showBack(card, side, last, [], before);
     savedSide = side; save();
@@ -259,7 +363,7 @@
   function snapshot() { return {state,mission,flows,deck,index,schedule,eventIndex,savedSide}; }
   function adopt(value) { ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=value); ResourceDisplay.mode=mission.difficulty || 'hard'; }
   function onNext() {
-    if(solTransition) return;
+    if(solTransition || missionTutorial?.active) return;
     const before=state;
     const result=Engine.next(snapshot());
     if (result.snapshot.mission===mission && result.snapshot.index===index) return;
@@ -298,25 +402,28 @@
     row.querySelectorAll('.tile').forEach(tile=>{clearTimeout(tile.changeTimer);tile.classList.remove('bump');delete tile.dataset.change;tile.parentElement.classList.remove('change-visible');tile.parentElement.querySelector('.resource-delta').replaceChildren();});
   }
   function restoreResourceHighlights() {
-    for(const ind of Indicators.INDICATORS){
-      const delta=ind.parts.reduce((sum,q)=>sum+(Number.isFinite(cardChanges[q])?cardChanges[q]:0),0);
+    for(const ind of ResourceDisplay.indicators()){
+      const before = Object.fromEntries(Object.entries(state).map(([q,n]) => [q,n-(cardChanges[q]||0)]));
+      const delta=ResourceDisplay.indicatorChange(ind,before,state);
       if(delta)row.querySelector(`[data-id="${ind.id}"]`).dataset.change=delta>0?'up':'down';
     }
   }
   function bumpChanged(before, after, persistent = false) {
-    Indicators.INDICATORS.forEach(ind => {
+    ResourceDisplay.indicators().forEach(ind => {
       if (!ind.parts.some(q => before[q] !== after[q])) return;
       const tile = row.querySelector(`[data-id="${ind.id}"]`);
       tile.classList.remove('bump');
-      const delta=ind.parts.reduce((sum,q)=>sum+after[q]-before[q],0);
+      const delta=ResourceDisplay.indicatorChange(ind,before,after);
+      if (ResourceDisplay.mode === 'easy' && delta === 0) return;
       tile.dataset.change=delta>0?'up':'down';
       const slot=tile.parentElement;
       const label=slot.querySelector('.resource-delta');label.replaceChildren();
-      ind.parts.filter(q=>after[q]!==before[q]).forEach(q=>{
+      if (ResourceDisplay.mode === 'easy') {
+        const number=document.createElement('strong');number.textContent=`${delta>0?'+':'−'}${fmt(Math.abs(delta))}`;
+        label.append(number);
+      } else ind.parts.filter(q=>after[q]!==before[q]).forEach(q=>{
         const display=ResourceDisplay.change(q,before[q],after[q]);
-        const difference=display.value;
-        if(ResourceDisplay.mode==='easy' && difference===0)return;
-        const number=document.createElement('strong');number.textContent=`${difference>0?'+':'−'}${fmt(Math.abs(difference))}`;
+        const number=document.createElement('strong');number.textContent=`${display.value>0?'+':'−'}${fmt(Math.abs(display.value))}`;
         const unit=document.createElement('small');unit.textContent=display.unit;
         label.append(number,unit);
       });
@@ -340,13 +447,18 @@
     document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.TOTAL_SOLS});
     endButton.disabled = mission.ended;
     if (!mission.ended) return;
+    effectPanel.hidden = true;
     const done = mission.reason === 'complete';
+    const failed = mission.reason === 'failed';
+    const resource = mission.difficulty === 'easy' && ['oxygen','water'].includes(mission.failedResource)
+      ? 'life-support' : mission.failedResource;
     cardUI.showMessage(
-      done ? Copy("completeTitle") : Copy("endedTitle"),
-      done ? Copy("completeBody", {totalSols: Mission.TOTAL_SOLS, events: index})
+      failed ? Copy("failedTitle") : done ? Copy("completeTitle") : Copy("endedTitle"),
+      failed ? Copy(`failedBody-${resource}`) : done ? Copy("completeBody", {totalSols: Mission.TOTAL_SOLS, events: index})
            : Copy("endedBody", {sol: mission.sol}),
       Copy("newMission"),
-      showDifficultyScreen);
+      showDifficultyScreen, failed ? resource : done ? 'complete' : 'quit',
+      failed ? Copy(`endingImage-${resource}`) : null);
   }
 
   endButton.addEventListener('click', () => dialog.showModal());
@@ -364,7 +476,6 @@
     if (intro.hidden) return;
     introDrag = null;
     briefing.style.transform = '';
-    if ((stored || window.invalidSavedMission) && !confirm(Copy("replaceSave"))) return;
     showDifficultyScreen();
     document.querySelector('#card .answer')?.focus({preventScroll: true});
   }
@@ -374,6 +485,14 @@
     document.getElementById('difficulty-screen').hidden=false;
     document.querySelector('[data-mode="easy"]').focus({preventScroll:true});
   }
+  const dailyCostSelect = document.getElementById('daily-cost-resource');
+  document.getElementById('daily-cost-hint').textContent = Copy('dailyCostHint', {dailyCostMultiplier:CurrentGameData.mission.dailyCostMultiplier ?? 1});
+  Object.entries(CurrentGameData.resources.quantities).forEach(([key, resource]) => {
+    const option = document.createElement('option'); option.value = key;
+    const hasDailyCost = CurrentGameData.flows.some(flow => flow.quantity === key && flow.amount < 0);
+    option.textContent = hasDailyCost ? resource.name : `${resource.name} (${Copy('noDailyUse')})`;
+    dailyCostSelect.append(option);
+  });
   document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
     startMission(button.dataset.mode);
     document.querySelector('#card .answer')?.focus({preventScroll:true});
@@ -426,22 +545,71 @@
     catch (_) { solNotice.textContent = Copy("storageUnavailable"); }
   }
   const stored = window.savedMission;
+  const continueButton = document.getElementById('menu-continue');
+  continueButton.disabled = !stored;
+  document.getElementById('menu-save-note').hidden = Boolean(stored);
   if (stored) {
-    const button = document.createElement('button'); button.className='start-mission'; button.textContent=Copy("continueMission");
-    button.onclick=()=>{ ResourceDisplay.mode=stored.mission.difficulty||'hard';({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=stored); intro.hidden=true;game.hidden=false;render();renderMission(); if(!mission.ended) {const side=savedSide;cardUI.showFront(deck[index],eventIndex+1,schedule[mission.sol-1]);if(side){cardChanges=stored.cardChanges||{};const before=Object.fromEntries(Object.entries(state).map(([q,n])=>[q,n-(cardChanges[q]||0)]));cardUI.showBack(deck[index],side,eventIndex+1===schedule[mission.sol-1],[],before);restoreResourceHighlights();}} };
-    const startButton = document.getElementById('start-mission');
-    const actions = document.createElement('div');
-    actions.className = 'briefing-actions';
-    startButton.before(actions);
-    actions.append(button, startButton);
+    continueButton.addEventListener('click', () => {
+      adopt(Engine.checkFailure(stored));
+      if (mission.ended || flows !== stored.flows) save();
+      mainMenu.hidden = true; intro.hidden = true; game.hidden = false;
+      render(); renderMission();
+      if (!mission.ended) {
+        const side = savedSide;
+        cardUI.showFront(deck[index], eventIndex + 1, schedule[mission.sol - 1]);
+        if (side) {
+          cardChanges = stored.cardChanges || {};
+          const before = Object.fromEntries(Object.entries(state).map(([q,n]) => [q,n-(cardChanges[q]||0)]));
+          cardUI.showBack(deck[index], side, eventIndex + 1 === schedule[mission.sol - 1], [], before);
+          restoreResourceHighlights();
+        }
+      }
+    });
   }
-  window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
+  window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ continueButton.disabled=true; game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
+  missionTutorial = MissionTutorial.create({
+    demonstrate: enabled => {
+      game.classList.toggle('tutorial-card-step', enabled);
+      if (!enabled) game.querySelector('.card-area').style.removeProperty('--tutorial-card-offset');
+      cardUI.demonstrate(enabled);
+    },
+    onFinish: () => document.querySelector('#card .answer')?.focus({preventScroll:true})
+  });
+  function startTutorial() {
+    const steps = ResourceDisplay.indicators().map(ind => ({
+      target: row.querySelector(`[data-id="${ind.id}"]`),
+      title: ind.name,
+      content: () => {
+        renderDetail(Indicators.read(state, ResourceDisplay.indicators()).find(item => item.id === ind.id));
+        const content = document.createElement('div'); content.className = 'tutorial-resource-detail';
+        detail.querySelectorAll('.resource-description, .resource-change').forEach(item => content.append(item.cloneNode(true)));
+        renderDetail(null);
+        return content;
+      }
+    }));
+    if (ResourceDisplay.mode === 'hard') {
+      steps.push({
+        target: effectPanel, title: Copy('tutorialEffectsTitle'),
+        content: () => {
+          const content = document.createElement('div');
+          const p = document.createElement('p'); p.textContent = Copy('tutorialEffectsBody'); content.append(p);
+          return content;
+        }
+      });
+    }
+    steps.push({
+      target: document.getElementById('card'), title: Copy('tutorialCardTitle'), demo: true,
+      content: () => { const p = document.createElement('p'); p.textContent = Copy('tutorialCardBody'); return p; }
+    });
+    missionTutorial.start(steps);
+  }
   buildTiles();
   try {
     const pendingDifficulty=sessionStorage.getItem('next-frontier-start');
     if (pendingDifficulty) {
       sessionStorage.removeItem('next-frontier-start');
-      startMission(pendingDifficulty==='easy'?'easy':'hard');
+      const pending = pendingDifficulty.startsWith('{') ? JSON.parse(pendingDifficulty) : {difficulty:pendingDifficulty, dailyCostResource:null};
+      startMission(pending.difficulty==='easy'?'easy':'hard', pending.dailyCostResource ?? null);
     }
   } catch (_) { /* The game remains playable when browser storage is disabled. */ }
 })();

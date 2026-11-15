@@ -24,3 +24,26 @@ let total=0;
 for(let water=600;water>400;water-=4)total+=display.change('water',water,water-4).value;
 assert.equal(total,display.read('water',400).value-display.read('water',600).value);
 console.log('display: ok');
+
+// Easy combines only the display. Physical stocks and capacities stay separate.
+context.CurrentGameData = {resources: JSON.parse(fs.readFileSync('data/resources.json','utf8'))};
+display.mode = 'easy';
+const life = display.indicators()[0];
+assert.equal(life.id, 'life-support');
+assert.equal(life.icon, 'health');
+assert.equal(display.indicators().length, 4);
+const initial = {oxygen: 36, water: 560, shield: 8, energy: 240, food: 100};
+assert.equal(display.round(display.level(life, initial)*100), 60);
+assert.equal(display.indicatorChange(life, initial, {...initial, water: 490}), 0);
+assert.equal(display.indicatorChange(life, initial, {...initial, oxygen: 30}), -10);
+// Water becomes the limiting stock; compare the combined endpoints, not summed deltas.
+assert.equal(display.indicatorChange(life, initial, {...initial, oxygen: 42, water: 350}), -10);
+assert.equal(display.round(display.level(life, {...initial, oxygen: 0})*100), 0);
+assert.equal(display.round(display.level(life, {...initial, water: 0})*100), 0);
+assert.equal(display.indicatorChange(life, {...initial, oxygen: 36.1}, {...initial, oxygen: 36.2}), 0);
+assert.equal(initial.oxygen, 36);
+assert.equal(initial.water, 560);
+assert.equal(Indicators.read(initial, display.indicators())[0].lowest, 'oxygen');
+display.mode = 'hard';
+assert.equal(display.indicators().length, 5);
+assert.equal(display.indicators()[0].id, 'oxygen');

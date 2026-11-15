@@ -87,5 +87,16 @@
       "icon": "food",
       "color": "#7ddc8a"
     }
-  ]
+  ],
+  "easyLifeSupport": {
+    "id": "life-support",
+    "name": "Life Support",
+    "parts": [
+      "oxygen",
+      "water"
+    ],
+    "icon": "health",
+    "color": "#70dfc2",
+    "description": "Life Support combines the oxygen you breathe and the water you drink."
+  }
 }

@@ -11,16 +11,59 @@ for(let seed=0;seed<10;seed++){
  assert.equal(easy.mission.difficulty,'easy');assert.ok(easy.deck.every(c=>c.difficulty==='easy'||c.difficulty==='medium'));
 }
 assert.throws(()=>Engine.start(Math.random,'unknown'));
+assert.throws(()=>Engine.start(()=>0,'hard','unknown'));
+assert.throws(()=>Engine.start(()=>0,'hard',['food']));
+assert.equal(Engine.start(()=>0,'hard').flows.dailyCostResource,null);
+for(const selected of Object.keys(data.resources.quantities)){
+ const chosen = Engine.start(()=>0,'easy',selected);
+ const restored=validateSave(JSON.parse(JSON.stringify({version:1,data,...chosen})));
+ assert.equal(restored.flows.dailyCostResource,selected);
+}
 const initial=snapshot;snapshot=Engine.answer(snapshot,'left');assert.equal(snapshot.mission.elapsed,0);assert.equal(Engine.answer(snapshot,'right'),snapshot);
 const roundtrip=JSON.parse(JSON.stringify({version:1,data,...snapshot},(k,v)=>v===Infinity?'__infinity':v),(k,v)=>v==='__infinity'?Infinity:v);
 validateSave(roundtrip);
+assert.throws(()=>validateSave({...roundtrip,flows:{...roundtrip.flows,dailyCostResource:['food']}}));
 const legacy=structuredClone(roundtrip);delete legacy.data.categories;legacy.data.mission.avoidConsecutive=true;for(const card of legacy.data.cards){delete card.category;delete card.probability}validateSave(legacy);
 assert.deepEqual(legacy.deck,roundtrip.deck);assert.deepEqual(roundtrip.state,JSON.parse(JSON.stringify(snapshot.state)));
 assert.throws(()=>validateSave({...roundtrip,index:999}));
 let result=Engine.next(snapshot);snapshot=result.snapshot;assert.equal(result.newSol,false);assert.equal(snapshot.mission.elapsed,0);
 snapshot=Engine.answer(snapshot,'right');snapshot=Engine.next(snapshot).snapshot;assert.equal(snapshot.mission.sol,2);assert.equal(snapshot.mission.elapsed,3);
 while(!snapshot.mission.ended){snapshot=Engine.answer(snapshot,'right');snapshot=Engine.next(snapshot).snapshot}
-assert.equal(snapshot.mission.elapsed,120);assert.equal(snapshot.index,80);assert.equal(snapshot.mission.reason,'complete');assert.equal(initial.mission.elapsed,0);
+assert.equal(snapshot.mission.reason,'failed');assert.equal(snapshot.state[snapshot.mission.failedResource],0);assert.equal(initial.mission.elapsed,0);
 validateSave(JSON.parse(JSON.stringify({version:1,data,...snapshot})));
+// Every physical stock has a failure, in both difficulty modes.
+for (const mode of ['easy','hard']) for (const resource of Object.keys(initial.state)) {
+  const fresh=Engine.start(()=>0, mode);
+  const deck=fresh.deck.map(c=>({...c,left:{label:'Drain',effects:{[resource]:-10000}}}));
+  const failed=Engine.answer({...fresh,deck},'left');
+  assert.equal(failed.mission.reason,'failed');
+  assert.equal(failed.mission.failedResource,resource);
+  assert.equal(Engine.answer(failed,'right'),failed);
+  assert.equal(Engine.next(failed).snapshot,failed);
+  validateSave(JSON.parse(JSON.stringify({version:1,data,...failed})));
+}
+const fractional=Engine.start(()=>0,'easy');
+assert.equal(Engine.checkFailure({...fractional,state:{...fractional.state,oxygen:0.01}}).mission.ended,false);
+const simultaneous=Engine.checkFailure({...fractional,state:{...fractional.state,water:0,oxygen:0}});
+assert.equal(simultaneous.mission.failedResource,'oxygen');
+// Supply enough production to test the successful 40-sol ending independently of balance.
+const F=require('./load-engine.cjs').Flows;
+let success=Engine.start(()=>0);
+success={...success,deck:success.deck.map(c=>({...c,left:{label:'Wait',effects:{}}})),
+ flows:{ongoing:[{rates:Object.fromEntries(Object.entries(F.ratesPerSol(F.createFlows(),0)).map(([q,n])=>[q,-n])) ,start:0,end:Infinity}],later:[]}};
+while(!success.mission.ended)success=Engine.next(Engine.answer(success,'left')).snapshot;
+assert.equal(success.mission.reason,'complete');assert.equal(success.mission.elapsed,120);
+// Failure on the final sol takes precedence over success.
+let last=Engine.start(()=>0);
+last={...last,mission:{...last.mission,sol:40,elapsed:117},state:{...last.state,food:0.01},savedSide:'left'};
+assert.equal(Engine.next(last).snapshot.mission.reason,'failed');
+assert.throws(()=>validateSave({...roundtrip,mission:{...roundtrip.mission,ended:true,reason:'failed',failedResource:'unknown'}}));
+const legacyHidden=Engine.start(()=>0,'hard');
+legacyHidden.flows={...legacyHidden.flows,ongoing:[{rates:{water:-10},note:'Removed',start:0,end:30,panelHidden:true,panelOrder:1}]};
+const restoredQueue=Engine.checkFailure(legacyHidden);
+assert.equal(restoredQueue.flows.ongoing.length,0);
+assert.deepEqual(restoredQueue.state,legacyHidden.state);
+assert.equal(restoredQueue.mission,legacyHidden.mission);
+validateSave(JSON.parse(JSON.stringify({version:1,data,...restoredQueue})));
 console.log('engine and save: ok');
 })().catch(e=>{console.error(e);process.exitCode=1});

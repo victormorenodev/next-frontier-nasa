@@ -21,6 +21,8 @@
   function create(slot, handlers) {
     let phase = 'none';          // 'front' | 'back' | 'message' | 'none'
     let drag = null;
+    let demoFrame = 0, demonstrating = false;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     // ── Build the card once; contents change per card ──
     const card3d = el('div', 'card3d');
@@ -58,7 +60,7 @@
 
     // ── Answering ──
     function answer(side) {
-      if (phase !== 'front') return;
+      if (phase !== 'front' || handlers.canAnswer?.() === false) return;
       phase = 'answering';
       card3d.style.transform = '';                 // glide back to the centre, then flip
       highlight(null);
@@ -85,7 +87,7 @@
 
     // ── Drag to answer (mouse, finger or pen) ──
     card3d.addEventListener('pointerdown', e => {
-      if (phase !== 'front' || e.button > 0) return;
+      if (phase !== 'front' || handlers.canAnswer?.() === false || e.button > 0) return;
       drag = {id: e.pointerId, x: e.clientX, dx: 0, moving: false};
     });
     card3d.addEventListener('pointermove', e => {
@@ -129,7 +131,7 @@
       drag = null;
       card3d.style.transform = '';
       card3d.classList.remove('dragging');
-      slot.classList.remove('ended', 'quiet-sol');
+      slot.classList.remove('ended', 'quiet-sol', 'illustrated-ending');
       image.hidden = false;
       slot.classList.add('has-card');
       if (!card3d.isConnected) slot.replaceChildren(card3d);
@@ -163,12 +165,15 @@
       const q = Indicators.QUANTITIES[key];
       const li = el('li', `${cls || ''} ${amount < 0 ? 'down' : 'up'}`.trim());
       li.style.setProperty('--c', COLOR_OF[key]);
-      const indicator=Indicators.INDICATORS.find(ind=>ind.parts.includes(key));
+      const indicator=ResourceDisplay.indicators().find(ind=>ind.parts.includes(key));
+      const isLife = indicator?.id === 'life-support';
       const name = el('span', 'name');
       const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
       icon.classList.add('effect-resource-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
       icon.innerHTML=ResourceIcons[indicator?.icon || key] || '';
-      name.append(icon,el('span','effect-resource-name',q.name));
+      if (isLife) li.style.setProperty('--c', 'var(--life-support)');
+      name.append(icon,el('span','effect-resource-name',isLife ? indicator.name : q.name));
+      if (isLife) hint = [Copy(key === 'water' ? 'lifeWaterEffect' : 'lifeOxygenEffect'), hint].filter(Boolean).join(' · ');
       if (hint) name.append(el('small', null, hint));
       const display=ResourceDisplay.effect(key,amount,before);
       li.append(name, el('b', 'amount', `${display.value === 0 ? '' : display.value < 0 ? '−' : '+'}${fmt(Math.abs(display.value))}${display.unit ? ' ' + display.unit : ''}${unitSuffix}`));
@@ -221,18 +226,56 @@
       nextBtn.focus({preventScroll: true});
     }
 
-    function showMessage(title, body, buttonLabel, onClick) {
+    function showMessage(title, body, buttonLabel, onClick, ending = 'quit', imagePath = null) {
       phase = 'message';
       slot.classList.remove('has-card');
       slot.classList.add('ended');
       const h = el('h2', null, title), p = el('p', null, body), b = el('button', 'new-mission', buttonLabel);
       b.type = 'button';
       b.addEventListener('click', onClick);
-      slot.replaceChildren(h, p, b);
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.classList.add('ending-icon'); icon.setAttribute('viewBox', '0 0 24 24');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = EndingIcons[ending] || EndingIcons.quit;
+      slot.dataset.ending = ending;
+      slot.classList.toggle('illustrated-ending', Boolean(imagePath));
+      if (imagePath) {
+        const art = el('img', 'ending-art'); art.alt = '';
+        art.addEventListener('error', () => {
+          slot.classList.remove('illustrated-ending');
+          h.classList.remove('ending-accessible-copy'); p.classList.remove('ending-accessible-copy');
+          art.replaceWith(icon);
+        }, {once:true});
+        h.classList.add('ending-accessible-copy'); p.classList.add('ending-accessible-copy');
+        art.src = imagePath;
+        slot.replaceChildren(art, h, p, b);
+      } else slot.replaceChildren(icon, h, p, b);
       b.focus();
     }
 
-    return {showFront, showBack, showMessage};
+    function updateDemoHighlight() {
+      cancelAnimationFrame(demoFrame);
+      highlight(null);
+      if (!demonstrating || reducedMotion.matches) return;
+      const tick = () => {
+        if (!demonstrating || reducedMotion.matches) return;
+        // Follow the actual CSS animation clock, including repeated cycles.
+        const animation = card3d.getAnimations().find(item => item.animationName === 'tutorial-card-swipe');
+        const progress = animation?.effect?.getComputedTiming().progress;
+        highlight(progress >= .08 && progress <= .40 ? 'left' : progress >= .58 && progress <= .94 ? 'right' : null);
+        demoFrame = requestAnimationFrame(tick);
+      };
+      tick();
+    }
+    reducedMotion.addEventListener('change', updateDemoHighlight);
+    function demonstrate(enabled) {
+      demonstrating = enabled;
+      card3d.classList.remove('deal');
+      card3d.classList.toggle('tutorial-demo', enabled);
+      if (!enabled) card3d.style.transform = '';
+      updateDemoHighlight();
+    }
+    return {showFront, showBack, showMessage, demonstrate};
   }
 
   root.CardUI = {create};

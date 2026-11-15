@@ -37,8 +37,8 @@
 
   // What the interface needs for each indicator.
   // An indicator's level is its lowest part: plenty of water must not hide low oxygen.
-  function read(state) {
-    return INDICATORS.map(ind => {
+  function read(state, definitions = INDICATORS) {
+    return definitions.map(ind => {
       const parts = ind.parts.map(key => ({
         id: key,
         name: QUANTITIES[key].name,
@@ -53,6 +53,9 @@
     });
   }
 
-  const api = {QUANTITIES, INDICATORS, createState, change, apply, level, read};
+  // Physical depletion only: a rounded Easy display of zero is not failure.
+  const depleted = state => Object.keys(QUANTITIES).find(q => state[q] <= 0) || null;
+
+  const api = {depleted, QUANTITIES, INDICATORS, createState, change, apply, level, read};
    root.Indicators = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

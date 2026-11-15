@@ -5,6 +5,7 @@ export function validateData(d, {legacy = false} = {}) {
   need(Number.isInteger(d.mission.totalSols)&&d.mission.totalSols>0,'mission.totalSols');
   need(Number.isInteger(d.mission.crew)&&d.mission.crew>0,'mission.crew');
   need(finite(d.mission.solHours)&&d.mission.solHours>0,'mission.solHours');
+  need(d.mission.dailyCostMultiplier === undefined || finite(d.mission.dailyCostMultiplier) && d.mission.dailyCostMultiplier > 0, 'mission.dailyCostMultiplier');
   const p=d.mission.eventChances;
   need(p&&[p.one,p.two].every(n=>finite(n)&&n>=0&&n<=1)&&Math.abs(p.one+p.two-1)<1e-9,'mission.eventChances');
 
@@ -24,6 +25,13 @@ export function validateData(d, {legacy = false} = {}) {
   const unique=(list,label)=>{need(Array.isArray(list)&&list.length>0,label);const ids=new Set();for(const item of list){need(item&&typeof item.id==='string'&&!ids.has(item.id),label+'.id');ids.add(item.id)}};
   unique(d.resources.indicators,'indicators');
   for(const i of d.resources.indicators)need(i.name&&/^#[0-9a-f]{6}$/i.test(i.color)&&['oxygen','water','shield','energy','food'].includes(i.icon)&&Array.isArray(i.parts)&&i.parts.length&&i.parts.every(k=>k in q),'indicator '+i.id);
+  if (d.resources.easyLifeSupport !== undefined) {
+    const i = d.resources.easyLifeSupport;
+    need(i && i.id === 'life-support' && typeof i.name === 'string' && i.name.trim() &&
+      i.icon === 'health' && /^#[0-9a-f]{6}$/i.test(i.color) && typeof i.description === 'string' && i.description.trim() &&
+      Array.isArray(i.parts) && i.parts.length === 2 && i.parts.includes('oxygen') && i.parts.includes('water') &&
+      i.parts.every(k => k in q), 'resources.easyLifeSupport');
+  }
   const effects=(e,path)=>{need(e&&typeof e==='object'&&!Array.isArray(e),path);for(const [k,v]of Object.entries(e))need(k in q&&finite(v),path+'.'+k)};
   unique(d.flows,'flows');
   for(const f of d.flows)need(f.quantity in q&&finite(f.amount)&&['perSol','perCrewEarthDay'].includes(f.basis)&&['reference','simulated'].includes(f.kind),'flow '+f.id);
@@ -58,10 +66,12 @@ export function validateSave(s){
  need(Number.isInteger(s.index)&&s.index>=0&&s.index<=s.deck.length&&Number.isInteger(s.eventIndex)&&s.eventIndex>=0&&s.eventIndex<2);
  need(s.mission.ended||s.index<s.deck.length&&s.eventIndex<s.schedule[s.mission.sol-1]);
  need(s.savedSide===null||['left','right'].includes(s.savedSide));
+ if(s.mission.reason==='failed')need(s.mission.ended&&Object.hasOwn(s.data.resources.quantities,s.mission.failedResource)&&s.state?.[s.mission.failedResource]===0);
  need(s.mission.difficulty===undefined||['easy','hard'].includes(s.mission.difficulty));
  if(s.mission.difficulty==='easy')need(s.deck.every(c=>c.difficulty==='easy'||c.difficulty==='medium'));
  for(const [k,r] of Object.entries(s.data.resources.quantities))need(Number.isFinite(s.state?.[k])&&s.state[k]>=0&&s.state[k]<=r.max);
  need(s.flows&&Array.isArray(s.flows.ongoing)&&Array.isArray(s.flows.later));
+ need(s.flows.dailyCostResource === undefined || s.flows.dailyCostResource === null || typeof s.flows.dailyCostResource === 'string' && Object.hasOwn(s.data.resources.quantities,s.flows.dailyCostResource));
  for(const o of s.flows.ongoing)need(Number.isFinite(o.start)&&(Number.isFinite(o.end)||o.end===Infinity)&&o.end>o.start&&Object.entries(o.rates).every(([k,n])=>k in s.state&&Number.isFinite(n)));
  for(const l of s.flows.later)need(Number.isFinite(l.at)&&Object.entries(l.effects).every(([k,n])=>k in s.state&&Number.isFinite(n)));
  const ids=new Set(s.data.cards.map(c=>c.id));need(s.deck.every(c=>ids.has(c.id)));
