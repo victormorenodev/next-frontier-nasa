@@ -49,7 +49,7 @@ Mudanças animam por 1,4 s; a passagem de sol inclui luz do fundo por 600 ms, re
 
 ## Cartas, imagens e probabilidades
 
-O catálogo combina **14 cartas da Página1 e 17 da Página2**. Os IDs 5/9/11 repetidos são eventos distintos: as versões da Página1 usam `page1-5`, `page1-9` e `page1-11`. `imageId` preserva o número usado para a imagem. Há **28 arquivos de imagem para os 31 eventos**, todos disponíveis no catálogo atual.
+O catálogo combina **14 cartas da Página1 e 17 da Página2**. Os IDs 5/9/11 repetidos são eventos distintos: as versões da Página1 usam `page1-5`, `page1-9` e `page1-11`. `imageId` preserva o número usado para a imagem. Há **28 imagens distintas para os 31 eventos**, todos disponíveis no catálogo atual.
 
 | Categoria | Cartas | Probabilidade-base |
 | --- | ---: | ---: |
@@ -61,7 +61,7 @@ O catálogo combina **14 cartas da Página1 e 17 da Página2**. Os IDs 5/9/11 re
 
 Sorteia-se categoria e depois carta, com chances iguais dentro da categoria. No Easy, as cartas Hard são excluídas e os pesos restantes normalizados; os pesos-base das categorias vêm do catálogo completo. Partidas salvas mantêm seus pesos antigos.
 
-Imagens são procuradas por `imageId` (ou ID), nas extensões `.jpg`, `.png`, `.jpeg`. Se faltarem ou forem inválidas, aparece um placeholder; o carregador tenta novamente a cada 15 segundos enquanto a frente está aberta. A legenda termina com **Image source:** e link da origem, ou valor vazio. As referências do verso são independentes; sem referência, a linha Source não aparece.
+Imagens são procuradas por `imageId` (ou ID), nas extensões `.webp`, `.jpg`, `.png`, `.jpeg`, priorizando WebP e URLs estáveis para cache. Se faltarem ou forem inválidas, aparece um placeholder; o carregador tenta novamente a cada 15 segundos enquanto a frente está aberta. A legenda termina com **Image source:** e link da origem, ou valor vazio. As referências do verso são independentes; sem referência, a linha Source não aparece.
 
 Para reimportar as planilhas e recalcular os pesos:
 
@@ -109,7 +109,7 @@ git diff --check
 git status --short
 ```
 
-São **nove suítes Node**, sem dependências npm, cobrindo motor, dados, apresentação, persistência e áudio. Node é ferramenta de desenvolvimento, não requisito do jogador. Alterações visuais exigem conferência no navegador: 320×568, 375×667, 1032×1376 e 844×390, incluindo toque, teclado e movimento reduzido. A duração histórica de 15–20 minutos não foi validada com crianças.
+São **dez suítes Node**, sem dependências npm, cobrindo motor, dados, apresentação, persistência e áudio. Node é ferramenta de desenvolvimento, não requisito do jogador. Alterações visuais exigem conferência no navegador: 320×568, 375×667, 1032×1376 e 844×390, incluindo toque, teclado e movimento reduzido. A duração histórica de 15–20 minutos não foi validada com crianças.
 
 ## Publicar e consultar documentos
 

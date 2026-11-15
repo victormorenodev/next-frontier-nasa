@@ -22,7 +22,7 @@ Revisada contra o código e os JSONs em **15/11/2026**. Orientações em [AGENTS
 | `assets/style.css`, `assets/images/` | Layout/animações e fundos ilustrados do menu/jogo |
 | `images/` | Briefing, eventos, placeholder e finais |
 | `scripts/import_event_cards.py` | Importação editorial das duas planilhas |
-| `tests/`, `package.json` | Nove suítes Node, sem dependências npm |
+| `tests/`, `package.json` | Dez suítes Node, sem dependências npm |
 | `.github/workflows/pages.yml` | Teste e publicação do pacote estático |
 
 O bootstrap lê **sete JSONs** em paralelo: categories, mission, resources, flows, cards, interface e glossary. Expõe CurrentGameData, tenta restaurar/migrar um save e define GameData como o snapshot salvo ou os dados atuais. Copy prioriza os textos da interface atual e interpola os parâmetros da missão. Falha de carregamento/validação mostra Try again; save inválido permite começar outra missão.
@@ -61,9 +61,9 @@ A Página2 usa pares resposta 1 // resposta 2 com unidades; a Página1 aceita ba
 
 ## Imagens e apresentação das cartas
 
-CardImages procura `images/cards/{imageId ?? id}.jpg`, `.png`, `.jpeg` quando imageById é true; cartas antigas sem isso usam image. Há 28 arquivos distintos válidos para os 31 eventos. Sem imagem decodificável, mostra placeholder.svg e legenda/alt Image not available yet.; tenta novamente em 15 s enquanto a frente estiver aberta. Cada tentativa usa URL nova para evitar cache negativo. Durante cada tentativa, o painel da imagem exibe “Loading image…” com indicador animado (estático com movimento reduzido) e aria-busy. Sucesso aguarda a decodificação; falha encerra o indicador e mantém o placeholder até a próxima tentativa. Cancelamento ao trocar carta/face impede resposta assíncrona trocando a imagem seguinte.
+CardImages procura `images/cards/{imageId ?? id}.webp`, `.jpg`, `.png`, `.jpeg` quando imageById é true; cartas antigas sem isso usam image. Há 28 imagens distintas válidas para os 31 eventos. Sem imagem decodificável, mostra placeholder.svg e legenda/alt Image not available yet.; tenta novamente em 15 s enquanto a frente estiver aberta. A primeira tentativa usa URL estável para reutilizar o cache; somente novas tentativas após falha recebem URL nova para evitar cache negativo. Durante cada tentativa, o painel da imagem exibe “Loading image…” com indicador animado (estático com movimento reduzido) e aria-busy. Sucesso aguarda a decodificação; falha encerra o indicador e mantém o placeholder até a próxima tentativa. Cancelamento ao trocar carta/face impede resposta assíncrona trocando a imagem seguinte.
 
-A legenda descreve o arquivo e sempre termina com Image source:; quando informado, exibe link com domínio e abertura em nova aba. Sem origem, mantém o rótulo vazio. Para saves de mesmo ID/caminho, legenda/alt atuais têm prioridade; link de imagem vem separado de Source. A correspondência exata entre alguns arquivos e páginas informadas não foi certificada.
+A legenda descreve o arquivo e sempre termina com Image source:; quando informado, exibe link com domínio e abertura em nova aba. Sem origem, mantém o rótulo vazio. Para saves de mesmo ID/caminho (ou mesmo imageId para imagens por ID), legenda/alt atuais têm prioridade; link de imagem vem separado de Source. A correspondência exata entre alguns arquivos e páginas informadas não foi certificada.
 
 Frente contém imagem, legenda, problema e botões; sem dificuldade/contador de eventos na HUD. Verso contém escolha, descrição opcional, efeitos imediatos, fonte opcional e avanço. Campos de texto usam nós de texto/textContent, sem executar HTML do conteúdo. SVGs vêm do código.
 
@@ -71,7 +71,7 @@ Arrasto real começa após 8 px, acompanha o deslocamento e inclina a carta. Ao 
 
 O painel inferior de efeitos foi removido. O tablet de relatório ainda existe (com paginação e efeitos legados), mas seu botão está oculto. Mãos removidas. A página não rola; usar safe areas, altura dinâmica e overflow interno para textos extensos.
 
-As imagens raster publicadas em `images/` e `assets/images/` têm limite de 1280×720 px em paisagem e 720×1280 px em retrato, preservando proporções e formatos, sem ampliar arquivos menores. JPEGs redimensionados usam qualidade 82; PNGs preservam compressão sem perdas após o redimensionamento. Originais de pesquisa em `docs/previews/` não são publicados. A hospedagem atual é Cloudflare Pages; o workflow GitHub Pages permanece como alternativa.
+As imagens exibidas usam WebP com qualidade 82, sem metadados e sem ampliar originais menores. Cartas têm limite de 960×960 px, preservando proporção; briefing e finais têm limite de 1280×1280 px. Gerar com `python scripts/optimize_images.py` (ImageMagick). JPG/PNG/JPEG originais ficam preservados como fallback; pesquisas em `docs/previews/` não são publicadas. A hospedagem atual é Cloudflare Pages; o workflow GitHub Pages permanece como alternativa.
 
 ## Estado, tempo e falhas
 
@@ -165,6 +165,6 @@ git diff --check
 git status --short
 ```
 
-Nove suítes Node: mission, indicators, flows, deck, data, engine, display, persistence e audio. Testes visuais não integram npm test; conferir navegador em 320×568, 375×667, 1032×1376 e 844×390, com toque/teclado/movimento reduzido. Testes e pesquisa não validam dimensionamento real da base nem a duração de 15–20 minutos com usuários.
+Dez suítes Node: mission, indicators, flows, deck, data, engine, display, persistence e audio. Testes visuais não integram npm test; conferir navegador em 320×568, 375×667, 1032×1376 e 844×390, com toque/teclado/movimento reduzido. Testes e pesquisa não validam dimensionamento real da base nem a duração de 15–20 minutos com usuários.
 
 Publish game testa e empacota index.html, src/, data/, assets/, images/ e sfx/ para GitHub Pages, por push na main ou execução manual. Documentos/testes/prints não entram no pacote. Hospedagem estática HTTP alternativa é compatível. Consultar o resultado do deploy em vez de presumir disponibilidade.

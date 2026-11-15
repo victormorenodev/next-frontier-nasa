@@ -183,7 +183,7 @@
       card3d.classList.add('deal');
 
       cancelImage();
-      const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&c.image===card.image);
+      const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&(c.image===card.image||(c.imageById&&card.imageById&&(c.imageId??c.id)===(card.imageId??card.id))));
       const renderCaption = (available, loading = false) => {
         imageLoading.hidden = !loading;
         imagePanel.setAttribute('aria-busy', String(loading));

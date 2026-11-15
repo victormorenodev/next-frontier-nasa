@@ -2,18 +2,20 @@
 globalThis.CardImages = {
  placeholder: 'images/cards/placeholder.svg',
  candidates(card) {
-  return card.imageById ? ['jpg','png','jpeg'].map(ext => `images/cards/${encodeURIComponent(card.imageId ?? card.id)}.${ext}`) : [card.image];
+  return card.imageById ? ['webp','jpg','png','jpeg'].map(ext => `images/cards/${encodeURIComponent(card.imageId ?? card.id)}.${ext}`) : [card.image];
  },
  show(image,card,onStatus) {
-  let cancelled=false,timer,settle;
+  let cancelled=false,timer,settle,retry=0;
   image.loadingReady=new Promise(resolve=>{settle=resolve;});
   image.src=this.placeholder;image.alt='Image not available yet.';
   const attempt=async()=>{
    onStatus(false,true);
    for(const path of this.candidates(card)){
     if(cancelled)return;
-    // A fresh URL avoids cached 404s when an image is added later.
-    const url=new URL(path,document.baseURI);url.searchParams.set('card-image',Date.now());
+    // Stable URLs let successful loads reuse the browser cache. Only retry
+    // missing/broken images with a fresh URL to avoid cached failures.
+    const url=new URL(path,document.baseURI);
+    if(retry)url.searchParams.set('card-image-retry',retry);
     const probe=new Image();
     const loaded=await new Promise(resolve=>{probe.onload=()=>resolve(true);probe.onerror=()=>resolve(false);probe.src=url.href;});
     if(cancelled)return;
@@ -26,7 +28,7 @@ globalThis.CardImages = {
    }
    onStatus(false,false);
    settle();
-   timer=setTimeout(attempt,15000);
+   timer=setTimeout(()=>{retry=Date.now();attempt();},15000);
   };
   attempt();
   return ()=>{cancelled=true;settle();clearTimeout(timer);};
