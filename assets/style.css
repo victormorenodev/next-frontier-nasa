@@ -1075,3 +1075,17 @@ main {
   .difficulty-option small { font-size: 12px; }
   .difficulty-back { margin-top: 8px; }
 }
+
+/* Hard mission effects: three permanent slots, with details above the panel. */
+.effect-panel { position: relative; flex-shrink: 0; align-self: center; margin-top: 10px; padding: 8px 12px; border: 1px solid #8694ad; border-radius: 16px; background: #222b3df5; box-shadow: 0 4px 16px #0005; z-index: 5; }
+.effect-slots { display: flex; gap: 10px; }
+.effect-slot { width: 48px; height: 48px; border: 1px solid #78869b; border-radius: 8px; background: #131c2e; }
+.effect-icon { display: flex; flex-wrap: wrap; align-content: center; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%; padding: 5px; border: 0; border-radius: 7px; background: #354b60; color: #d3f4ed; cursor: pointer; }
+.effect-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.effect-icon:focus-visible { outline: 3px solid #b9efdf; outline-offset: 2px; }
+.effect-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: min(300px, calc(100vw - 56px)); max-height: 45dvh; overflow-y: auto; padding: 14px; border: 1px solid #93b6c1; border-radius: 12px; background: #182c35; color: #edf6f5; box-shadow: 0 6px 24px #0008; font-size: 14px; line-height: 1.4; }
+.effect-tooltip strong { display: block; margin-bottom: 8px; }
+.effect-tooltip p { margin: 5px 0 0; }
+.effect-panel:not(.dismissed) .effect-slot:focus-within .effect-tooltip, .effect-panel:not(.dismissed) .effect-slot.is-open .effect-tooltip { display: block; }
+@media (hover: hover) { .effect-panel:not(.dismissed) .effect-slot:hover .effect-tooltip { display: block; } }
+@media (max-height: 699px) and (orientation: landscape) { .effect-panel { grid-column: 1; grid-row: 4; margin: 0; justify-self: center; } }

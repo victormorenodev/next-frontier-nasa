@@ -79,5 +79,10 @@
   "difficultyHardHint": "Real units. All cards can appear.",
   "difficultyBack": "← Back",
   "resourceLoseEasy": "After 1 sol, this number will go down by {amount}.",
-  "resourceGainEasy": "After 1 sol, this number will go up by {amount}."
+  "resourceGainEasy": "After 1 sol, this number will go up by {amount}.",
+  "effectEmpty": "Empty effect slot",
+  "effectFallback": "Mission effect",
+  "effectRate": "{resource}: {amount} {unit} per sol.",
+  "effectOnce": "{resource}: {amount} {unit} once. No change per sol.",
+  "effectStarts": "Starts in {sols}."
 }

@@ -57,3 +57,7 @@ git status --short
 Node é ferramenta de desenvolvimento/teste, não requisito do jogador. Para alterações visuais, verificar também no navegador. Referências de tamanho: 320×568, 375×667, 1032×1376 e 844×390; ampliar conforme o caso. Testes históricos não substituem validação de novas alterações.
 
 O workflow **Publish game** está em `.github/workflows/pages.yml`: testa e publica o conteúdo estático ao receber push na main ou execução manual. O projeto também pode ser hospedado estaticamente na Cloudflare. Não presumir sucesso de publicação, autenticação ou sincronização de branches; consultar o estado real quando necessário. Não incluir prints/logs de diagnóstico em commits do jogo sem necessidade.
+
+## Painel de efeitos no Hard
+
+O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito retira o ícone mais antigo e desloca os demais para a esquerda. Ícones retirados não voltam quando outro efeito termina; os efeitos continuam na simulação até seu término. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.

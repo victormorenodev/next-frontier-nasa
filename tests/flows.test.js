@@ -68,4 +68,19 @@ assert.deepEqual(F.active(flows, 0).map(a => [a.note, a.thirdsLeft]), [['Dusty p
 assert.deepEqual(F.active(flows, 4).map(a => a.thirdsLeft), [5, Infinity]);
 assert.deepEqual(F.active(flows, 9).map(a => a.note), ['New plants', 'Forever']);   // dust over, plants started
 
+// Display FIFO spans ongoing and scheduled effects without cancelling simulation.
+let queue = F.createFlows();
+queue = F.addAnswer(queue, {ongoing: [{rates: {water: -1}, note: 'First', for: 10}]}, 0);
+queue = F.addAnswer(queue, {later: [{effects: {food: 2}, note: 'Second', after: 5}]}, 0);
+queue = F.addAnswer(queue, {ongoing: [{rates: {oxygen: -1}, note: 'Third', for: 1}]}, 0);
+queue = F.addAnswer(queue, {ongoing: [{rates: {energy: -1}, note: 'Fourth', for: 2}]}, 0);
+const visibleQueue = f => [...f.ongoing, ...f.later].filter(o => !o.panelHidden)
+  .sort((a, b) => a.panelOrder - b.panelOrder).map(o => o.note);
+assert.deepEqual(visibleQueue(queue), ['Second', 'Third', 'Fourth']);
+assert.equal(queue.ongoing.find(o => o.note === 'First').panelHidden, true);
+close(F.ratesPerSol(queue, 0).water, base.water - 1);
+const expiredQueue = F.passTime(s0, queue, 0, 3).flows;
+assert.deepEqual(visibleQueue(expiredQueue), ['Second', 'Fourth']);
+assert.deepEqual(visibleQueue(JSON.parse(JSON.stringify(expiredQueue))), ['Second', 'Fourth']);
+
 console.log('flows: ok');

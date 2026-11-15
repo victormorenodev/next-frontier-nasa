@@ -37,7 +37,20 @@
       end: o.for == null ? Infinity : now + ((o.after || 0) + o.for) * THIRDS
     }));
     const later = (answer.later || []).map(l => ({effects: l.effects, note: l.note || '', at: now + l.after * THIRDS}));
-    return {ongoing: [...flows.ongoing, ...ongoing], later: [...flows.later, ...later]};
+    // Keep a persistent display queue across both kinds of effect. Evicted icons
+    // stay hidden even if newer effects expire; simulation still applies all flows.
+    const previous = [...flows.ongoing, ...flows.later];
+    let order = Math.max(0, ...previous.map(o => o.panelOrder || 0));
+    [...ongoing, ...later].forEach(o => { o.panelOrder = ++order; });
+    const next = {ongoing: [...flows.ongoing, ...ongoing], later: [...flows.later, ...later]};
+    const visible = [...next.ongoing, ...next.later]
+      .filter(o => !o.panelHidden)
+      .sort((a, b) => (a.panelOrder || 0) - (b.panelOrder || 0));
+    const evicted = new Set(visible.slice(0, Math.max(0, visible.length - 3)));
+    return {
+      ongoing: next.ongoing.map(o => evicted.has(o) ? {...o, panelHidden: true} : o),
+      later: next.later.map(o => evicted.has(o) ? {...o, panelHidden: true} : o)
+    };
   }
 
   // Change of each quantity during one third `t` (the third that starts at time t).

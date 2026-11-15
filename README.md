@@ -96,3 +96,7 @@ Manter essa estrutura e verificar o resultado do deploy. O estado atual de dispo
 - [CLAUDE.md](CLAUDE.md): ponto de entrada para a mesma documentação, sem regras duplicadas.
 - [docs/RESEARCH.md](docs/RESEARCH.md): pesquisa, fontes e cuidados científicos.
 - [Histórico de implementação](docs/history/ARCHITECTURE.md) e [contexto anterior](docs/history/PROJECT_CONTEXT.md): versões arquivadas, não instruções atuais.
+
+## Painel de efeitos no Hard
+
+O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito retira o ícone mais antigo e desloca os demais para a esquerda. Ícones retirados não voltam quando outro efeito termina; os efeitos continuam na simulação até seu término. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
