@@ -143,6 +143,8 @@ def convert_page1(source):
    image=f'images/cards/{card_id}.jpg',imageById=True,imageCaption=caption,imageAlt=caption,imageSource=row['Imagem da carta'].strip(),
    sourceReferenceText=row['Referência'].strip())
   ref=reference(row['Referência'])
+  if card_id=='8' and ref:
+   ref['references']=ref.get('references',[{key:ref[key] for key in ('institution','url')}])[:1]
   if ref:card['source']=ref
   pairs={key:page1_pair(row[column],card_id,key,unit) for key,(column,unit) in PAGE1_COLUMNS.items()}
   for index,(side,label) in enumerate([('left',left),('right',right)]):

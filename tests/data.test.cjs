@@ -15,7 +15,7 @@ assert.equal(data.cards.find(c=>c.id==='1').left.effects.oxygen,3.85);
 assert.equal(data.cards.find(c=>c.id==='3').left.effects.water,12.4);
 assert.equal(data.cards.find(c=>c.id==='7').right.effects.food,1.5);
 assert.equal(data.cards.find(c=>c.id==='25').left.effects.shield,-16.5);
-assert.equal(data.cards.find(c=>c.id==='8').source.references.length,2);
+assert.deepEqual(data.cards.find(c=>c.id==='8').source.references,[{institution:'NASA',url:'https://ntrs.nasa.gov/citations/20220002905'}]);
 assert.ok(!data.cards.find(c=>c.id==='page1-11').source.url.includes('google.com'));
 const missingSources=structuredClone(data);delete missingSources.cards[0].source;missingSources.cards[0].imageSource='';validateData(missingSources);
 
