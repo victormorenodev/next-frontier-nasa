@@ -25,7 +25,7 @@ Start New Mission abre o briefing com imagem NASA e crédito. Botão, arrasto ou
 | Operation Steins | Easy | Ages 7–10 | 75% da capacidade | 27 (easy/medium) |
 | Operation Gate | Hard | Ages 11+ | 50% da capacidade | 31 (easy/medium/hard) |
 
-Cada sol tem uma carta (80%) ou duas (20%). Responda por botão, arrasto ou setas; o verso mostra a escolha, explicação opcional, efeitos imediatos e **Source:** quando há referência. Efeitos diários são aplicados uma vez, após a última carta do sol. Repetições são permitidas, inclusive no mesmo sol. Completar 25 sols no Easy ou 30 no Hard vence; qualquer recurso interno em zero causa **Mission Failed**, com prioridade sobre a vitória.
+Cada sol tem uma carta (80%) ou duas (20%). Responda por botão, arrasto ou setas; o verso mostra a escolha, explicação opcional, efeitos imediatos e **Source:** quando há referência. Efeitos diários são aplicados uma vez, após a última carta do sol. Cartas podem reaparecer, mas nunca imediatamente após o mesmo ID, inclusive entre sols. Completar 25 sols no Easy ou 30 no Hard vence; qualquer recurso interno em zero causa **Mission Failed**, com prioridade sobre a vitória.
 
 ## Recursos e consumo
 

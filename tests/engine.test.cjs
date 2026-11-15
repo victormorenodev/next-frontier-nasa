@@ -11,6 +11,7 @@ for(const [mode,fraction] of [['easy',.75],['hard',.5]]){
  assert.equal(started.mission.totalSols,duration);
  assert.equal(started.schedule.length,duration);
  assert.equal(started.deck.length,duration);
+ assert.ok(started.deck.every((card,index)=>index===0||card.id!==started.deck[index-1].id));
  for(const [key,q] of Object.entries(data.resources.quantities))assert.equal(started.state[key],q.max*fraction,mode+' '+key);
  const saved=JSON.parse(JSON.stringify({version:1,data,...started}));
  saved.state.food-=.125;

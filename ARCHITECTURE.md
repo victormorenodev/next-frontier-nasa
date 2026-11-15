@@ -51,7 +51,7 @@ O briefing/seletor não substitui o save; escolher modo substitui sem confirmaç
 | Science | 5 | 5/31 |
 | Emergency | 7 | 7/31 |
 
-O importador atualiza cards.json e categories.json: peso da categoria = contagem/total; peso da carta = 1/contagem da categoria. Não arredondar os pesos. Categorias somam 1 e cartas somam 1 por categoria, tolerância 1e-9. Sorteios independentes categoria → carta, com reposição e repetições permitidas.
+O importador atualiza cards.json e categories.json: peso da categoria = contagem/total; peso da carta = 1/contagem da categoria. Não arredondar os pesos. Categorias somam 1 e cartas somam 1 por categoria, tolerância 1e-9. Sorteios categoria → carta, com reposição, excluindo o ID anterior a cada sorteio. Os pesos conjuntos restantes são normalizados, inclusive quando uma categoria fica temporariamente sem opções. A regra vale dentro do mesmo sol e entre sols; saves existentes preservam a sequência já sorteada. Menos de dois eventos elegíveis impede gerar uma sequência com mais de uma carta.
 
 Easy permite easy/medium (27 cartas); Hard, os três níveis (31). Deck valida o catálogo original, filtra cartas, remove categorias vazias e normaliza os pesos existentes. Os pesos-base das categorias não são recalculados pela contagem filtrada: no Easy, os eventos elegíveis de cada categoria continuam iguais entre si, mas não têm necessariamente a mesma chance global de cartas de outra categoria. Conjunto sem opções elegíveis gera erro.
 
