@@ -3,6 +3,9 @@
  'use strict';
  const entries=CurrentGameData.glossary;
  const escape=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+ // Resource explanations are available through the HUD indicators instead.
+ // Keep these entries in the menu glossary, without annotating card text.
+ const indicatorEntries=new Set(['life-support','oxygen','radiation-shield']);
  const aliases=entries.flatMap(entry=>entry.aliases.map(alias=>({alias,entry}))).sort((a,b)=>b.alias.length-a.alias.length);
  const pattern=new RegExp('(?<![\\p{L}\\p{N}])('+aliases.map(a=>escape(a.alias)).join('|')+')(?![\\p{L}\\p{N}])','giu');
  const byAlias=new Map(aliases.map(a=>[a.alias.toLowerCase(),a.entry]));
@@ -30,6 +33,8 @@
    const value=text.textContent;pattern.lastIndex=0;const matches=[...value.matchAll(pattern)];if(!matches.length)continue;
    const fragment=document.createDocumentFragment();let offset=0;
    for(const match of matches){
+    // Match the full phrase first so "radiation shield" cannot annotate only "radiation".
+    if(indicatorEntries.has(byAlias.get(match[0].toLowerCase()).id))continue;
     fragment.append(value.slice(offset,match.index));const term=document.createElement('span');term.className='glossary-term';term.dataset.glossary=byAlias.get(match[0].toLowerCase()).id;term.textContent=match[0];term.tabIndex=0;
     // Keep inline text semantics, including inside answer buttons; key handlers provide access.
     term.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')open(term)});

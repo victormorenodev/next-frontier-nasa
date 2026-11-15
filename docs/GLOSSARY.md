@@ -63,3 +63,5 @@ A tabela inventaria correspondências textuais; a marcação na interface privil
 | Water recycling | 22, 3, 12, 13 |
 
 Os botões de escolha são excluídos da marcação do glossário para que tocar neles sempre escolha a resposta. O texto da alternativa pode continuar sendo explicado no verso.
+
+Os recursos/indicadores Life Support, Oxygen e Radiation Shield (e seus aliases) ficam sem marcação ou popover nas cartas, pois os detalhes dos indicadores já os explicam. As 41 entradas continuam disponíveis no menu; outros conceitos, como oxygen generator, radiation e water recycling, mantêm suas explicações nas cartas.
