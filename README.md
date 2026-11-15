@@ -78,7 +78,7 @@ Novas missões têm tutorial sobre os indicadores e a carta: cinco etapas no Eas
 
 O glossário tem **41 termos**, em ordem alfabética, no menu e nos textos das cartas, com cor e sublinhado pontilhado. Hover, toque ou foco mostram explicações curtas; **botões de escolha não recebem glossário**. [Auditoria e fontes](docs/GLOSSARY.md).
 
-Música e som ambiente ficam em loop após uma interação permitida pelo navegador. O botão de som no menu e no jogo controla todos os sons e guarda a preferência. Há efeitos para indicadores/botões, avanço do sol e início da inclinação da carta (uma vez por arrasto, mesmo sem confirmar). Interrupções são recuperadas nas próximas interações ou no retorno à aba, respeitando o som desligado.
+Música e som ambiente ficam em loop após uma interação permitida pelo navegador. O botão de som no menu e no jogo controla todos os sons e guarda a preferência. Há efeitos para indicadores/botões, avanço do sol e movimento da carta (ao começar a inclinar e a cada virada ou retomada do arrasto, mesmo sem confirmar). Os sons usam a Web Audio API: tocam sem atraso e a música emenda o loop sem pausa. Interrupções são recuperadas nas próximas interações ou no retorno à aba, respeitando o som desligado.
 
 ## Progresso salvo
 
