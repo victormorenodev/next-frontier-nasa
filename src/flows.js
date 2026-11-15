@@ -20,10 +20,17 @@
 
   // Base flows. `kind`: 'reference' = from a published source (see docs/RESEARCH.md, studies and proposed applications),
   // 'simulated' = invented for the prototype. Daily budgets are split over three internal steps.
-  const BASE_FLOWS = GameData.flows.map(f => ({...f, perSol: f.amount * (f.basis === 'perCrewEarthDay' ? CREW * SOL_HOURS / 24 : 1)}));
+  const BASE_FLOWS = GameData.flows.map(f => ({...f, perSol: f.amount * (f.amount < 0 ? (GameData.mission.dailyCostMultiplier ?? 1) : 1) * (f.basis === 'perCrewEarthDay' ? CREW * SOL_HOURS / 24 : 1)}));
 
-  function createFlows() {
-    return {ongoing: [], later: []};
+  function createFlows(dailyCostResource) {
+    return {ongoing: [], later: [], ...(dailyCostResource === undefined ? {} : {dailyCostResource})};
+  }
+
+  function baseRate(flow, flows) {
+    // Missing selection identifies old saves, which retain their original global multiplier.
+    if (!Object.hasOwn(flows, 'dailyCostResource')) return flow.perSol;
+    const base = flow.amount * (flow.basis === 'perCrewEarthDay' ? CREW * SOL_HOURS / 24 : 1);
+    return base * (flow.amount < 0 && flows.dailyCostResource === flow.quantity ? (GameData.mission.dailyCostMultiplier ?? 1) : 1);
   }
 
   // Records the lasting parts of an answer. `now` = mission time in thirds.
@@ -48,6 +55,7 @@
       .sort((a, b) => (a.panelOrder || 0) - (b.panelOrder || 0));
     const evicted = new Set(visible.slice(0, Math.max(0, visible.length - 3)));
     return {
+      ...flows,
       ongoing: next.ongoing.map(o => evicted.has(o) ? {...o, panelHidden: true} : o),
       later: next.later.map(o => evicted.has(o) ? {...o, panelHidden: true} : o)
     };
@@ -58,7 +66,7 @@
     const out = {};
     const add = (q, n) => { out[q] = (out[q] || 0) + n; };
     BASE_FLOWS.forEach(f => {
-      add(f.quantity, f.perSol / THIRDS);
+      add(f.quantity, baseRate(f, flows) / THIRDS);
     });
     flows.ongoing.forEach(o => {
       if (t >= o.start && t < o.end) Object.entries(o.rates).forEach(([q, n]) => add(q, n / THIRDS));
@@ -71,7 +79,7 @@
   function ratesPerSol(flows, now) {
     const out = {};
     Object.keys(Indicators.QUANTITIES).forEach(q => { out[q] = 0; });
-    BASE_FLOWS.forEach(f => { out[f.quantity] += f.perSol; });
+    BASE_FLOWS.forEach(f => { out[f.quantity] += baseRate(f, flows); });
     flows.ongoing.forEach(o => {
       if (now >= o.start && now < o.end) Object.entries(o.rates).forEach(([q, n]) => { out[q] += n; });
     });
@@ -88,17 +96,26 @@
 
   // Lets `thirds` pass from mission time `from`. Returns the new quantities and flows,
   // plus `happened`: the "later" events that fired. Finished changes are dropped.
-  function passTime(state, flows, from, thirds) {
-    let s = state, later = flows.later;
+  function passTime(state, flows, from, thirds, {stopOnEmpty = false} = {}) {
+    let s = state, later = flows.later, end = from;
     const happened = [];
+    let failedResource = null;
     for (let t = from; t < from + thirds; t++) {
       s = Indicators.apply(s, ratesForThird(flows, t));
+      end = t + 1;
+      failedResource = stopOnEmpty ? Indicators.depleted(s) : null;
+      if (failedResource) break;
       const due = later.filter(l => l.at <= t + 1);
-      due.forEach(l => { s = Indicators.apply(s, l.effects); happened.push(l); });
-      later = later.filter(l => l.at > t + 1);
+      for (const l of due) {
+        s = Indicators.apply(s, l.effects); happened.push(l);
+        later = later.filter(item => item !== l);
+        failedResource = stopOnEmpty ? Indicators.depleted(s) : null;
+        if (failedResource) break;
+      }
+      if (failedResource) break;
     }
-    const end = from + thirds;
-    return {state: s, flows: {ongoing: flows.ongoing.filter(o => o.end > end), later}, happened};
+    return {state: s, flows: {...flows, ongoing: flows.ongoing.filter(o => o.end > end), later},
+      happened, failedResource, thirdsPassed: end - from};
   }
 
   const api = {THIRDS, CREW, SOL_HOURS, BASE_FLOWS, createFlows, addAnswer, ratesForThird, ratesPerSol, active, passTime};

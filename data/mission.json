@@ -23,5 +23,6 @@
       ],
       "display": "physical"
     }
-  }
+  },
+  "dailyCostMultiplier": 3
 }

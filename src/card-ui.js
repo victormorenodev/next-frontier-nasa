@@ -129,7 +129,7 @@
       drag = null;
       card3d.style.transform = '';
       card3d.classList.remove('dragging');
-      slot.classList.remove('ended', 'quiet-sol');
+      slot.classList.remove('ended', 'quiet-sol', 'illustrated-ending');
       image.hidden = false;
       slot.classList.add('has-card');
       if (!card3d.isConnected) slot.replaceChildren(card3d);
@@ -163,12 +163,15 @@
       const q = Indicators.QUANTITIES[key];
       const li = el('li', `${cls || ''} ${amount < 0 ? 'down' : 'up'}`.trim());
       li.style.setProperty('--c', COLOR_OF[key]);
-      const indicator=Indicators.INDICATORS.find(ind=>ind.parts.includes(key));
+      const indicator=ResourceDisplay.indicators().find(ind=>ind.parts.includes(key));
+      const isLife = indicator?.id === 'life-support';
       const name = el('span', 'name');
       const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
       icon.classList.add('effect-resource-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
       icon.innerHTML=ResourceIcons[indicator?.icon || key] || '';
-      name.append(icon,el('span','effect-resource-name',q.name));
+      if (isLife) li.style.setProperty('--c', 'var(--life-support)');
+      name.append(icon,el('span','effect-resource-name',isLife ? indicator.name : q.name));
+      if (isLife) hint = [Copy(key === 'water' ? 'lifeWaterEffect' : 'lifeOxygenEffect'), hint].filter(Boolean).join(' · ');
       if (hint) name.append(el('small', null, hint));
       const display=ResourceDisplay.effect(key,amount,before);
       li.append(name, el('b', 'amount', `${display.value === 0 ? '' : display.value < 0 ? '−' : '+'}${fmt(Math.abs(display.value))}${display.unit ? ' ' + display.unit : ''}${unitSuffix}`));
@@ -221,14 +224,30 @@
       nextBtn.focus({preventScroll: true});
     }
 
-    function showMessage(title, body, buttonLabel, onClick) {
+    function showMessage(title, body, buttonLabel, onClick, ending = 'quit', imagePath = null) {
       phase = 'message';
       slot.classList.remove('has-card');
       slot.classList.add('ended');
       const h = el('h2', null, title), p = el('p', null, body), b = el('button', 'new-mission', buttonLabel);
       b.type = 'button';
       b.addEventListener('click', onClick);
-      slot.replaceChildren(h, p, b);
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.classList.add('ending-icon'); icon.setAttribute('viewBox', '0 0 24 24');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = EndingIcons[ending] || EndingIcons.quit;
+      slot.dataset.ending = ending;
+      slot.classList.toggle('illustrated-ending', Boolean(imagePath));
+      if (imagePath) {
+        const art = el('img', 'ending-art'); art.alt = '';
+        art.addEventListener('error', () => {
+          slot.classList.remove('illustrated-ending');
+          h.classList.remove('ending-accessible-copy'); p.classList.remove('ending-accessible-copy');
+          art.replaceWith(icon);
+        }, {once:true});
+        h.classList.add('ending-accessible-copy'); p.classList.add('ending-accessible-copy');
+        art.src = imagePath;
+        slot.replaceChildren(art, h, p, b);
+      } else slot.replaceChildren(icon, h, p, b);
       b.focus();
     }
 

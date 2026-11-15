@@ -6,13 +6,13 @@ Consolidado em **15/11/2026** a partir do código e dos JSONs atuais. Leia este 
 
 - Jogo de decisões por cartas inspirado em Reigns: administrar uma base marciana com **quatro astronautas**. O projeto surgiu a partir do desafio Junior Astronaut Mission Trainer do NASA Space Apps; não afirmar endosso, premiação ou submissão oficial sem evidência.
 - Todo texto visível ao jogador é **em inglês simples**. Documentação interna pode ser em português. Priorizar crianças: ícones claros, frases curtas, contraste e controles de toque/teclado acessíveis.
-- A missão termina ao concluir **40 sols**. Cada sol tem **1 carta (80%)** ou **2 cartas (20%)**; não há sols sem eventos. A meta histórica de 15–20 minutos ainda não foi validada com usuários.
+- A missão termina ao concluir **40 sols** ou quando qualquer recurso físico zera. Cada sol tem **1 carta (80%)** ou **2 cartas (20%)**; não há sols sem eventos. A meta histórica de 15–20 minutos ainda não foi validada com usuários.
 - Sortear primeiro categoria, depois carta da categoria, com reposição. Repetições consecutivas são permitidas, inclusive no mesmo sol. Categorias-base: Routine 35%, Maintenance 25%, Exploration 20%, Science 15%, Emergency 5%.
 - Após o briefing, escolher **Easy** (cientistas de 7–10 anos) ou **Hard** (astronautas de 11+). Easy sorteia somente cartas easy/medium; Hard permite os três níveis. Após filtrar, normalizar probabilidades e excluir categorias sem cartas elegíveis.
 - A simulação usa unidades físicas em ambos os modos. Easy exibe inteiros normalizados de **0 a 100, sem símbolo %** e sem unidade. Não arredondar o estado interno. Previsões e variações reais usam a diferença dos valores arredondados antes/depois; frações continuam acumulando. Hard exibe unidades físicas.
 - Cinco recursos: Oxygen Level (kg), Water Stock (L), Radiation Shield (g/cm²), Energy Supply (kWh) e Food Stock (kg de alimento seco). Quantidades iniciais, capacidades, explicações e cores vêm dos JSONs.
 - As cartas não possuem duração individual. Escolhas aplicam efeitos imediatos e registram efeitos contínuos/agendados; consumo e produção de um sol são aplicados uma única vez após sua última carta. Terços de sol são apenas passos internos de integração, sem manhã/tarde/noite jogáveis.
-- Existem dez cartas mock, com efeitos simulados. Ainda não há derrota automática por recurso zerado nem cartas cientificamente dimensionadas para uma base real.
+- Existem dez cartas mock, com efeitos simulados. Recursos zerados causam derrota automática; as cartas ainda não são cientificamente dimensionadas para uma base real.
 
 ## Interface e comportamento atuais
 
@@ -61,3 +61,34 @@ O workflow **Publish game** está em `.github/workflows/pages.yml`: testa e publ
 ## Painel de efeitos no Hard
 
 O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito retira o ícone mais antigo e desloca os demais para a esquerda. Ícones retirados não voltam quando outro efeito termina; os efeitos continuam na simulação até seu término. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
+
+## Life Support no Easy
+
+- Easy tem quatro indicadores: Life Support (cruz de saúde), Radiation Shield, Energy Supply e Food Stock. Hard mantém os cinco indicadores separados.
+- Life Support é somente visual: `round(100 × min(oxygen / oxygen.max, water / water.max))`. Manter estoques físicos independentes; não somar água e oxigênio. Previsões, animações e contornos comparam o índice arredondado antes/depois, inclusive quando troca o recurso limitante.
+- O detalhe descreve oxigênio e água e mostra o número combinado de Life Support e sua variação prevista após um sol, sem números separados de estoque; no verso, Life Support mantém a identificação “Changes water”/“Changes oxygen” e a variação do componente. Essa variação não é o delta combinado da HUD.
+- Configuração visual em `resources.easyLifeSupport`; usar a apresentação atual também para saves antigos. Não migrar nem arredondar estado físico.
+- Regras detalhadas em [ARCHITECTURE.md](ARCHITECTURE.md#life-support-no-easy); limites científicos em [docs/RESEARCH.md](docs/RESEARCH.md#simplificação-visual-life-support-no-easy). O índice não mede autonomia ou sobrevivência nem representa todos os sistemas de suporte à vida.
+
+## Finais e consumo temporário para teste
+
+- Recurso físico em zero encerra com “Mission Failed”. Easy tem quatro finais de falha: Life Support (água ou oxigênio), blindagem, energia e comida. Hard tem cinco: oxigênio, água, blindagem, energia e comida. Os textos ficam em `data/interface.json` (`failedTitle`, `failedBody-*`).
+- Verificar após efeitos imediatos e em cada passo interno dos fluxos diários/agendados; interromper ao zerar, sem permitir resgate posterior. Falha tem prioridade sobre sucesso no sol 40. O zero arredondado do Easy não causa derrota se o estoque físico ainda for positivo. Empate usa a ordem dos recursos em `resources.quantities` (atualmente oxygen, water, shield, energy, food).
+- `mission.dailyCostMultiplier` está temporariamente em **3**: triplica somente consumos-base negativos do recurso escolhido na nova missão, mantendo coeficientes originais e produção. Efeitos de cartas não são multiplicados. Voltar para 1 encerra o ajuste de teste em novas missões. Saves preservam a configuração com que começaram; ausência do campo equivale a 1.
+- Blindagem continua sem consumo diário por radiação. O final é uma regra do jogo, não um cálculo de dose ou sobrevivência.
+
+As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado; o painel de efeitos fica oculto ao encerrar para reservar espaço ao final. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
+
+## Início de nova missão e seleção de consumo
+
+O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
+
+Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+
+A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
+
+## Imagens aprovadas das cartas de falha
+
+As seis artes em `images/endings/` são usadas integralmente nas cartas de falha, incluindo seus textos e ícones. Os caminhos ficam em `data/interface.json` → `endingImage-life-support`, `endingImage-oxygen`, `endingImage-water`, `endingImage-shield`, `endingImage-energy` e `endingImage-food`. Easy usa Life Support para oxigênio/água; Hard usa as imagens físicas separadas. Blindagem, energia e comida compartilham imagens entre os modos.
+
+A imagem mantém proporção sem corte e o botão Start New Mission fica fora dela. Título e descrição em HTML continuam disponíveis para leitores de tela; se a imagem falhar, aparecem com o ícone vetorial de fallback. Sucesso e encerramento manual mantêm suas telas com ícones vetoriais. `docs/previews/endings/` preserva os originais aprovados e os prompts. Nenhuma carta de falha entra no sorteio de eventos; a seleção decorre da causa de encerramento já salva.

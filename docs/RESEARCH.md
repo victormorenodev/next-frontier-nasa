@@ -113,3 +113,25 @@ Prioridade analítica anteriormente sugerida: DONKI → toolkit alimentar CSA �
 - Texto do briefing: [NASA Moon to Mars Architecture Definition Document, revisão C, dezembro de 2025](https://www.nasa.gov/wp-content/uploads/2025/12/add-revision-c-20251211.pdf), especialmente habitação, proteção da saúde e resposta a emergências em Marte (UC-H-103 M, UC-H-107 M e UC-H-108 M, página impressa 129). Quatro astronautas e 40 sols são regras do jogo.
 - Imagem do briefing: [NASA Science — First Humans on Mars (Artist’s Concept), PIA23302](https://science.nasa.gov/photojournal/first-humans-on-mars-artists-concept/). Crédito visível no jogo: NASA, sem link na legenda.
 - PDFs locais de pesquisa anteriores: `../Analise_Resources_Junior_Astronaut.pdf` e `../Reigns_Marciano_Resources_e_Mecanicas.pdf`. Estão fora do repositório e não são necessários para executar ou compreender o código.
+
+## Simplificação visual: Life Support no Easy
+
+Life Support é um índice didático de disponibilidade relativa de água e oxigênio: o menor dos dois estoques dividido por sua própria capacidade, apresentado de 0 a 100. Essa escolha é um modelo de interface do jogo, sem coeficiente científico externo. Uma reserva abundante não compensa a falta da outra; a média dos estoques esconderia essa limitação.
+
+O índice não mede massa, potabilidade, pressão parcial de O₂, autonomia em sols ou tempo de sobrevivência. Capacidades e estoques do protótipo são parâmetros de balanceamento; comparar suas frações não determina qual recurso acabará primeiro. Suporte à vida real também envolve controle de CO₂, pressão, temperatura e outros sistemas não representados por esse índice.
+
+A simulação continua calculando água em L e oxigênio em kg separadamente, preservando suas referências e os coeficientes existentes. A cruz de saúde representa o indicador didático; não acrescenta um modelo de saúde dos astronautas. Hard mantém a apresentação física separada.
+
+## Esgotamento de recursos e custos de teste
+
+O encerramento por recurso zerado é uma regra de jogo, não um modelo de mortalidade ou de resposta fisiológica. Água e oxigênio continuam estoques físicos separados; no Easy suas falhas compartilham a apresentação Life Support. Falta de blindagem interrompe a missão por regra de segurança do jogo, sem estimar dose ou tempo de exposição. Radiação não consome blindagem.
+
+O ajuste temporário `mission.dailyCostMultiplier = 3` multiplica consumos-base negativos do recurso selecionado depois da conversão para sol. As referências de 0,84 kg de O₂ e 0,62 kg de alimento seco por pessoa/dia terrestre permanecem registradas nos fluxos; seus valores triplicados são exclusivos de teste e não devem ser apresentados como necessidade científica da tripulação. Produção e efeitos de cartas não recebem o multiplicador. Sem o campo, ou com valor 1, o consumo-base volta ao modelo anterior em novas missões.
+
+## Início de nova missão e seleção de consumo
+
+O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
+
+Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+
+A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.

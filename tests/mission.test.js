@@ -33,7 +33,7 @@ for (const events of [1, 2]) {
   assert.equal(mission.sol, 40);
   assert.equal(mission.reason, 'complete');
   assert.equal(M.advance(mission), mission);
-  assert.ok(Math.abs(state.water - 440) < 1e-8);
+  assert.ok(Math.abs(state.water - (600 - 40 * 4 * (require('../data/mission.json').dailyCostMultiplier ?? 1))) < 1e-8);
 }
 assert.equal(m.elapsed, 0);
 const ended = M.endMission(m);

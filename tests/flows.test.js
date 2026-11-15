@@ -5,19 +5,20 @@ const F = require('./load-engine.cjs').Flows;
 const I = require('./load-engine.cjs').Indicators;
 const close = (a, b, msg) => assert.ok(Math.abs(a - b) < 1e-9, `${msg || ''} ${a} ≠ ${b}`);
 
+const multiplier = require('../data/mission.json').dailyCostMultiplier ?? 1;
 const empty = F.createFlows();
 const s0 = I.createState();
 
 // Base trend per sol: O₂ 3 − 3.45, water −4, energy +40, food −2.55 (4 crew, sol = 24.6597 h).
 const base = F.ratesPerSol(empty, 0);
-close(base.oxygen, 3 - 4 * 0.84 * 24.6597 / 24, 'oxygen');
-close(base.water, -4, 'water');
-close(base.energy, 40, 'energy');
-close(base.food, -4 * 0.62 * 24.6597 / 24, 'food');
+close(base.oxygen, 3 - multiplier * 4 * 0.84 * 24.6597 / 24, 'oxygen');
+close(base.water, -4 * multiplier, 'water');
+close(base.energy, 100 - 60 * multiplier, 'energy');
+close(base.food, -multiplier * 4 * 0.62 * 24.6597 / 24, 'food');
 close(base.shield, 0, 'shield');            // radiation does not use up the shield
 
 // Daily budgets have no day/afternoon/night dependency.
-[0, 1, 2].forEach(t => close(F.ratesForThird(empty, t).energy, 40 / 3));
+[0, 1, 2].forEach(t => close(F.ratesForThird(empty, t).energy, base.energy / 3));
 
 // One whole sol of base flows = the per-sol trend (energy starts below max so nothing clamps).
 const oneSol = F.passTime(s0, empty, 0, 3).state;
@@ -25,10 +26,10 @@ const oneSol = F.passTime(s0, empty, 0, 3).state;
 
 // Ongoing change: dust → −30 kWh/sol for 3 sols, then back to normal.
 let flows = F.addAnswer(empty, {ongoing: [{rates: {energy: -30}, for: 3}]}, 0);
-close(F.ratesPerSol(flows, 0).energy, 10);
-close(F.ratesPerSol(flows, 9).energy, 40);
+close(F.ratesPerSol(flows, 0).energy, base.energy - 30);
+close(F.ratesPerSol(flows, 9).energy, base.energy);
 let r = F.passTime(s0, flows, 0, 9);
-close(r.state.energy, s0.energy + 3 * 10, 'three dusty sols');
+close(r.state.energy, Math.max(0, Math.min(300, s0.energy + 3 * (base.energy - 30))), 'three dusty sols');
 assert.equal(r.flows.ongoing.length, 0);    // finished changes are dropped
 
 // Delayed start: plants give food only after 3 sols, for 2 sols.
@@ -82,5 +83,35 @@ close(F.ratesPerSol(queue, 0).water, base.water - 1);
 const expiredQueue = F.passTime(s0, queue, 0, 3).flows;
 assert.deepEqual(visibleQueue(expiredQueue), ['Second', 'Fourth']);
 assert.deepEqual(visibleQueue(JSON.parse(JSON.stringify(expiredQueue))), ['Second', 'Fourth']);
+
+// Depletion cannot be rescued later in the same sol when resolving a mission.
+const rescue = {ongoing: [], later: [{at: 1, effects: {food: 100}, note: 'Too late'}]};
+const stopped = F.passTime({...s0, food: 0.01}, rescue, 0, 3, {stopOnEmpty:true});
+assert.equal(stopped.failedResource, 'food');
+assert.equal(stopped.thirdsPassed, 1);
+assert.equal(stopped.state.food, 0);
+assert.equal(stopped.happened.length, 0);
+assert.equal(stopped.flows.later.length, 1);
+const delayedFailure = F.passTime(s0, {ongoing: [], later: [{at:1,effects:{shield:-10}}]}, 0, 3, {stopOnEmpty:true});
+assert.equal(delayedFailure.failedResource, 'shield');
+assert.equal(delayedFailure.happened.length, 1);
+
+// New missions accelerate only their selected physical resource.
+const normal = F.ratesPerSol(F.createFlows(null), 0);
+for (const selected of ['oxygen','water','shield','energy','food']) {
+  const chosen = F.createFlows(selected);
+  const rates = F.ratesPerSol(chosen, 0);
+  for (const key of Object.keys(normal)) {
+    const extra = F.BASE_FLOWS.filter(f => f.quantity === key && f.amount < 0)
+      .reduce((sum, f) => sum + f.amount * (f.basis === 'perCrewEarthDay' ? F.CREW * F.SOL_HOURS / 24 : 1) * (multiplier-1), 0);
+    close(rates[key], normal[key] + (key === selected ? extra : 0));
+  }
+  assert.equal(F.addAnswer(chosen, {}, 0).dailyCostResource, selected);
+  const advanced = F.passTime(s0, chosen, 0, 3);
+  assert.equal(advanced.flows.dailyCostResource, selected);
+  close(advanced.state.water, s0.water + rates.water);
+}
+close(normal.energy, 40);
+close(normal.water, -4);
 
 console.log('flows: ok');
