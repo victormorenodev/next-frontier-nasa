@@ -1,6 +1,6 @@
 # Pesquisa e referências — Next Frontier
 
-Consolidação em 15/11/2026. Referências e contexto preservados da pesquisa existente; links e dados externos não foram revalidados nesta consolidação. Este documento não define regras do jogo. Valores implementados estão nos JSONs e a operação atual está em [ARCHITECTURE.md](../ARCHITECTURE.md). Exemplos marcados como feature são propostas de pesquisa, não funcionalidades necessariamente implementadas.
+Revisão documental em 15/11/2026. Referências e contexto preservados da pesquisa existente; os links externos não foram revalidados nesta revisão do estado local. Este documento não define regras do jogo. Valores implementados estão nos JSONs e a operação atual está em [ARCHITECTURE.md](../ARCHITECTURE.md). Exemplos marcados como feature são propostas de pesquisa, não funcionalidades necessariamente implementadas.
 
 ## Origem e objetivo
 
@@ -14,7 +14,7 @@ O projeto foi concebido para o **NASA International Space Apps Challenge 2026**,
 
 O desafio pede um jogo ou aplicativo interativo para crianças de 7–12 anos administrarem uma base lunar ou marciana, aprendendo decisões de engenharia envolvendo suporte à vida, energia, radiação, alimentos e comunicação. O foco é tornar os conflitos entre necessidades compreensíveis por meio das consequências das escolhas.
 
-**Nosso recorte é uma base marciana e um jogo de decisões por cartas inspirado em Reigns.** O jogador assume o comando de uma base já instalada. Cada carta apresenta um problema, um personagem e duas alternativas. As escolhas alteram estoques, disponibilidade de equipamentos e consequências futuras.
+**Nosso recorte é uma base marciana e um jogo de decisões por cartas inspirado em Reigns.** O jogador assume o comando de uma base já instalada. Cada carta atual apresenta uma imagem, um problema e duas alternativas, com efeitos imediatos nos recursos. Consequências futuras continuam como possibilidade do motor e tema de pesquisa, sem novas cartas contínuas/agendadas no catálogo atual.
 
 A associação ao hackathon descreve a origem e a proposta do projeto; não implica endosso, premiação ou validação da NASA. Não há confirmação nesta conversa de inscrição ou submissão oficial da equipe.
 
@@ -22,11 +22,11 @@ A associação ao hackathon descreve a origem e a proposta do projeto; não impl
 
 | Indicador | Grandezas físicas | Intenção |
 | --- | --- | --- |
-| Oxygen Level | O₂ em kg; produção/consumo por sol; futuramente remoção de CO₂ | Manter ar respirável |
-| Water Stock | Água utilizável em litros; perdas e reciclagem | Manter reserva de água, separada da água da blindagem |
-| Radiation Shield | Índice de proteção de 0 a 100%, sem unidade física | Representar a preparação do abrigo no jogo |
-| Energy Supply | Energia da bateria em kWh; geração e demanda em kW | Balancear geração, operação e períodos de déficit |
-| Food Stock | Massa por categoria, energia alimentar, validade e produção | Manter alimentação adequada ao longo da missão |
+| Oxygen Level | O₂ em kg; perdas e alterações imediatas das cartas | Manter ar respirável |
+| Water Stock | Água utilizável em litros; perdas e reciclagem | Manter reserva de água; o índice Shield atual não representa água armazenada |
+| Radiation Shield | Índice de proteção de 0 a 100%, sem unidade física | Representar a proteção dos astronautas no jogo |
+| Energy Supply | Energia em kWh; saldo diário e efeitos das cartas | Balancear geração, operação e períodos de déficit |
+| Food Stock | kg de alimento seco; perdas e efeitos das cartas | Manter alimentação adequada ao longo da missão |
 
 Não confundir kW (potência) e kWh (energia), kg de comida hidratada e kg de sólidos alimentares, nem Gy e Sv.
 
@@ -40,7 +40,7 @@ Mover água utilizável para a blindagem deve conservar a massa total, sem dupli
 
 ### Referência histórica: parâmetros do protótipo anterior
 
-O protótipo removido (commit `45928f0`, branch `prototype`) usava os valores abaixo. Os estoques iniciais foram reaproveitados nos dados atuais de recursos e fluxos. A geração automática anterior de +100 kWh/sol e o consumo de 60 kWh/sol são históricos e foram substituídos pelo saldo-base atual.
+O protótipo removido (commit `45928f0`, branch `prototype`) usava os valores abaixo. Alguns estoques iniciais permaneceram como fallback legado em resources.json; novas missões usam 75%/50% das capacidades atuais, e os fluxos atuais são saldos autorais por sol. A geração automática anterior de +100 kWh/sol e o consumo de 60 kWh/sol são históricos e foram substituídos pelo saldo-base atual.
 
 | Parâmetro | Valor | Natureza |
 | --- | --- | --- |
@@ -110,7 +110,7 @@ Prioridade analítica anteriormente sugerida: DONKI → toolkit alimentar CSA �
 
 ## Referências da apresentação
 
-- Texto do briefing: [NASA Moon to Mars Architecture Definition Document, revisão C, dezembro de 2025](https://www.nasa.gov/wp-content/uploads/2025/12/add-revision-c-20251211.pdf), especialmente habitação, proteção da saúde e resposta a emergências em Marte (UC-H-103 M, UC-H-107 M e UC-H-108 M, página impressa 129). Quatro astronautas e 40 sols são regras do jogo.
+- Texto do briefing: [NASA Moon to Mars Architecture Definition Document, revisão C, dezembro de 2025](https://www.nasa.gov/wp-content/uploads/2025/12/add-revision-c-20251211.pdf), especialmente habitação, proteção da saúde e resposta a emergências em Marte (UC-H-103 M, UC-H-107 M e UC-H-108 M, página impressa 129). Quatro astronautas e 35 sols são regras atuais do jogo, sem equivalência a um planejamento de missão real.
 - Imagem do briefing: [NASA Science — First Humans on Mars (Artist’s Concept), PIA23302](https://science.nasa.gov/photojournal/first-humans-on-mars-artists-concept/). Crédito visível no jogo: NASA, sem link na legenda.
 - PDFs locais de pesquisa anteriores: `../Analise_Resources_Junior_Astronaut.pdf` e `../Reigns_Marciano_Resources_e_Mecanicas.pdf`. Estão fora do repositório e não são necessários para executar ou compreender o código.
 
@@ -126,38 +126,32 @@ A simulação continua calculando água em L e oxigênio em kg separadamente, pr
 
 O encerramento por recurso zerado é uma regra de jogo, não um modelo de mortalidade ou de resposta fisiológica. Água e oxigênio continuam estoques físicos separados; no Easy suas falhas compartilham a apresentação Life Support. Falta de blindagem interrompe a missão por regra de segurança do jogo, sem estimar dose ou tempo de exposição. Radiação não consome blindagem.
 
-O ajuste temporário `mission.dailyCostMultiplier = 3` multiplica consumos-base negativos do recurso selecionado depois da conversão para sol. As referências de 0,84 kg de O₂ e 0,62 kg de alimento seco por pessoa/dia terrestre permanecem registradas nos fluxos; seus valores triplicados são exclusivos de teste e não devem ser apresentados como necessidade científica da tripulação. Produção e efeitos de cartas não recebem o multiplicador. Sem o campo, ou com valor 1, o consumo-base volta ao modelo anterior em novas missões.
+Os fluxos-base atuais são totais autorais para quatro pessoas: O₂ −3,5 kg, água −10 L, energia −5 kWh e comida seca −2,6 kg por sol. A produção automática anterior foi retirada. Os coeficientes históricos de 0,84 kg de O₂ e 0,62 kg de alimento seco por pessoa/dia terrestre continuam registrados como referências nesta pesquisa, mas não são os coeficientes ativos de flows.json.
 
-## Início de nova missão e seleção de consumo
-
-O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
-
-Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
-
-A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
+Novas missões usam consumo normal (dailyCostResource null). O multiplicador 3 e a seleção por recurso só permanecem para compatibilidade com saves antigos; não há seletor Faster daily use na interface. Estoques/fluxos de partidas em andamento conservam seus snapshots. Detalhes de persistência e início estão em [ARCHITECTURE.md](../ARCHITECTURE.md#persistência-e-migração).
 
 O limite de três efeitos contínuos/agendados simultaneamente registrados é uma regra de balanceamento do protótipo, não uma limitação científica da base. Retirar um efeito da fila interrompe apenas suas contribuições futuras no modelo; não devolve massa ou energia já consumida nem desfaz transferências imediatas.
 
 ## Cartas autorais importadas do CSV
 
-O catálogo atual tem 13 eventos fornecidos pelo autor. Links de referência e origens das imagens são preservados, mas as influências são escolhas de balanceamento: percentuais da capacidade do jogo, não consumos ou produções medidos por NASA/ESA. A conversão usa as capacidades atuais de `resources.json`, mantendo unidades físicas nos estoques e pontos percentuais no índice Shield; as notas laterais do CSV não redefinem os estoques nem suas unidades.
+O catálogo atual combina 14 eventos da Página1 e 17 da Página2, totalizando 31. Seus valores são unidades físicas explícitas ou pontos de Shield, não percentuais da capacidade. Fontes e textos originais são preservados, mas os efeitos são balanceamento autoral, não consumos/produções certificados por NASA/ESA. A marca Source Verified? é metadado da planilha, não validação científica do motor.
 
-Algumas narrativas tratam de remoção de CO₂, eletrólise e reciclagem. Seus deltas simplificados não implementam as reações químicas ou um balanço detalhado de massas desses equipamentos. Campos sem quantificação receberam zero por autorização; isso não demonstra que os problemas ou escolhas sejam fisicamente inofensivos. Não há dose humana nem morte inferida de um evento de radiação.
+As narrativas de CO₂, eletrólise, Sabatier e reciclagem não implementam reações químicas ou balanços detalhados desses equipamentos. Efeitos imediatos positivos em comida não simulam prazo de cultivo, composição nutricional ou equivalência de alimento fresco com kg secos. Mudanças no índice Shield não medem massa de blindagem consumida nem dose recebida.
 
-As duas menções a uma reserva de 15 kWh foram retiradas da apresentação para não confundir um equipamento citado com a bateria atual de 1480 kWh da base. O texto original permanece em sourceDescription e no CSV. [Registro editorial e conversões](CARDS.md).
+Resumos de 8/10 removem o limite antigo de 15 kWh; 10/13 independem de evento anterior por causa do sorteio com reposição. As versões repetidas 5/9/11 são eventos distintos. A anotação Side effects de 9 fica sem execução. [Auditoria de conteúdo, fontes e imagens](CARDS.md).
 
 ## Shield percentual atual
 
 Shield é um índice de proteção de 0 a 100% nos dois modos, iniciado em 75% no Easy e 50% no Hard. Não é densidade superficial, dose nem porcentagem de radiação bloqueada; não permite inferir autonomia, proteção clínica ou conversão direta para massa de água. O modelo geométrico de 20 m² descrito acima é histórico e não governa mais o indicador atual.
 
-Os efeitos percentuais fornecidos pelo autor são somados em pontos do índice. Não existe desgaste diário por radiação. Saves antigos preservam o nível proporcional à antiga capacidade, sem apresentar essa normalização como cálculo físico de proteção. O₂, água, energia e alimento seco continuam nas unidades físicas já documentadas.
+Os valores de Shield fornecidos pelo autor são somados diretamente em pontos do índice. Não existe desgaste diário por radiação. Saves antigos preservam o nível proporcional à antiga capacidade, sem apresentar essa normalização como cálculo físico de proteção. O₂, água, energia e alimento seco continuam nas unidades físicas já documentadas.
 
 ## Saldo-base atual por sol
 
-Para a base de quatro pessoas, o autor definiu perdas líquidas de 3,5 kg de oxigênio, 10 L de água, 5 kWh de energia e 2,6 kg de comida seca por sol. Shield não tem desgaste diário. São parâmetros de balanceamento (`kind: simulated`), não novos coeficientes atribuídos à NASA. O₂ e comida são próximos dos totais históricos arredondados, mas os valores atuais são totais por sol (`perSol`), sem nova conversão de dia terrestre ou multiplicação por quatro. A produção automática anterior de O₂/energia foi removida para que o saldo real corresponda às perdas solicitadas. Efeitos de cartas e o multiplicador temporário selecionável continuam separados.
+Para a base de quatro pessoas, o autor definiu perdas líquidas de 3,5 kg de oxigênio, 10 L de água, 5 kWh de energia e 2,6 kg de comida seca por sol. Shield não tem desgaste diário. São parâmetros de balanceamento (`kind: simulated`), não novos coeficientes atribuídos à NASA. O₂ e comida são próximos dos totais históricos arredondados, mas os valores atuais são totais por sol (`perSol`), sem nova conversão de dia terrestre ou multiplicação por quatro. A produção automática anterior de O₂/energia foi removida para que o saldo real corresponda às perdas solicitadas. Efeitos de cartas continuam adicionais; o multiplicador é apenas compatibilidade legada, sem seletor atual.
 
 Os estoques iniciais atuais são uma fração da capacidade por dificuldade: 75% no Easy e 50% no Hard, incluindo Shield. São escolhas de balanceamento, não estimativas científicas de autonomia. O estado físico conserva as frações de unidade.
 
-## Catálogo Página2 (vigente)
+## Limites da pesquisa e glossário
 
-O catálogo anterior da Página1 foi substituído por 17 cartas. A Página2 fornece valores físicos explícitos e pontos de Shield, não percentuais; referências e a marca Source Verified? são preservadas, sem afirmar validação científica dos valores autorais. Side effects da carta 9 é apenas anotação, pois não existe produção automática nem novas cartas contínuas. A auditoria atual de imagens/fontes está em [CARDS.md](CARDS.md).
+As propostas acima não são autorização de novas funcionalidades. A referência vigente de operação é ARCHITECTURE.md, e os parâmetros ativos ficam nos JSONs. A duração atual é 35 sols; a meta histórica de 15–20 minutos ainda não foi validada com crianças. O glossário atual tem 41 definições didáticas, incluindo siglas e termos das cartas; [GLOSSARY.md](GLOSSARY.md) registra a auditoria e fontes específicas. Definir proteção eletromagnética como ideia experimental não valida as consequências físicas da carta 25.
