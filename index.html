@@ -5,24 +5,67 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#1b1a30">
   <title>Next Frontier</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=20261115-mission35-radiation2">
 </head>
 <body>
-  <section class="mission-intro" id="mission-intro" aria-labelledby="intro-title">
+  <!-- Decorative view through the base window; never intercepts game input. -->
+  <div class="base-window" aria-hidden="true">
+    <div class="mars-landscape"></div>
+    <div class="window-glass"></div>
+    <div class="window-frame"></div>
+  </div>
+  <section id="main-menu" class="main-menu" aria-labelledby="menu-title">
+    <div class="main-menu-content">
+      <svg class="menu-orbit" viewBox="0 0 64 40" aria-hidden="true"><circle cx="32" cy="20" r="13"/><ellipse cx="32" cy="20" rx="28" ry="9" transform="rotate(-24 32 20)"/><circle cx="54" cy="10" r="3"/></svg>
+      <h1 id="menu-title"><span class="menu-title-next" data-copy="menuTitleNext"></span> <span class="menu-title-frontier" data-copy="menuTitleFrontier"></span></h1>
+      <nav class="main-menu-actions" aria-label="Main menu">
+        <button id="menu-start" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 10 7-10 7z"/></svg><span data-copy="menuStart"></span><span class="menu-action-arrow" aria-hidden="true">→</span></button>
+        <button id="menu-continue" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2 7M4 4v7h7M12 7v5l3 2"/></svg><span data-copy="continueMission"></span></button>
+        <button id="menu-glossary" type="button" aria-haspopup="dialog" aria-controls="glossary-dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v15M12 5C8 2 3 4 3 4v14s5-2 9 2c4-4 9-2 9-2V4s-5-2-9 1Z"/></svg><span data-copy="menuGlossary"></span></button>
+        <button id="menu-sound" class="sound-toggle" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sound-waves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="sound-mute" d="m16 9 6 6m0-6-6 6"/></svg><span class="sound-text"></span></button>
+        <button id="menu-credits" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><span data-copy="menuCredits"></span></button>
+      </nav>
+      <p id="menu-save-note" class="menu-save-note" data-copy="menuNoSave" hidden></p>
+    </div>
+  </section>
+  <dialog id="glossary-dialog" class="menu-dialog glossary-dialog" aria-labelledby="glossary-title">
+    <h2 id="glossary-title" data-copy="menuGlossary"></h2>
+    <dl id="glossary-list"></dl>
+    <button id="glossary-close" type="button" data-copy="menuBack" autofocus></button>
+  </dialog>
+  <dialog id="credits-dialog" class="menu-dialog" aria-labelledby="credits-title">
+    <h2 id="credits-title" data-copy="menuCredits"></h2>
+    <p data-copy="creditsProject"></p>
+    <p data-copy="creditsNasa"></p>
+    <p data-copy="creditsArt"></p>
+    <button id="credits-close" type="button" data-copy="menuBack" autofocus></button>
+  </dialog>
+  <section class="mission-intro" id="mission-intro" aria-labelledby="intro-title" hidden>
     <article class="briefing" id="briefing">
       <figure class="briefing-figure">
         <img class="briefing-image" src="images/conceptual_outpost.jpeg" alt="An imagined Mars base with habitats, a rover and astronauts on the orange surface" draggable="false">
         <figcaption><span data-copy="html2"></span></figcaption>
       </figure>
       <div class="briefing-content">
-        <p class="briefing-eyebrow"><span data-copy="html3"></span></p>
         <h1 id="intro-title"><span data-copy="html4"></span></h1>
         <p><span data-copy="html5"></span><strong><span data-copy="html6"></span></strong><span data-copy="html7"></span></p>
-        <p><span data-copy="html8"></span></p>
         <button id="start-mission" class="start-mission" type="button"><span data-copy="html9"></span><span aria-hidden="true">→</span></button>
         <p class="briefing-hint"><span data-copy="html10"></span></p>
       </div>
     </article>
+  </section>
+
+  <section id="difficulty-screen" class="difficulty-screen" aria-labelledby="difficulty-title" hidden>
+    <div class="difficulty-panel">
+      <p class="briefing-eyebrow" data-copy="html3"></p>
+      <h1 id="difficulty-title" data-copy="difficultyTitle"></h1>
+      <p class="difficulty-intro" data-copy="difficultyIntro"></p>
+      <div class="difficulty-options">
+        <button type="button" class="difficulty-option" data-mode="easy"><span class="difficulty-symbol" aria-hidden="true">←</span><strong data-copy="difficultyEasy"></strong><span data-copy="difficultyEasyAge"></span><small data-copy="difficultyEasyHint"></small></button>
+        <button type="button" class="difficulty-option" data-mode="hard"><span class="difficulty-symbol" aria-hidden="true">→</span><strong data-copy="difficultyHard"></strong><span data-copy="difficultyHardAge"></span><small data-copy="difficultyHardHint"></small></button>
+      </div>
+      <button type="button" class="difficulty-back" id="difficulty-back" data-copy="difficultyBack"></button>
+    </div>
   </section>
 
   <main id="game" hidden>
@@ -32,17 +75,14 @@
         <svg class="sky-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><ellipse cx="12" cy="12" rx="11" ry="4" transform="rotate(-30 12 12)"/></svg>
         <span><strong id="sol"><span data-copy="html11"></span></strong><small id="sol-notice" role="status" aria-live="polite"><span data-copy="html12"></span></small></span>
       </p>
-      <button class="end-button" id="end-mission" type="button"><span data-copy="html13"></span></button>
+      <div class="topbar-actions">
+        <button class="sound-toggle sound-icon-button" id="game-sound" type="button" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sound-waves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="sound-mute" d="m16 9 6 6m0-6-6 6"/></svg></button>
+        <button class="end-button" id="end-mission" type="button"><span data-copy="html13"></span></button>
+      </div>
     </header>
 
     <section class="indicators" id="indicators" aria-label="Base indicators"></section>
-    <!-- Info box under the indicators: shows the active effects; while an indicator is held,
-         its detail covers this box (same size), so no extra space is needed. -->
     <div class="readout" id="readout">
-      <section class="effects-box" aria-labelledby="effects-title">
-        <h2><span id="effects-title"><span data-copy="html14"></span></span><span class="more" id="active-more"></span></h2>
-        <ul id="active-effects"></ul>
-      </section>
       <section class="detail empty" id="detail" aria-live="polite"></section>
     </div>
 
@@ -50,10 +90,35 @@
     <div class="card-area">
       <section class="card-slot" id="card" aria-label="Mission card"></section>
     </div>
+    <button class="tablet-toggle" id="open-tablet" hidden type="button" aria-haspopup="dialog" aria-controls="effects-tablet" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 7h6M9 11h6M11 18h2"/></svg>
+      <span data-copy="tabletOpen"></span><span id="tablet-count" class="tablet-count">0</span><span aria-hidden="true">↑</span>
+    </button>
   </main>
+
+  <dialog id="mission-tutorial" class="tutorial-dialog" aria-labelledby="tutorial-title" aria-describedby="tutorial-body">
+    <div class="tutorial-spotlight" aria-hidden="true"></div>
+    <section class="tutorial-panel">
+      <header class="tutorial-header"><button id="tutorial-skip" type="button" data-copy="tutorialSkip"></button></header>
+      <div class="tutorial-copy" aria-live="polite"><h2 id="tutorial-title"></h2><div id="tutorial-body"></div></div>
+      <footer class="tutorial-footer"><button id="tutorial-next" type="button" autofocus></button></footer>
+    </section>
+  </dialog>
 
   <!-- Decorative day turnover, always behind the game. -->
   <div id="sol-transition" class="sol-transition" aria-hidden="true" hidden></div>
+
+  <dialog id="effects-tablet" class="tablet-dialog" aria-labelledby="tablet-title">
+    <div class="tablet-scene">
+      <section class="tablet-device">
+        <header class="tablet-heading"><div><p class="tablet-kicker" data-copy="tabletKicker"></p><h2 id="tablet-title" data-copy="tabletTitle"></h2></div><button id="close-tablet" type="button" class="tablet-close" data-copy="tabletClose"></button></header>
+        <p class="tablet-summary" id="tablet-summary" aria-live="polite"></p>
+        <ul id="active-effects" class="tablet-effects"></ul>
+        <nav class="tablet-pages" aria-label="Effects pages"><button id="tablet-prev" type="button" data-copy="tabletPrev"></button><span id="tablet-page" aria-live="polite"></span><button id="tablet-next" type="button" data-copy="tabletNext"></button></nav>
+        <div class="tablet-home" aria-hidden="true"></div>
+      </section>
+    </div>
+  </dialog>
 
   <!-- Asks before ending, so a stray tap does not end the mission. -->
   <dialog class="confirm" id="end-dialog" aria-labelledby="end-title">
@@ -65,7 +130,7 @@
     </div>
   </dialog>
 
-  <!-- Classic scripts (no modules) so the game works by opening this file directly. -->
-  <script type="module" src="src/bootstrap.js"></script>
+  <!-- Native modules and JSON data require an HTTP server. -->
+  <script type="module" src="src/bootstrap.js?v=20261115-mission35-radiation2"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
 
   const DRAG_START_PX = 8;       // smaller moves count as a tap, not a drag
   const ANSWER_SHARE = 0.28;     // drag past 28% of the card width to answer
-  const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 100 ? 1 : 0});
+  const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 1 ? 2 : Math.abs(n) < 100 ? 1 : 0});
 
   // Which indicator colour each quantity uses (one indicator per quantity).
   const COLOR_OF = {};
@@ -19,8 +19,11 @@
   };
 
   function create(slot, handlers) {
+    let cancelImage = () => {};
     let phase = 'none';          // 'front' | 'back' | 'message' | 'none'
     let drag = null;
+    let demoFrame = 0, demonstrating = false;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     // ── Build the card once; contents change per card ──
     const card3d = el('div', 'card3d');
@@ -31,32 +34,36 @@
     card3d.append(inner);
 
     // Front parts
-    const top = el('div', 'card-top');
-    const difficulty = el('span', 'difficulty');
-    const count = el('span', 'count');
-    top.append(difficulty, count);
+
+    const figure = el('figure', 'card-figure');
     const image = el('img', 'card-image');
+    const caption = el('figcaption', 'card-caption');
+    figure.append(image, caption);
     const text = el('p', 'card-text');
     const answers = el('div', 'answers');
     const leftBtn = el('button', 'answer left');
     const rightBtn = el('button', 'answer right');
     leftBtn.type = rightBtn.type = 'button';
     answers.append(leftBtn, rightBtn);
-    front.append(top, image, text, answers);
+    front.append(figure, text, answers);
 
     // Back parts
     const chosenLabel = el('p', 'chosen-label', Copy("youChose"));
     const chosen = el('h2', 'chosen');
+    const choiceDescription = el('p', 'choice-description');
+    choiceDescription.hidden = true;
     const effects = el('ul', 'effects');
     const source = el('p', 'source');
     const mockNote = el('p', 'mock-note', Copy("mockNote"));
     const nextBtn = el('button', 'next');
     nextBtn.type = 'button';
-    back.append(chosenLabel, chosen, effects, source, mockNote, nextBtn);
+    back.append(chosenLabel, chosen, choiceDescription, effects, source, mockNote, nextBtn);
 
     // ── Answering ──
-    function answer(side) {
-      if (phase !== 'front') return;
+    // Button choices play here; a swipe already played when the card began to tilt.
+    function answer(side, how = 'button') {
+      if (phase !== 'front' || handlers.canAnswer?.() === false) return;
+      if (how === 'button') globalThis.GameAudio?.play('button');
       phase = 'answering';
       card3d.style.transform = '';                 // glide back to the centre, then flip
       highlight(null);
@@ -70,7 +77,11 @@
 
     leftBtn.addEventListener('click', () => answer('left'));
     rightBtn.addEventListener('click', () => answer('right'));
-    nextBtn.addEventListener('click', () => { if (phase === 'back') handlers.onNext(); });
+    nextBtn.addEventListener('click', () => {
+      if (phase !== 'back') return;
+      globalThis.GameAudio?.play('button');
+      handlers.onNext();
+    });
 
     // Keyboard: arrows answer like the buttons.
     document.addEventListener('keydown', e => {
@@ -83,7 +94,7 @@
 
     // ── Drag to answer (mouse, finger or pen) ──
     card3d.addEventListener('pointerdown', e => {
-      if (phase !== 'front' || e.button > 0) return;
+      if (e.target.closest('.glossary-term, a') || phase !== 'front' || handlers.canAnswer?.() === false || e.button > 0) return;
       drag = {id: e.pointerId, x: e.clientX, dx: 0, moving: false};
     });
     card3d.addEventListener('pointermove', e => {
@@ -91,6 +102,7 @@
       drag.dx = e.clientX - drag.x;
       if (!drag.moving && Math.abs(drag.dx) > DRAG_START_PX) {
         drag.moving = true;
+        globalThis.GameAudio?.play('swipe');
         try { card3d.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ } // follow outside the card
         card3d.classList.add('dragging');
       }
@@ -105,7 +117,7 @@
       drag = null;
       card3d.classList.remove('dragging');
       if (!moving) return;                          // it was a tap: the button click handles it
-      if (Math.abs(dx) > card3d.offsetWidth * ANSWER_SHARE) answer(dx < 0 ? 'left' : 'right');
+      if (Math.abs(dx) > card3d.offsetWidth * ANSWER_SHARE) answer(dx < 0 ? 'left' : 'right', 'swipe');
       else { card3d.style.transform = ''; highlight(null); }
     };
     card3d.addEventListener('pointerup', endDrag);
@@ -124,11 +136,11 @@
 
     // ── What ui.js calls ──
     function showFront(card, number, total) {
+      Glossary.close();
       drag = null;
       card3d.style.transform = '';
       card3d.classList.remove('dragging');
-      slot.classList.remove('ended', 'quiet-sol');
-      difficulty.hidden = false;
+      slot.classList.remove('ended', 'quiet-sol', 'illustrated-ending');
       image.hidden = false;
       slot.classList.add('has-card');
       if (!card3d.isConnected) slot.replaceChildren(card3d);
@@ -143,14 +155,23 @@
       void card3d.offsetWidth;
       card3d.classList.add('deal');
 
-      difficulty.textContent = Deck.DIFFICULTIES[card.difficulty];
-      difficulty.dataset.level = card.difficulty;
-      count.textContent = Copy("eventCount", {number,total});
-      image.src = card.image;
-      image.alt = card.imageAlt || '';
+      cancelImage();
+      const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&c.image===card.image);
+      const renderCaption = available => {
+        caption.textContent=available ? (currentCard?.imageCaption ?? card.imageCaption ?? '').trim() : Copy('cardImageMissing');
+        caption.append(` ${Copy('imageSourceLabel')}`);
+        const imageSource=currentCard?.imageSource ?? card.imageSource ?? (card.source?.kind==='image' ? card.source.url : '');
+        if(imageSource){
+          const link=el('a',null,new URL(imageSource).hostname.replace(/^www\./,''));
+          link.href=imageSource;link.target='_blank';link.rel='noopener noreferrer';caption.append(link);
+        }
+        caption.hidden=false;Glossary.decorate(caption);
+      };
+      cancelImage=CardImages.show(image,{...card,imageAlt:currentCard?.imageAlt ?? card.imageAlt},renderCaption);
       text.textContent = card.description;
       leftBtn.textContent = `← ${card.left.label}`;
       rightBtn.textContent = `${card.right.label} →`;
+      [caption,text].forEach(node => Glossary.decorate(node));
       highlight(null);
       setFace(false);
       phase = 'front';
@@ -158,13 +179,22 @@
     }
 
     // One line of the back: coloured dot + name (+ small hint) on the left, amount on the right.
-    function effectRow(key, amount, unitSuffix, hint, cls) {
+    function effectRow(key, amount, unitSuffix, hint, cls, before) {
       const q = Indicators.QUANTITIES[key];
       const li = el('li', `${cls || ''} ${amount < 0 ? 'down' : 'up'}`.trim());
       li.style.setProperty('--c', COLOR_OF[key]);
-      const name = el('span', 'name', q.name);
+      const indicator=ResourceDisplay.indicators().find(ind=>ind.parts.includes(key));
+      const isLife = indicator?.id === 'life-support';
+      const name = el('span', 'name');
+      const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
+      icon.classList.add('effect-resource-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
+      icon.innerHTML=ResourceIcons[indicator?.icon || key] || '';
+      if (isLife) li.style.setProperty('--c', 'var(--life-support)');
+      name.append(icon,el('span','effect-resource-name',isLife ? indicator.name : q.name));
+      if (isLife) hint = [Copy(key === 'water' ? 'lifeWaterEffect' : 'lifeOxygenEffect'), hint].filter(Boolean).join(' · ');
       if (hint) name.append(el('small', null, hint));
-      li.append(name, el('b', 'amount', `${amount < 0 ? '−' : '+'}${fmt(Math.abs(amount))} ${q.unit}${unitSuffix}`));
+      const display=ResourceDisplay.effect(key,amount,before);
+      li.append(name, el('b', 'amount', `${display.value === 0 ? '' : display.value < 0 ? '−' : '+'}${fmt(Math.abs(display.value))}${display.unit === '%' ? '%' : display.unit ? ' ' + display.unit : ''}${unitSuffix}`));
       return li;
     }
 
@@ -175,13 +205,18 @@
       return `${when}${howLong}${o.note ? ` · ${o.note}` : ''}`;
     }
 
-    function showBack(card, side, isLast, happened) {
+    function showBack(card, side, isLast, happened, beforeState) {
+      Glossary.close();
+      cancelImage();
       const picked = card[side];
       chosen.textContent = picked.label;
+      const explanation = typeof picked.description === 'string' ? picked.description.trim() : '';
+      choiceDescription.textContent = explanation;
+      choiceDescription.hidden = !explanation;
       effects.replaceChildren();
       // Now: immediate changes.
       const now = Object.entries(picked.effects || {});
-      now.forEach(([key, amount]) => effects.append(effectRow(key, amount, '')));   // no hint: it is right now
+      now.forEach(([key, amount]) => effects.append(effectRow(key, amount, '', undefined, undefined, beforeState?.[key])));   // no hint: it is right now
       // Every sol: changes to what the base uses or makes.
       (picked.ongoing || []).forEach(o => Object.entries(o.rates).forEach(([key, rate]) =>
         effects.append(effectRow(key, rate, '/sol', ongoingHint(o), 'ongoing'))));
@@ -195,34 +230,79 @@
       (happened || []).forEach(h => Object.entries(h.effects).forEach(([key, amount]) =>
         effects.append(effectRow(key, amount, '', `just happened${h.note ? ` · ${h.note}` : ''}`, 'happened'))));
 
-      // Institution only; it links to the full reference.
-      source.replaceChildren(Copy("source"));
-      const link = el('a', null, card.source.institution);
-      link.href = card.source.url;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      source.append(link);
+      // References belong on the back; image attribution belongs in the caption.
+      source.replaceChildren();
+      source.hidden=!card.source || card.source.kind==='image';
+      if(!source.hidden){
+        source.append(Copy('source'));
+        (card.source.references || [card.source]).forEach((reference,index)=>{
+          if(index)source.append(' · ');
+          const link=el('a',null,reference.institution);
+          link.href=reference.url;link.target='_blank';link.rel='noopener noreferrer';source.append(link);
+        });
+      }
 
       mockNote.hidden = !card.mock;
       nextBtn.textContent = isLast ? Copy("endSol") : Copy("nextEvent");
+      [chosen,choiceDescription,effects].forEach(node => Glossary.decorate(node));
       setFace(true);
       inner.classList.add('flipped');
       phase = 'back';
       nextBtn.focus({preventScroll: true});
     }
 
-    function showMessage(title, body, buttonLabel, onClick) {
+    function showMessage(title, body, buttonLabel, onClick, ending = 'quit', imagePath = null) {
+      Glossary.close();
+      cancelImage();
       phase = 'message';
       slot.classList.remove('has-card');
       slot.classList.add('ended');
       const h = el('h2', null, title), p = el('p', null, body), b = el('button', 'new-mission', buttonLabel);
       b.type = 'button';
       b.addEventListener('click', onClick);
-      slot.replaceChildren(h, p, b);
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.classList.add('ending-icon'); icon.setAttribute('viewBox', '0 0 24 24');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = EndingIcons[ending] || EndingIcons.quit;
+      slot.dataset.ending = ending;
+      slot.classList.toggle('illustrated-ending', Boolean(imagePath));
+      if (imagePath) {
+        const art = el('img', 'ending-art'); art.alt = '';
+        art.addEventListener('error', () => {
+          slot.classList.remove('illustrated-ending');
+          h.classList.remove('ending-accessible-copy'); p.classList.remove('ending-accessible-copy');
+          art.replaceWith(icon);
+        }, {once:true});
+        h.classList.add('ending-accessible-copy'); p.classList.add('ending-accessible-copy');
+        art.src = imagePath;
+        slot.replaceChildren(art, h, p, b);
+      } else slot.replaceChildren(icon, h, p, b);
       b.focus();
     }
 
-    return {showFront, showBack, showMessage};
+    function updateDemoHighlight() {
+      cancelAnimationFrame(demoFrame);
+      highlight(null);
+      if (!demonstrating || reducedMotion.matches) return;
+      const tick = () => {
+        if (!demonstrating || reducedMotion.matches) return;
+        // Follow the actual CSS animation clock, including repeated cycles.
+        const animation = card3d.getAnimations().find(item => item.animationName === 'tutorial-card-swipe');
+        const progress = animation?.effect?.getComputedTiming().progress;
+        highlight(progress >= .08 && progress <= .40 ? 'left' : progress >= .58 && progress <= .94 ? 'right' : null);
+        demoFrame = requestAnimationFrame(tick);
+      };
+      tick();
+    }
+    reducedMotion.addEventListener('change', updateDemoHighlight);
+    function demonstrate(enabled) {
+      demonstrating = enabled;
+      card3d.classList.remove('deal');
+      card3d.classList.toggle('tutorial-demo', enabled);
+      if (!enabled) card3d.style.transform = '';
+      updateDemoHighlight();
+    }
+    return {showFront, showBack, showMessage, demonstrate};
   }
 
   root.CardUI = {create};
