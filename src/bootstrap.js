@@ -39,7 +39,7 @@ try {
  for(const el of document.querySelectorAll('[data-copy]'))el.textContent=Copy(el.dataset.copy);
  if(window.invalidSavedMission){const p=document.createElement('p');p.textContent=Copy('invalidSave');document.getElementById('start-mission').before(p)}
  globalThis.CardData={CARDS:GameData.cards};
- for(const file of ['indicators','mission','flows','deck','engine','icons','display','glossary','card-ui','tutorial','ui'])await import(moduleURL(`./${file}.js`));
+ for(const file of ['indicators','mission','flows','deck','engine','icons','display','glossary','audio','card-ui','tutorial','ui'])await import(moduleURL(`./${file}.js`));
 }catch(error){
  console.error(error);
  document.getElementById('main-menu').hidden=true;

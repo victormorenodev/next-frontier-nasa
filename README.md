@@ -56,7 +56,7 @@ Cada carta tem ID único, category, probability, difficulty, description, image,
 
 Fluxos usam amount e basis: perSol ou perCrewEarthDay. Esta última multiplica amount por crew × solHours/24. Preserve unidade, fonte e classificação reference/simulated. Templates da interface aceitam campos como `{crew}`, `{totalSols}`, `{sol}` e `{amount}`, conforme a mensagem. JSONs não contêm fórmulas executáveis.
 
-Layout, animações, gestos, desenhos dos ícones e tipos de regras ficam em CSS/JavaScript. O motor não interpreta qualquer comportamento arbitrário só por adicioná-lo ao JSON. Código em src/, CSS/ilustração em assets/, imagens de briefing/cartas em images/.
+Layout, animações, gestos, sons, desenhos dos ícones e tipos de regras ficam em CSS/JavaScript. O motor não interpreta qualquer comportamento arbitrário só por adicioná-lo ao JSON. Código em src/, CSS/ilustração em assets/, imagens de briefing/cartas em images/, sons em sfx/.
 
 ## Progresso salvo
 
@@ -85,6 +85,7 @@ src/
 data/
 assets/
 images/
+sfx/
 ```
 
 Manter essa estrutura e verificar o resultado do deploy. O estado atual de disponibilidade pública não foi revalidado nesta revisão documental. Não enviar prints, ZIPs de logs, testes ou documentação interna como parte do pacote do jogo.
@@ -205,3 +206,7 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 ## Fontes das cartas e das imagens
 
 O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+
+## Sons
+
+Arquivos em `sfx/`, controlados por `src/audio.js`: clique ao tocar nos indicadores e nos botões da carta, *swipe* ao responder arrastando, som de novo dia quando o sol muda, e música de fundo com o som da nave por baixo, mais baixo. A música começa no primeiro toque/clique (regra dos navegadores) e o botão de alto-falante, no menu e na barra da missão, liga e desliga todo o som; a escolha fica salva no navegador. Para trocar um som ou volume, editar o arquivo em `sfx/` ou a tabela no início de `src/audio.js`. Detalhes em [AGENTS.md](AGENTS.md#sons).

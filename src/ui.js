@@ -259,6 +259,7 @@
   row.addEventListener('pointerdown', e => {
     const tile = tileAt(e.clientX, e.clientY);
     if (!tile || e.button > 0) return;
+    globalThis.GameAudio?.play('button');            // tap/click on an indicator (hover stays silent)
     pressing = e.pointerId;
     try { row.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
     show(tile.dataset.id);
@@ -285,7 +286,10 @@
     if (tile && tile.matches(':focus-visible')) show(tile.dataset.id);
   });
   row.addEventListener('focusout', e => { if (!row.contains(e.relatedTarget)) hide(); });
-  row.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+  row.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hide();
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.closest('.tile') && !e.repeat) globalThis.GameAudio?.play('button');
+  });
 
   // ── Mission flow: deck, answers, end ────────────────────
   const mainMenu = document.getElementById('main-menu');
@@ -297,6 +301,16 @@
   });
   const creditsDialog = document.getElementById('credits-dialog');
   document.getElementById('menu-credits').addEventListener('click', () => creditsDialog.showModal());
+  // Sound on/off: same setting for the menu button and the mission bar button.
+  const renderSound = (button, on) => {
+    button.setAttribute('aria-pressed', String(on));
+    button.classList.toggle('muted', !on);
+    const state = Copy(on ? 'soundOn' : 'soundOff');
+    const text = button.querySelector('.sound-text');
+    if (text) text.textContent = `${Copy('soundLabel')}: ${state}`;
+    else { button.setAttribute('aria-label', Copy('soundLabel')); button.title = `${Copy('soundLabel')}: ${state}`; }
+  };
+  ['menu-sound', 'game-sound'].forEach(id => GameAudio.bindToggle(document.getElementById(id), renderSound));
   document.getElementById('credits-close').addEventListener('click', () => creditsDialog.close());
   creditsDialog.addEventListener('click', event => { if (event.target === creditsDialog) creditsDialog.close(); });
   const briefing = document.getElementById('briefing');
@@ -386,6 +400,7 @@
       solTransition=false;
       document.getElementById('card').inert=false;
       document.getElementById('open-tablet').disabled=false;
+      if(!mission.ended)globalThis.GameAudio?.play('sol');   // the sol number goes up now
       renderMission();
       if(!mission.ended)showSol();
       background.hidden=true;

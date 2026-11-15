@@ -59,8 +59,10 @@
     back.append(chosenLabel, chosen, choiceDescription, effects, source, mockNote, nextBtn);
 
     // ── Answering ──
-    function answer(side) {
+    // `how`: 'button' (tap/click/arrow key) or 'swipe' (drag) — picks the sound effect.
+    function answer(side, how = 'button') {
       if (phase !== 'front' || handlers.canAnswer?.() === false) return;
+      globalThis.GameAudio?.play(how);
       phase = 'answering';
       card3d.style.transform = '';                 // glide back to the centre, then flip
       highlight(null);
@@ -74,7 +76,11 @@
 
     leftBtn.addEventListener('click', () => answer('left'));
     rightBtn.addEventListener('click', () => answer('right'));
-    nextBtn.addEventListener('click', () => { if (phase === 'back') handlers.onNext(); });
+    nextBtn.addEventListener('click', () => {
+      if (phase !== 'back') return;
+      globalThis.GameAudio?.play('button');
+      handlers.onNext();
+    });
 
     // Keyboard: arrows answer like the buttons.
     document.addEventListener('keydown', e => {
@@ -109,7 +115,7 @@
       drag = null;
       card3d.classList.remove('dragging');
       if (!moving) return;                          // it was a tap: the button click handles it
-      if (Math.abs(dx) > card3d.offsetWidth * ANSWER_SHARE) answer(dx < 0 ? 'left' : 'right');
+      if (Math.abs(dx) > card3d.offsetWidth * ANSWER_SHARE) answer(dx < 0 ? 'left' : 'right', 'swipe');
       else { card3d.style.transform = ''; highlight(null); }
     };
     card3d.addEventListener('pointerup', endDrag);

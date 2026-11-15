@@ -22,6 +22,7 @@ Consolidada em **15/11/2026** a partir do código atual. Este documento descreve
 | `src/engine.js` | Ações puras sobre snapshots: start, answer, next, end |
 | `src/display.js` | Conversão física/inteiros normalizados, arredondamento e variações exibidas |
 | `src/icons.js` | Desenhos compartilhados entre indicadores e resultados das cartas |
+| `src/audio.js` | Sons: efeitos das ações, música e som da nave em loop, botão de som |
 | `src/card-ui.js` | Frente/verso, legendas, escolhas, efeitos e gestos da carta |
 | `src/ui.js` | Orquestração da interface, modos, detalhes, animações, saves e tablet oculto |
 | `assets/style.css` | Layout responsivo, apresentação visual, animações e movimento reduzido |
@@ -32,7 +33,7 @@ Consolidada em **15/11/2026** a partir do código atual. Este documento descreve
 
 ## Inicialização e dependências
 
-O navegador abre o HTML por HTTP e importa `bootstrap.js` como módulo nativo. O bootstrap lê os seis JSONs em paralelo, valida os dados e tenta validar o save. Se válido, usa o snapshot dos dados salvo para as regras da partida; os textos atuais da interface têm prioridade. Preenche o HTML e importa, em sequência, indicators → mission → flows → deck → engine → icons → display → card-ui → tutorial → ui.
+O navegador abre o HTML por HTTP e importa `bootstrap.js` como módulo nativo. O bootstrap lê os seis JSONs em paralelo, valida os dados e tenta validar o save. Se válido, usa o snapshot dos dados salvo para as regras da partida; os textos atuais da interface têm prioridade. Preenche o HTML e importa, em sequência, indicators → mission → flows → deck → engine → icons → display → glossary → audio → card-ui → tutorial → ui.
 
 Os arquivos carregados são módulos do navegador, mas ainda expõem suas APIs pelo `globalThis`; a ordem importa. Os testes usam `vm` para carregar a lógica e importar a validação. Não há framework, instalação de dependências ou etapa de build obrigatória. Caminhos relativos atendem tanto a raiz quanto subdiretórios de hospedagem estática. `file://` não é suportado.
 
@@ -223,3 +224,18 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 ## Fontes das cartas e das imagens
 
 O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+
+## Áudio
+
+`src/audio.js` cria `GameAudio` antes de `card-ui` e `ui`, que o chamam com `globalThis.GameAudio?.play(nome)`. O motor (`engine`, `flows` etc.) não conhece sons.
+
+| Ponto no código | Som |
+| --- | --- |
+| `ui.js`, `pointerdown` na linha de indicadores (tile) e `keydown` Enter/Espaço | `button` |
+| `card-ui.js`, `answer(side, how)`: `how = 'button'` para botões e setas, `'swipe'` para arrasto além do limiar; só toca se a resposta for aceita | `button` / `swipe` |
+| `card-ui.js`, botão Next/Finish do verso | `button` |
+| `ui.js`, `onNext` → `finish()` da passagem de sol, se a missão não terminou | `sol` |
+
+Loops (`music`, `ship`): `Audio` com `loop`, iniciados no primeiro `pointerdown`/`pointerup`/`touchend`/`click`/`keydown` (fase de captura) e removidos esses ouvintes quando um `play()` dá certo. Começam no volume 0 e sobem em 1,5 s. `visibilitychange` pausa/retoma. `bindToggle(botão, render)` liga os dois botões de som ao mesmo estado; `setEnabled` grava `next-frontier-sound`. `loopVolumes()` ajuda a conferir os volumes no console.
+
+Validação feita: no navegador (via HTTP), registrando as chamadas de `play()`: menu → loops; toque no indicador → button; hover → nada; resposta por botão/seta → button; Next → button; passagem para o Sol 2 → sol; arrasto à direita/esquerda → swipe; arrasto curto → nada; som desligado → nenhum efeito, loops pausados, preferência salva. *Fade-in* e silêncio conferidos com `Audio` simulado no Node. O volume relativo música × nave foi definido de ouvido pelos valores acima e deve ser ajustado ouvindo no dispositivo.

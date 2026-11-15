@@ -26,7 +26,7 @@ Consolidado em **15/11/2026** a partir do código e dos JSONs atuais. Leia este 
 
 ## Organização, dados e persistência
 
-- HTML de entrada na raiz; motor/interface em `src/`; configuração e conteúdo em `data/`; CSS e ilustração em `assets/`; imagens de cartas/briefing em `images/`; testes em `tests/`.
+- HTML de entrada na raiz; motor/interface em `src/`; configuração e conteúdo em `data/`; CSS e ilustração em `assets/`; imagens de cartas/briefing em `images/`; sons em `sfx/`; testes em `tests/`.
 - Execução requer **HTTP**, módulos JavaScript nativos e leitura de JSON por fetch. A regra antiga de duplo clique/file:// foi substituída. Sem framework, dependências npm ou build obrigatório para jogar.
 - Editar configuração/conteúdo nos JSONs, sem duplicar parâmetros no motor. Desenhos dos ícones, regras de cálculo, layout, gestos e animações permanecem no código. Novos tipos de comportamento podem exigir código.
 - Validar probabilidades, referências e tipos. Categorias somam 1; cartas somam 1 dentro de cada categoria, antes do filtro de dificuldade. Não inserir fórmulas executáveis nos JSONs.
@@ -144,3 +144,21 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 ## Fontes das cartas e das imagens
 
 O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+
+## Sons
+
+Cinco arquivos em `sfx/`, tocados por `src/audio.js` (`GameAudio`):
+
+| Arquivo | Quando toca | Volume |
+| --- | --- | --- |
+| `button_clicking.mp3` | Toque/clique num indicador (hover não toca); Enter/Espaço num indicador; botões de resposta da carta (clique ou setas ← →); botão Next/Finish do verso | 0,55 |
+| `card_swipe_v2.mp3` | Resposta por arrasto da carta, para qualquer lado. Arrasto curto que volta ao centro não toca | 0,7 |
+| `day_change_v2.mp3` | Quando o número do sol sobe (fim da passagem de sol), exceto se a missão terminou | 0,7 |
+| `main_track.mp3` | Música de fundo em loop | 0,4 |
+| `spacecraft_bg.mp3` | Som da nave em loop, junto da música e bem abaixo dela | 0,12 |
+
+- Navegadores só liberam áudio após interação: os loops começam no primeiro toque, clique ou tecla em qualquer tela (inclusive no menu), com *fade-in* de 1,5 s a partir do volume 0. No celular, a tentativa se repete ao soltar o dedo/clicar até a música realmente começar.
+- Botão de som (alto-falante) no menu ("Sound: On/Off") e na barra da missão, ao lado de End mission (ícone de 44 px, 54 px em telas grandes). Desligar pausa os loops e silencia os efeitos. A preferência fica em `localStorage` na chave `next-frontier-sound` (`on`/`off`), separada do save da missão.
+- Os loops pausam quando a aba fica oculta e voltam ao reabrir. Efeitos usam uma cópia do áudio para que repetições rápidas se sobreponham.
+- Arquivos e volumes ficam em `src/audio.js` (como layout e animações); textos do botão em `data/interface.json` (`soundLabel`, `soundOn`, `soundOff`). O tutorial (demonstração automática da carta) não toca sons.
+- Publicação: `sfx/` faz parte do pacote estático (workflow e lista do README).

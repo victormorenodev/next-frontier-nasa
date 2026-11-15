@@ -98,6 +98,32 @@ main {
   .end-button:not(:disabled):hover { background: color-mix(in srgb, var(--page-danger) 16%, transparent); }
 }
 
+/* Sound toggle: speaker with waves when on, crossed when off. */
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.sound-toggle svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sound-toggle .sound-mute { display: none; }
+.sound-toggle.muted .sound-mute { display: inline; }
+.sound-toggle.muted .sound-waves { display: none; }
+.sound-icon-button {
+  display: grid;
+  place-items: center;
+  width: 44px;                   /* same touch size as End mission */
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--page-text);
+  background: transparent;
+  color: var(--page-text);
+  cursor: pointer;
+  opacity: .85;
+}
+.sound-icon-button svg { width: 22px; height: 22px; }
+.sound-icon-button:focus-visible { outline: 3px solid var(--page-text); outline-offset: 3px; }
+@media (hover: hover) {
+  .sound-icon-button:hover { opacity: 1; background: color-mix(in srgb, var(--page-text) 12%, transparent); }
+}
+
 /* ── Indicator row ─────────────────────────────── */
 .indicators {
   flex-shrink: 0;
@@ -688,6 +714,8 @@ main { position: relative; z-index: 1; }
   .sol strong { font-size: 32px; }
   .sol small { font-size: 17px; }
   .end-button { min-height: 54px; padding-inline: 22px; font-size: 18px; border-radius: 28px; }
+  .sound-icon-button { width: 54px; height: 54px; }
+  .sound-icon-button svg { width: 26px; height: 26px; }
   .indicators { gap: 16px; }
   .tile { border-radius: 22px; }
   .tile .trend { right: 9px; bottom: 7px; font-size: 18px; }

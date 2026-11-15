@@ -120,5 +120,8 @@
   "tutorialEffectsTitle": "Lasting effects",
   "tutorialEffectsBody": "Lasting effects and planned changes appear here. Hover or tap an icon to see its changes per sol, or when it happens.",
   "imageSourceLabel": "Image source: ",
-  "menuGlossary": "Glossary"
+  "menuGlossary": "Glossary",
+  "soundLabel": "Sound",
+  "soundOn": "On",
+  "soundOff": "Off"
 }
