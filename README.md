@@ -76,7 +76,7 @@ O importador atualiza `data/cards.json` e `data/categories.json`. Os efeitos atu
 
 Novas missões têm tutorial sobre os indicadores e a carta: cinco etapas no Easy, seis no Hard. Radiation Shield explica o que é radiação e a proteção dos astronautas. Next, deslize ou setas avançam; Skip tutorial está disponível desde o início. A última etapa demonstra a inclinação e o preenchimento dos botões continuamente até **Let’s play!**, sem aplicar escolhas nem tocar o som de arrasto. Continuar missão não repete o tutorial.
 
-O glossário tem **41 termos**, em ordem alfabética, no menu e nos textos das cartas, com cor e sublinhado pontilhado. Hover, toque ou foco mostram explicações curtas; **botões de escolha não recebem glossário**. [Auditoria e fontes](docs/GLOSSARY.md).
+O glossário tem **41 termos**, em ordem alfabética, no menu e nos textos das cartas, com cor e sublinhado pontilhado. Hover, toque ou foco mostram explicações curtas; **botões de escolha não recebem glossário**. [Auditoria e fontes](docs/GLOSSARY.md). Nomes dos recursos/indicadores (Life Support, Oxygen e Radiation Shield, incluindo seus aliases) não recebem marcação nas cartas; suas explicações ficam nos detalhes dos indicadores. As entradas continuam no glossário do menu.
 
 Música e som ambiente ficam em loop após uma interação permitida pelo navegador. O botão de som no menu e no jogo controla todos os sons e guarda a preferência. Há efeitos para indicadores/botões, avanço do sol e movimento da carta (ao começar a inclinar e a cada virada ou retomada do arrasto, mesmo sem confirmar). Os sons usam a Web Audio API: tocam sem atraso e a música emenda o loop sem pausa. Interrupções são recuperadas nas próximas interações ou no retorno à aba, respeitando o som desligado.
 
