@@ -22,7 +22,7 @@
       "unitName": "percent",
       "start": 80,
       "max": 100,
-      "description": "Shows how ready the shelter is to protect the crew from radiation."
+      "description": "Shows how well the astronauts are protected from radiation."
     },
     "energy": {
       "name": "Energy",

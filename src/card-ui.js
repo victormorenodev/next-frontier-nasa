@@ -235,8 +235,11 @@
       source.hidden=!card.source || card.source.kind==='image';
       if(!source.hidden){
         source.append(Copy('source'));
-        const link=el('a',null,card.source.institution);
-        link.href=card.source.url;link.target='_blank';link.rel='noopener noreferrer';source.append(link);
+        (card.source.references || [card.source]).forEach((reference,index)=>{
+          if(index)source.append(' · ');
+          const link=el('a',null,reference.institution);
+          link.href=reference.url;link.target='_blank';link.rel='noopener noreferrer';source.append(link);
+        });
       }
 
       mockNote.hidden = !card.mock;

@@ -4,7 +4,19 @@ const fs=require('node:fs');const code=fs.readFileSync('src/validation.js','utf8
 const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface','glossary'].map(k=>[k,require('../data/'+k+'.json')]));
 validateData(data);
 assert.equal(data.glossary.length,10);
-assert.ok(data.cards.every(c=>c.source?.kind==='reference'));
+assert.ok(data.cards.filter(c=>!['12','13'].includes(c.id)).every(c=>c.source?.kind==='reference'));
+assert.ok(data.cards.filter(c=>['12','13'].includes(c.id)).every(c=>!c.source));
+assert.equal(data.cards.length,31);
+for(const invalid of ['', '../1', 1]){const bad=structuredClone(data);bad.cards[0].imageId=invalid;assert.throws(()=>validateData(bad));}
+const badReferences=structuredClone(data);badReferences.cards.find(c=>c.id==='8').source.references[0].url='javascript:alert(1)';assert.throws(()=>validateData(badReferences));
+
+assert.equal(data.cards.find(c=>c.id==='page1-5').imageId,'5');
+assert.equal(data.cards.find(c=>c.id==='1').left.effects.oxygen,3.85);
+assert.equal(data.cards.find(c=>c.id==='3').left.effects.water,12.4);
+assert.equal(data.cards.find(c=>c.id==='7').right.effects.food,1.5);
+assert.equal(data.cards.find(c=>c.id==='25').left.effects.shield,-16.5);
+assert.equal(data.cards.find(c=>c.id==='8').source.references.length,2);
+assert.ok(!data.cards.find(c=>c.id==='page1-11').source.url.includes('google.com'));
 const missingSources=structuredClone(data);delete missingSources.cards[0].source;missingSources.cards[0].imageSource='';validateData(missingSources);
 
 for(const mutate of [d=>d.glossary[0].definition='',d=>d.glossary[0].aliases=[],d=>d.glossary[1].aliases=['MOXIE']]){const bad=structuredClone(data);mutate(bad);assert.throws(()=>validateData(bad));}

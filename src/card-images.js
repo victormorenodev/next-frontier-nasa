@@ -2,7 +2,7 @@
 globalThis.CardImages = {
  placeholder: 'images/cards/placeholder.svg',
  candidates(card) {
-  return card.imageById ? ['jpg','png','jpeg'].map(ext => `images/cards/${encodeURIComponent(card.id)}.${ext}`) : [card.image];
+  return card.imageById ? ['jpg','png','jpeg'].map(ext => `images/cards/${encodeURIComponent(card.imageId ?? card.id)}.${ext}`) : [card.image];
  },
  show(image,card,onStatus) {
   let cancelled=false,timer;

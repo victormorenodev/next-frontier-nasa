@@ -1,6 +1,6 @@
 # Next Frontier
 
-Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **40 sols**. Todo o conteúdo do jogo está em inglês simples.
+Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **30 sols**. Todo o conteúdo do jogo está em inglês simples.
 
 Documentação consolidada em **15/11/2026**, conforme o código e os JSONs atuais.
 
@@ -25,9 +25,9 @@ O briefing apresenta a missão e a imagem da NASA com crédito. Clique, arraste 
 
 O₂, água, energia e comida usam unidades físicas nos dois modos; Shield usa um índice percentual de 0 a 100. Easy arredonda apenas a exibição; as frações continuam acumulando. Previsões e variações reais refletem a diferença entre os inteiros exibidos antes e depois.
 
-Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Qualquer recurso zerado encerra a missão com “Mission Failed”.
+Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 30. Qualquer recurso zerado encerra a missão com “Mission Failed”.
 
-As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 35%, Maintenance 25%, Exploration 15%, Science 20%, Emergency 5%. No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
+As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 9/31 (29,03%), Maintenance 9/31 (29,03%), Exploration 1/31 (3,23%), Science 5/31 (16,13%), Emergency 7/31 (22,58%). No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
 
 Na frente, cada imagem tem legenda. No verso, a explicação da escolha aparece somente se preenchida; os resultados mostram ícones e nomes dos recursos. Dificuldade e número de eventos não aparecem na HUD.
 
@@ -46,7 +46,7 @@ Passe o mouse sobre um indicador no PC ou segure/deslize no toque para ver a fun
 
 Probabilidades são frações entre 0 e 1. Categorias somam 1 e cartas somam 1 por categoria, com tolerância de 1e-9. Cada categoria precisa de cartas e total positivo. Probabilidade zero desabilita a seleção. Uma categoria com uma única carta usa probability 1 nessa carta. O filtro de dificuldade remove categorias sem cartas elegíveis e preserva a proporção entre as restantes.
 
-Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As 17 cartas atuais vêm de `Cartas de evento - Página2.csv`, usam imagens por ID e têm rótulos curtos com a resposta completa no verso. Os efeitos já vêm em unidades físicas/pontos e não são percentuais.
+Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As 31 cartas atuais vêm de `Cartas de evento - Página1.csv` e `Cartas de evento - Página2.csv`, usam imagens por ID e têm rótulos curtos com a resposta completa no verso. Os efeitos já vêm em unidades físicas/pontos e não são percentuais.
 
 - `effects`: mudanças imediatas nas unidades físicas dos estoques e pontos percentuais de Shield, inclusive no Easy.
 - `ongoing`: rates por sol, after opcional e for opcional; omitir for significa continuar indefinidamente.
@@ -112,7 +112,7 @@ O índice simplifica a disponibilidade; não estima tempo de sobrevivência nem 
 
 ## Finais da missão e teste de consumo
 
-Concluir os 40 sols sem zerar recursos mantém o final de sucesso. Zerar um recurso, por escolha ou durante a resolução diária, mostra **Mission Failed** e uma explicação específica. Easy tem quatro finais de falha: Life Support (oxigênio ou água), Radiation Shield, Energy Supply e Food Stock. Hard separa oxigênio e água, com cinco finais de falha. Encerrar manualmente continua mostrando Mission ended.
+Concluir os 30 sols sem zerar recursos mantém o final de sucesso. Zerar um recurso, por escolha ou durante a resolução diária, mostra **Mission Failed** e uma explicação específica. Easy tem quatro finais de falha: Life Support (oxigênio ou água), Radiation Shield, Energy Supply e Food Stock. Hard separa oxigênio e água, com cinco finais de falha. Encerrar manualmente continua mostrando Mission ended.
 
 Temporariamente, `data/mission.json` → `dailyCostMultiplier: 3` triplica o consumo-base de apenas um recurso escolhido para facilitar testes. No seletor Easy/Hard, escolher em Faster daily use o recurso ou Normal daily use para consumo normal. Produção e efeitos das cartas permanecem com seus valores próprios. Os coeficientes científicos originais em `flows.json` foram preservados. Para restaurar o consumo normal, usar 1 e começar uma nova missão; continuar um save preserva o multiplicador salvo (saves anteriores usam 1).
 
@@ -155,9 +155,9 @@ Toque em Next, deslize para qualquer lado ou use as setas para avançar; na últ
 O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.
 
 
-## Catálogo atual de eventos — Página2
+## Catálogo atual de eventos — Páginas1/2
 
-O catálogo contém somente as 17 cartas da Página2. O importador lê categorias, dificuldades e pares `resposta 1 // resposta 2` em unidades explícitas (kg, L, kWh, pontos de Shield), sem conversão de percentuais. Textos curtos na frente; respostas completas no verso e originais preservados. Pesos iguais dentro de cada categoria. Easy tem 15 cartas elegíveis, Hard tem 17. Side effects da carta 9 fica como anotação, sem gerar efeitos contínuos.
+O catálogo contém as 14 cartas da Página1 e as 17 da Página2, totalizando 31. O importador lê categorias, dificuldades e pares `resposta 1 // resposta 2` em unidades explícitas (kg, L, kWh, pontos de Shield), sem conversão de percentuais. Textos curtos na frente; respostas completas no verso e originais preservados. Pesos iguais dentro de cada categoria. Easy tem 27 cartas elegíveis, Hard tem 31. Side effects da carta 9 fica como anotação, sem gerar efeitos contínuos.
 
 `src/card-images.js` procura JPG, PNG e JPEG pelo ID, usa placeholder quando ausentes e tenta novamente a cada 15 segundos enquanto a frente está aberta. Não é preciso reimportar o CSV para adicionar imagens. A legenda descreve o arquivo e termina com Image source: e a origem informada, ou valor vazio. [Detalhes e auditoria](docs/CARDS.md).
 
@@ -193,7 +193,7 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 
 ## Fontes das cartas e das imagens
 
-O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Sources da Página2 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa Sources da Página2 ou Referência da Página1 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
 
 ## Remoção do painel inferior de efeitos
 
@@ -208,3 +208,13 @@ Arquivos em `sfx/`, controlados por `src/audio.js`: clique ao tocar nos indicado
 Os eventos reais de interação continuam observados após a primeira reprodução: um loop pausado ou bloqueado é tentado novamente no próximo toque/clique/tecla, independentemente do outro loop. Uma tentativa pendente por loop evita duplicar play durante a sequência pointerdown/pointerup/click. Retorno à aba/pageshow tenta retomar; pagehide pausa os loops. Uma reprodução assíncrona que termina após desligar o som ou ocultar a página não reinicia o áudio. Desligar pausa também efeitos já em reprodução. A preferência off continua respeitada, sem ativar som silenciosamente. Testes em tests/audio.test.cjs cobrem bloqueios parciais/totais, interrupções, retorno à aba e mute durante play pendente.
 
 A música de fundo e o som ambiente usam loop nativo contínuo. O efeito swipe toca uma vez quando a carta começa a inclinar no arrasto (mais de 8 px), mesmo se o jogador cancelar; não se repete ao soltar/confirmar. A demonstração automática do tutorial permanece silenciosa.
+
+Radiation Shield representa a proteção dos próprios astronautas contra radiação. A descrição atual vale também para partidas salvas e o ícone compartilhado dos indicadores/efeitos é um escudo envolvendo o capacete e os ombros de um astronauta. O índice continua abstrato (0–100), sem medir dose nem afirmar que um traje sozinho fornece proteção suficiente.
+
+## Catálogo combinado e IDs visuais
+
+31 eventos: 14 da Página1 e 17 da Página2. Colisões 5/9/11 são mantidas como eventos distintos; as versões da Página1 usam IDs internos page1-5/page1-9/page1-11. O campo imageId conserva o ID visual numérico para procurar JPG/PNG/JPEG; sourceCardId e catalogSheet permitem auditoria. Todas as cartas têm imagem válida (28 arquivos distintos). Probabilidades por carta são recalculadas igualmente dentro da categoria combinada. Valores da Página1 atual usam unidades físicas/pontos, sem aplicar percentuais. Fontes múltiplas aparecem no verso; fontes vazias continuam ocultas. Saves em andamento são preservados; novas missões usam o catálogo combinado.
+
+As probabilidades-base das categorias são proporcionais ao número de cartas no catálogo completo: contagem da categoria / total de cartas. O importador atualiza cards.json e categories.json juntos, sem arredondar os pesos. Cartas dentro da categoria permanecem equiprováveis. O filtro Easy continua removendo cartas Hard e normalizando os pesos existentes; saves preservam seus pesos anteriores.
+
+Novas missões duram 30 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.

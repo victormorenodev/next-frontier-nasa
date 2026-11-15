@@ -156,7 +156,7 @@
     ind.parts.forEach(p=>{
       const part=document.createElement('div');
       const description=document.createElement('p');description.className='resource-description';
-      description.textContent=GameData.resources.quantities[p.id].description || CurrentGameData.resources.quantities[p.id]?.description || '';
+      description.textContent=CurrentGameData.resources.quantities[p.id]?.description || GameData.resources.quantities[p.id].description || '';
       const value=document.createElement('div');value.className='value';
       const amount=document.createElement('strong');amount.className='amount';const display=ResourceDisplay.read(p.id,p.value);amount.textContent=`${fmt(display.value)}${display.unit==='%'?'%':display.unit?' '+display.unit:''}`;
       const capacity=document.createElement('span');capacity.className='of';capacity.textContent=Copy('resourceCapacity',{max:fmt(display.max),unit:display.unit==='%'?'':display.unit});

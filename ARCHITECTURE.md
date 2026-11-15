@@ -10,7 +10,7 @@ Consolidada em **15/11/2026** a partir do código atual. Este documento descreve
 | `data/mission.json` | Tripulação, duração do sol, duração da missão, eventos/sol e configurações dos modos |
 | `data/resources.json` | Quantidades, capacidades, unidades, descrições e indicadores |
 | `data/categories.json` | IDs, nomes e probabilidades das categorias |
-| `data/cards.json` | Dezessete cartas da Página2, escolhas, descrições, efeitos em unidades explícitas, imagens por ID, legendas, fontes e probabilidades condicionais |
+| `data/cards.json` | Trinta e uma cartas das Páginas1/2, escolhas, descrições, efeitos em unidades explícitas, imagens por ID, legendas, fontes e probabilidades condicionais |
 | `data/flows.json` | Consumos/produções, bases de conversão e classificação reference/simulated |
 | `data/interface.json` | Textos, templates, imagem e crédito do briefing |
 | `src/bootstrap.js` | Carregamento HTTP, validação, leitura do save, inicialização e tratamento de falha |
@@ -41,15 +41,15 @@ Uma falha de fetch/JSON/validação na inicialização é registrada no console 
 
 ## Dados e sorteio
 
-Configuração padrão: 4 astronautas, 40 sols, 80% de um evento e 20% de dois. `Engine.start(random, difficulty)` gera o cronograma completo e pede ao Deck exatamente a soma dos eventos: de 40 a 80 cartas.
+Configuração padrão: 4 astronautas, 30 sols, 80% de um evento e 20% de dois. `Engine.start(random, difficulty)` gera o cronograma completo e pede ao Deck exatamente a soma dos eventos: de 30 a 60 cartas.
 
 | Categoria | Probabilidade-base |
 | --- | ---: |
-| Routine | 35% |
-| Maintenance | 25% |
-| Exploration | 15% |
-| Science | 20% |
-| Emergency | 5% |
+| Routine | 9/31 ≈ 29,03% |
+| Maintenance | 9/31 ≈ 29,03% |
+| Exploration | 1/31 ≈ 3,23% |
+| Science | 5/31 ≈ 16,13% |
+| Emergency | 7/31 ≈ 22,58% |
 
 Cada evento consome dois sorteios independentes: categoria e carta dentro dela. Probabilidades são frações de 0 a 1; categorias somam 1 e cartas somam 1 por categoria, com tolerância 1e-9. Não há rodadas balanceadas nem proibição de repetição consecutiva. Probabilidade zero desabilita a seleção.
 
@@ -65,7 +65,7 @@ O snapshot do motor contém `state`, `mission`, `flows`, `deck`, `index`, `event
 2. `answer` aplica a escolha e registra fluxos no instante atual, sem avançar o relógio. Não reaplica se a carta já tem savedSide.
 3. A interface vira a carta, mostra resultados e salva.
 4. `next` passa à próxima carta do mesmo sol ou integra um sol completo após a última.
-5. Ao concluir o sol 40 sem falha, marca `ended: true`, `reason: 'complete'`; não exibe um sol 41. Recurso zerado encerra com `reason: 'failed'` e `failedResource`; encerramento manual usa `reason: 'quit'`.
+5. Ao concluir o sol 30 sem falha, marca `ended: true`, `reason: 'complete'`; não exibe um sol 41. Recurso zerado encerra com `reason: 'failed'` e `failedResource`; encerramento manual usa `reason: 'quit'`.
 
 `mission.elapsed` usa terços inteiros de sol, sem períodos jogáveis. Fluxos são aplicados em três passos internos por sol. Coeficientes `perCrewEarthDay` multiplicam amount por crew × solHours/24; os `perSol` já são totais diários. Cada passo respeita os limites do estoque e executa efeitos agendados quando devidos. Blindagem não é consumida por radiação.
 
@@ -123,7 +123,7 @@ Nome, cor e descrição vêm de `data/resources.json` → `easyLifeSupport`; a c
 
 `Indicators.depleted` encontra o primeiro recurso interno em zero na ordem de `resources.quantities` (oxygen, water, shield, energy, food). Não usa os números arredondados do Easy. `Engine.checkFailure` aplica a regra às escolhas e à retomada de saves ativos antigos com estoque zerado. Saves de missões já encerradas são descartados no bootstrap.
 
-`Flows.passTime(..., {stopOnEmpty: true})` verifica após o saldo de cada terço interno e após cada efeito agendado. Ao zerar, interrompe a integração, mantém consequências não executadas e retorna `failedResource` e `thirdsPassed`. Não existe período jogável novo: são passos internos da resolução diária. `Engine.next` salva o tempo efetivamente integrado e conserva o sol em que houve falha, sem avançar para outro evento. A falha prevalece inclusive no sol 40. Previsões usam a mesma interrupção, sem alterar o estado real. Chamadas sem a opção preservam a integração genérica dos fluxos.
+`Flows.passTime(..., {stopOnEmpty: true})` verifica após o saldo de cada terço interno e após cada efeito agendado. Ao zerar, interrompe a integração, mantém consequências não executadas e retorna `failedResource` e `thirdsPassed`. Não existe período jogável novo: são passos internos da resolução diária. `Engine.next` salva o tempo efetivamente integrado e conserva o sol em que houve falha, sem avançar para outro evento. A falha prevalece inclusive no sol 30. Previsões usam a mesma interrupção, sem alterar o estado real. Chamadas sem a opção preservam a integração genérica dos fluxos.
 
 A UI mostra imediatamente a falha de uma escolha e salva o final, sem apresentar o verso como se a missão continuasse. Falhas durante a resolução diária usam a animação de recursos existente antes de mostrar o final. A tela usa `failedTitle` e `failedBody-*` de `interface.json`, com botão New mission. No Easy, failedResource oxygen/water seleciona o mesmo texto life-support; Hard conserva as cinco causas. O save guarda a causa física, validada contra um estoque realmente zerado, e mantém o final somente na sessão atual, removendo o save ao encerrar. Encerramento manual e sucesso permanecem distintos.
 
@@ -177,9 +177,9 @@ O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the
 Taxas de um efeito removido param nas integrações futuras, e consequências agendadas removidas não disparam. O cancelamento não reverte estoques alterados antes dele, não restitui recursos consumidos e não reativa efeitos anteriores quando uma vaga fica livre. Previsões, active e integração usam a mesma normalização. `Engine.checkFailure` normaliza saves antigos na retomada; a UI salva essa migração quando os fluxos mudam, preservando estado físico, relógio e sequência.
 
 
-## Catálogo atual de eventos — Página2
+## Catálogo atual de eventos — Páginas1/2
 
-O catálogo contém somente as 17 cartas da Página2. O importador lê categorias, dificuldades e pares `resposta 1 // resposta 2` em unidades explícitas (kg, L, kWh, pontos de Shield), sem conversão de percentuais. Textos curtos na frente; respostas completas no verso e originais preservados. Pesos iguais dentro de cada categoria. Easy tem 15 cartas elegíveis, Hard tem 17. Side effects da carta 9 fica como anotação, sem gerar efeitos contínuos.
+O catálogo contém as 14 cartas da Página1 e as 17 da Página2, totalizando 31. O importador lê categorias, dificuldades e pares `resposta 1 // resposta 2` em unidades explícitas (kg, L, kWh, pontos de Shield), sem conversão de percentuais. Textos curtos na frente; respostas completas no verso e originais preservados. Pesos iguais dentro de cada categoria. Easy tem 27 cartas elegíveis, Hard tem 31. Side effects da carta 9 fica como anotação, sem gerar efeitos contínuos.
 
 `src/card-images.js` procura JPG, PNG e JPEG pelo ID, usa placeholder quando ausentes e tenta novamente a cada 15 segundos enquanto a frente está aberta. Não é preciso reimportar o CSV para adicionar imagens. A legenda descreve o arquivo e termina com Image source: e a origem informada, ou valor vazio. [Detalhes e auditoria](docs/CARDS.md).
 
@@ -215,7 +215,7 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 
 ## Fontes das cartas e das imagens
 
-O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Sources da Página2 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa Sources da Página2 ou Referência da Página1 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
 
 ## Remoção do painel inferior de efeitos
 
@@ -241,3 +241,13 @@ Validação feita: no navegador (via HTTP), registrando as chamadas de `play()`:
 Os eventos reais de interação continuam observados após a primeira reprodução: um loop pausado ou bloqueado é tentado novamente no próximo toque/clique/tecla, independentemente do outro loop. Uma tentativa pendente por loop evita duplicar play durante a sequência pointerdown/pointerup/click. Retorno à aba/pageshow tenta retomar; pagehide pausa os loops. Uma reprodução assíncrona que termina após desligar o som ou ocultar a página não reinicia o áudio. Desligar pausa também efeitos já em reprodução. A preferência off continua respeitada, sem ativar som silenciosamente. Testes em tests/audio.test.cjs cobrem bloqueios parciais/totais, interrupções, retorno à aba e mute durante play pendente.
 
 A música de fundo e o som ambiente usam loop nativo contínuo. O efeito swipe toca uma vez quando a carta começa a inclinar no arrasto (mais de 8 px), mesmo se o jogador cancelar; não se repete ao soltar/confirmar. A demonstração automática do tutorial permanece silenciosa.
+
+Radiation Shield representa a proteção dos próprios astronautas contra radiação. A descrição atual vale também para partidas salvas e o ícone compartilhado dos indicadores/efeitos é um escudo envolvendo o capacete e os ombros de um astronauta. O índice continua abstrato (0–100), sem medir dose nem afirmar que um traje sozinho fornece proteção suficiente.
+
+## Catálogo combinado e IDs visuais
+
+31 eventos: 14 da Página1 e 17 da Página2. Colisões 5/9/11 são mantidas como eventos distintos; as versões da Página1 usam IDs internos page1-5/page1-9/page1-11. O campo imageId conserva o ID visual numérico para procurar JPG/PNG/JPEG; sourceCardId e catalogSheet permitem auditoria. Todas as cartas têm imagem válida (28 arquivos distintos). Probabilidades por carta são recalculadas igualmente dentro da categoria combinada. Valores da Página1 atual usam unidades físicas/pontos, sem aplicar percentuais. Fontes múltiplas aparecem no verso; fontes vazias continuam ocultas. Saves em andamento são preservados; novas missões usam o catálogo combinado.
+
+As probabilidades-base das categorias são proporcionais ao número de cartas no catálogo completo: contagem da categoria / total de cartas. O importador atualiza cards.json e categories.json juntos, sem arredondar os pesos. Cartas dentro da categoria permanecem equiprováveis. O filtro Easy continua removendo cartas Hard e normalizando os pesos existentes; saves preservam seus pesos anteriores.
+
+Novas missões duram 30 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.

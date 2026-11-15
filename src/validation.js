@@ -61,11 +61,13 @@ export function validateData(d, {legacy = false, allowLegacyShield = false} = {}
     need(c.sourceVerified===undefined||typeof c.sourceVerified==='boolean','card '+c.id+'.sourceVerified');
     need(c.sourceDescription===undefined||typeof c.sourceDescription==='string','card '+c.id+'.sourceDescription');
     need(c.imageSource===undefined||c.imageSource===''||typeof c.imageSource==='string'&&/^https?:\/\//.test(c.imageSource),'card '+c.id+'.imageSource');
+    need(c.imageId===undefined||typeof c.imageId==='string'&&/^\d+$/.test(c.imageId),'card '+c.id+'.imageId');
     need(c.imageById===undefined||typeof c.imageById==='boolean','card '+c.id+'.imageById');
     need(c.imageCaption===undefined||typeof c.imageCaption==='string','card '+c.id+'.imageCaption');
     need(c.description&&c.image&&['easy','medium','hard'].includes(c.difficulty),'card '+c.id);
     if(c.source!=null){
       need(c.source.institution&&/^https?:\/\//.test(c.source.url),'card '+c.id+'.source');
+      if(c.source.references!==undefined)need(Array.isArray(c.source.references)&&c.source.references.length>0&&c.source.references.every(ref=>ref&&typeof ref.institution==='string'&&ref.institution.trim()&&/^https?:\/\//.test(ref.url)),'card '+c.id+'.source.references');
       need(c.source.kind===undefined||['reference','image'].includes(c.source.kind),'card '+c.id+'.source.kind');
     }
     for(const side of ['left','right']){

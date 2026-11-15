@@ -8,13 +8,17 @@ const I = require('./load-engine.cjs').Indicators;
 // Small seeded random so results are repeatable.
 const seeded = seed => () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 
-// The authored catalog contains 17 unique IDs with runtime image lookup.
+// The authored catalog contains 31 unique IDs with runtime image lookup.
 CARDS.forEach(c => assert.deepEqual(D.validateCard(c), [], c.id));
-assert.equal(CARDS.length, 17);
+assert.equal(CARDS.length, 31);
 assert.equal(new Set(CARDS.map(c => c.id)).size, CARDS.length);
 assert.ok(CARDS.every(c => !c.mock));
-assert.deepEqual(CARDS.map(c=>c.id),['5','9','11','14','15','16','17','18','19','20','21','22','23','24','26','27','29']);
-for(const c of CARDS)assert.equal(c.imageById,true);
+assert.deepEqual(CARDS.map(c=>c.id),['5','9','11','14','15','16','17','18','19','20','21','22','23','24','26','27','29','1','2','3','4','page1-5','6','7','8','page1-9','10','page1-11','12','13','25']);
+for(const c of CARDS){
+ assert.equal(c.imageById,true);
+ assert.ok(['jpg','png','jpeg'].some(ext=>require('node:fs').existsSync(`images/cards/${c.imageId}.${ext}`)),c.id+' needs an image');
+}
+
 
 // Validation catches bad data.
 const bad = {...CARDS[0], difficulty: 'super', left: {label: 'x', effects: {gold: 1}}};
@@ -31,6 +35,7 @@ const deck = D.createDeck(CARDS, 100000, seeded(42));
 const counts = {};
 for (const c of deck) counts[c.category] = (counts[c.category] || 0) + 1;
 for (const category of categories) {
+  assert.equal(category.probability,CARDS.filter(c=>c.category===category.id).length/CARDS.length);
   assert.ok(Math.abs(counts[category.id] / deck.length - category.probability) < 0.006, category.id);
   const members=CARDS.filter(c=>c.category===category.id);
   for(const card of members){
@@ -45,7 +50,7 @@ assert.equal(D.createDeck([only],5,()=>0,[{id:'solo',name:'Solo',probability:1}]
 let rolls=[0.35,0];
 assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].category,'maintenance');
 rolls=[.96,.5];
-assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].id,CARDS.filter(c=>c.category==='emergency')[2].id);
+assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].id,CARDS.filter(c=>c.category==='emergency')[3].id);
 assert.throws(()=>D.createDeck(CARDS,1,()=>1));
 assert.throws(()=>D.createDeck(CARDS,-1));
 const disabled=[{...only,probability:0},{...only,id:'enabled',probability:1}];
@@ -59,8 +64,8 @@ assert.ok(easyDeck.every(c=>c.id==='safe'));
 assert.throws(()=>D.createDeck(fixtureCards,1,()=>0,fixtureCategories,['medium']));
 assert.equal(fixtureCards[0].probability,1);
 const easyCatalog=D.createDeck(CARDS,1000,seeded(8),categories,['easy','medium']);
-assert.ok(easyCatalog.every(c=>!['9','26'].includes(c.id)));
-assert.ok(new Set(D.createDeck(CARDS,20000,seeded(9),categories).map(c=>c.id)).size===17);
+assert.ok(easyCatalog.every(c=>c.difficulty!=='hard'));
+assert.ok(new Set(D.createDeck(CARDS,20000,seeded(9),categories).map(c=>c.id)).size===31);
 
 // Shield is a 0–100 score; sheet p values are additive points.
 const s0=I.createState();

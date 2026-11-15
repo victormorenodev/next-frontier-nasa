@@ -6,13 +6,13 @@ Consolidado em **15/11/2026** a partir do código e dos JSONs atuais. Leia este 
 
 - Jogo de decisões por cartas inspirado em Reigns: administrar uma base marciana com **quatro astronautas**. O projeto surgiu a partir do desafio Junior Astronaut Mission Trainer do NASA Space Apps; não afirmar endosso, premiação ou submissão oficial sem evidência.
 - Todo texto visível ao jogador é **em inglês simples**. Documentação interna pode ser em português. Priorizar crianças: ícones claros, frases curtas, contraste e controles de toque/teclado acessíveis.
-- A missão termina ao concluir **40 sols** ou quando qualquer recurso zera. Cada sol tem **1 carta (80%)** ou **2 cartas (20%)**; não há sols sem eventos. A meta histórica de 15–20 minutos ainda não foi validada com usuários.
-- Sortear primeiro categoria, depois carta da categoria, com reposição. Repetições consecutivas são permitidas, inclusive no mesmo sol. Categorias-base: Routine 35%, Maintenance 25%, Exploration 15%, Science 20%, Emergency 5%.
+- A missão termina ao concluir **30 sols** ou quando qualquer recurso zera. Cada sol tem **1 carta (80%)** ou **2 cartas (20%)**; não há sols sem eventos. A meta histórica de 15–20 minutos ainda não foi validada com usuários.
+- Sortear primeiro categoria, depois carta da categoria, com reposição. Repetições consecutivas são permitidas, inclusive no mesmo sol. Categorias-base: Routine 9/31 (29,03%), Maintenance 9/31 (29,03%), Exploration 1/31 (3,23%), Science 5/31 (16,13%), Emergency 7/31 (22,58%).
 - Após o briefing, escolher **Easy** (cientistas de 7–10 anos) ou **Hard** (astronautas de 11+). Easy sorteia somente cartas easy/medium; Hard permite os três níveis. Após filtrar, normalizar probabilidades e excluir categorias sem cartas elegíveis.
 - O₂, água, energia e comida usam unidades físicas internas em ambos os modos; Shield usa uma escala interna de 0 a 100 pontos percentuais. Easy exibe os estoques normalizados de **0 a 100, sem símbolo %**, e Shield com %. Não arredondar o estado interno. Previsões e variações reais usam a diferença dos valores arredondados antes/depois; frações continuam acumulando. Hard exibe unidades físicas nos estoques e % em Shield.
 - Cinco recursos: Oxygen Level (kg), Water Stock (L), Radiation Shield (0–100%), Energy Supply (kWh) e Food Stock (kg de alimento seco). Capacidades, explicações e cores vêm de resources.json; a fração inicial por modo vem de mission.json.
 - As cartas não possuem duração individual. Escolhas aplicam efeitos imediatos e registram efeitos contínuos/agendados; consumo e produção de um sol são aplicados uma única vez após sua última carta. Terços de sol são apenas passos internos de integração, sem manhã/tarde/noite jogáveis.
-- Existem 17 cartas de `Cartas de evento - Página2.csv`, com categorias/dificuldades e efeitos em unidades explícitas. Imagens são resolvidas por ID em images/cards, com placeholder quando ausentes. Recursos zerados causam derrota automática; as cartas ainda não são cientificamente dimensionadas para uma base real.
+- Existem 31 cartas das duas planilhas `Cartas de evento - Página1.csv` e `Cartas de evento - Página2.csv`, com categorias/dificuldades e efeitos em unidades explícitas. Imagens são resolvidas por ID em images/cards, com placeholder quando ausentes. Recursos zerados causam derrota automática; as cartas ainda não são cientificamente dimensionadas para uma base real.
 
 ## Interface e comportamento atuais
 
@@ -73,7 +73,7 @@ O painel de efeitos abaixo das cartas foi removido de ambos os modos. O tutorial
 ## Finais e consumo temporário para teste
 
 - Recurso em zero encerra com “Mission Failed”. Easy tem quatro finais de falha: Life Support (água ou oxigênio), blindagem, energia e comida. Hard tem cinco: oxigênio, água, blindagem, energia e comida. Os textos ficam em `data/interface.json` (`failedTitle`, `failedBody-*`).
-- Verificar após efeitos imediatos e em cada passo interno dos fluxos diários/agendados; interromper ao zerar, sem permitir resgate posterior. Falha tem prioridade sobre sucesso no sol 40. Um zero arredondado na apresentação não causa derrota se o valor interno ainda for positivo, inclusive em Shield. Empate usa a ordem dos recursos em `resources.quantities` (atualmente oxygen, water, shield, energy, food).
+- Verificar após efeitos imediatos e em cada passo interno dos fluxos diários/agendados; interromper ao zerar, sem permitir resgate posterior. Falha tem prioridade sobre sucesso no sol 30. Um zero arredondado na apresentação não causa derrota se o valor interno ainda for positivo, inclusive em Shield. Empate usa a ordem dos recursos em `resources.quantities` (atualmente oxygen, water, shield, energy, food).
 - `mission.dailyCostMultiplier` está temporariamente em **3**: é mantido para compatibilidade com consumos-base negativos selecionados em saves antigos, mantendo coeficientes originais e produção. Efeitos de cartas não são multiplicados. Voltar para 1 encerra o ajuste de teste em novas missões. Saves preservam a configuração com que começaram; ausência do campo equivale a 1.
 - Blindagem continua sem consumo diário por radiação. O final é uma regra do jogo, não um cálculo de dose ou sobrevivência.
 
@@ -142,7 +142,7 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 
 ## Fontes das cartas e das imagens
 
-O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Sources da Página2 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa Sources da Página2 ou Referência da Página1 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
 
 ## Remoção do painel inferior de efeitos
 
@@ -171,3 +171,13 @@ Cinco arquivos em `sfx/`, tocados por `src/audio.js` (`GameAudio`):
 Os eventos reais de interação continuam observados após a primeira reprodução: um loop pausado ou bloqueado é tentado novamente no próximo toque/clique/tecla, independentemente do outro loop. Uma tentativa pendente por loop evita duplicar play durante a sequência pointerdown/pointerup/click. Retorno à aba/pageshow tenta retomar; pagehide pausa os loops. Uma reprodução assíncrona que termina após desligar o som ou ocultar a página não reinicia o áudio. Desligar pausa também efeitos já em reprodução. A preferência off continua respeitada, sem ativar som silenciosamente. Testes em tests/audio.test.cjs cobrem bloqueios parciais/totais, interrupções, retorno à aba e mute durante play pendente.
 
 A música de fundo e o som ambiente usam loop nativo contínuo. O efeito swipe toca uma vez quando a carta começa a inclinar no arrasto (mais de 8 px), mesmo se o jogador cancelar; não se repete ao soltar/confirmar. A demonstração automática do tutorial permanece silenciosa.
+
+Radiation Shield representa a proteção dos próprios astronautas contra radiação. A descrição atual vale também para partidas salvas e o ícone compartilhado dos indicadores/efeitos é um escudo envolvendo o capacete e os ombros de um astronauta. O índice continua abstrato (0–100), sem medir dose nem afirmar que um traje sozinho fornece proteção suficiente.
+
+## Catálogo combinado e IDs visuais
+
+31 eventos: 14 da Página1 e 17 da Página2. Colisões 5/9/11 são mantidas como eventos distintos; as versões da Página1 usam IDs internos page1-5/page1-9/page1-11. O campo imageId conserva o ID visual numérico para procurar JPG/PNG/JPEG; sourceCardId e catalogSheet permitem auditoria. Todas as cartas têm imagem válida (28 arquivos distintos). Probabilidades por carta são recalculadas igualmente dentro da categoria combinada. Valores da Página1 atual usam unidades físicas/pontos, sem aplicar percentuais. Fontes múltiplas aparecem no verso; fontes vazias continuam ocultas. Saves em andamento são preservados; novas missões usam o catálogo combinado.
+
+As probabilidades-base das categorias são proporcionais ao número de cartas no catálogo completo: contagem da categoria / total de cartas. O importador atualiza cards.json e categories.json juntos, sem arredondar os pesos. Cartas dentro da categoria permanecem equiprováveis. O filtro Easy continua removendo cartas Hard e normalizando os pesos existentes; saves preservam seus pesos anteriores.
+
+Novas missões duram 30 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.
