@@ -31,28 +31,30 @@
     card3d.append(inner);
 
     // Front parts
-    const top = el('div', 'card-top');
-    const difficulty = el('span', 'difficulty');
-    const count = el('span', 'count');
-    top.append(difficulty, count);
+
+    const figure = el('figure', 'card-figure');
     const image = el('img', 'card-image');
+    const caption = el('figcaption', 'card-caption');
+    figure.append(image, caption);
     const text = el('p', 'card-text');
     const answers = el('div', 'answers');
     const leftBtn = el('button', 'answer left');
     const rightBtn = el('button', 'answer right');
     leftBtn.type = rightBtn.type = 'button';
     answers.append(leftBtn, rightBtn);
-    front.append(top, image, text, answers);
+    front.append(figure, text, answers);
 
     // Back parts
     const chosenLabel = el('p', 'chosen-label', Copy("youChose"));
     const chosen = el('h2', 'chosen');
+    const choiceDescription = el('p', 'choice-description');
+    choiceDescription.hidden = true;
     const effects = el('ul', 'effects');
     const source = el('p', 'source');
     const mockNote = el('p', 'mock-note', Copy("mockNote"));
     const nextBtn = el('button', 'next');
     nextBtn.type = 'button';
-    back.append(chosenLabel, chosen, effects, source, mockNote, nextBtn);
+    back.append(chosenLabel, chosen, choiceDescription, effects, source, mockNote, nextBtn);
 
     // ── Answering ──
     function answer(side) {
@@ -128,7 +130,6 @@
       card3d.style.transform = '';
       card3d.classList.remove('dragging');
       slot.classList.remove('ended', 'quiet-sol');
-      difficulty.hidden = false;
       image.hidden = false;
       slot.classList.add('has-card');
       if (!card3d.isConnected) slot.replaceChildren(card3d);
@@ -143,11 +144,11 @@
       void card3d.offsetWidth;
       card3d.classList.add('deal');
 
-      difficulty.textContent = Deck.DIFFICULTIES[card.difficulty];
-      difficulty.dataset.level = card.difficulty;
-      count.textContent = Copy("eventCount", {number,total});
       image.src = card.image;
       image.alt = card.imageAlt || '';
+      const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&c.image===card.image);
+      caption.textContent=(card.imageCaption ?? currentCard?.imageCaption ?? '').trim();
+      caption.hidden=!caption.textContent;
       text.textContent = card.description;
       leftBtn.textContent = `← ${card.left.label}`;
       rightBtn.textContent = `${card.right.label} →`;
@@ -162,7 +163,12 @@
       const q = Indicators.QUANTITIES[key];
       const li = el('li', `${cls || ''} ${amount < 0 ? 'down' : 'up'}`.trim());
       li.style.setProperty('--c', COLOR_OF[key]);
-      const name = el('span', 'name', q.name);
+      const indicator=Indicators.INDICATORS.find(ind=>ind.parts.includes(key));
+      const name = el('span', 'name');
+      const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');
+      icon.classList.add('effect-resource-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');
+      icon.innerHTML=ResourceIcons[indicator?.icon || key] || '';
+      name.append(icon,el('span','effect-resource-name',q.name));
       if (hint) name.append(el('small', null, hint));
       li.append(name, el('b', 'amount', `${amount < 0 ? '−' : '+'}${fmt(Math.abs(amount))} ${q.unit}${unitSuffix}`));
       return li;
@@ -178,6 +184,9 @@
     function showBack(card, side, isLast, happened) {
       const picked = card[side];
       chosen.textContent = picked.label;
+      const explanation = typeof picked.description === 'string' ? picked.description.trim() : '';
+      choiceDescription.textContent = explanation;
+      choiceDescription.hidden = !explanation;
       effects.replaceChildren();
       // Now: immediate changes.
       const now = Object.entries(picked.effects || {});

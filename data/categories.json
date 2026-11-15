@@ -1,0 +1,27 @@
+[
+  {
+    "id": "routine",
+    "name": "Routine",
+    "probability": 0.35
+  },
+  {
+    "id": "maintenance",
+    "name": "Maintenance",
+    "probability": 0.25
+  },
+  {
+    "id": "exploration",
+    "name": "Exploration",
+    "probability": 0.2
+  },
+  {
+    "id": "science",
+    "name": "Science",
+    "probability": 0.15
+  },
+  {
+    "id": "emergency",
+    "name": "Emergency",
+    "probability": 0.05
+  }
+]

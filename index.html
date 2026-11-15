@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+  <!-- Decorative view through the base window; never intercepts game input. -->
+  <div class="base-window" aria-hidden="true">
+    <div class="mars-landscape"></div>
+    <div class="window-glass"></div>
+    <div class="window-frame"></div>
+  </div>
   <section class="mission-intro" id="mission-intro" aria-labelledby="intro-title">
     <article class="briefing" id="briefing">
       <figure class="briefing-figure">
@@ -36,13 +42,7 @@
     </header>
 
     <section class="indicators" id="indicators" aria-label="Base indicators"></section>
-    <!-- Info box under the indicators: shows the active effects; while an indicator is held,
-         its detail covers this box (same size), so no extra space is needed. -->
     <div class="readout" id="readout">
-      <section class="effects-box" aria-labelledby="effects-title">
-        <h2><span id="effects-title"><span data-copy="html14"></span></span><span class="more" id="active-more"></span></h2>
-        <ul id="active-effects"></ul>
-      </section>
       <section class="detail empty" id="detail" aria-live="polite"></section>
     </div>
 
@@ -50,10 +50,26 @@
     <div class="card-area">
       <section class="card-slot" id="card" aria-label="Mission card"></section>
     </div>
+    <button class="tablet-toggle" id="open-tablet" hidden type="button" aria-haspopup="dialog" aria-controls="effects-tablet" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M9 7h6M9 11h6M11 18h2"/></svg>
+      <span data-copy="tabletOpen"></span><span id="tablet-count" class="tablet-count">0</span><span aria-hidden="true">↑</span>
+    </button>
   </main>
 
   <!-- Decorative day turnover, always behind the game. -->
   <div id="sol-transition" class="sol-transition" aria-hidden="true" hidden></div>
+
+  <dialog id="effects-tablet" class="tablet-dialog" aria-labelledby="tablet-title">
+    <div class="tablet-scene">
+      <section class="tablet-device">
+        <header class="tablet-heading"><div><p class="tablet-kicker" data-copy="tabletKicker"></p><h2 id="tablet-title" data-copy="tabletTitle"></h2></div><button id="close-tablet" type="button" class="tablet-close" data-copy="tabletClose"></button></header>
+        <p class="tablet-summary" id="tablet-summary" aria-live="polite"></p>
+        <ul id="active-effects" class="tablet-effects"></ul>
+        <nav class="tablet-pages" aria-label="Effects pages"><button id="tablet-prev" type="button" data-copy="tabletPrev"></button><span id="tablet-page" aria-live="polite"></span><button id="tablet-next" type="button" data-copy="tabletNext"></button></nav>
+        <div class="tablet-home" aria-hidden="true"></div>
+      </section>
+    </div>
+  </dialog>
 
   <!-- Asks before ending, so a stray tap does not end the mission. -->
   <dialog class="confirm" id="end-dialog" aria-labelledby="end-title">

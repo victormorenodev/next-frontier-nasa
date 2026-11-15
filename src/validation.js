@@ -1,4 +1,4 @@
-export function validateData(d) {
+export function validateData(d, {legacy = false} = {}) {
   const need=(ok,path)=>{if(!ok)throw Error(`Invalid data: ${path}`)};
   const finite=Number.isFinite;
   need(d?.mission?.version===1,'mission.version');
@@ -7,7 +7,7 @@ export function validateData(d) {
   need(finite(d.mission.solHours)&&d.mission.solHours>0,'mission.solHours');
   const p=d.mission.eventChances;
   need(p&&[p.one,p.two].every(n=>finite(n)&&n>=0&&n<=1)&&Math.abs(p.one+p.two-1)<1e-9,'mission.eventChances');
-  need(typeof d.mission.avoidConsecutive==='boolean','mission.avoidConsecutive');
+
   const q=d.resources?.quantities; need(q&&Object.keys(q).length,'resources.quantities');
   for(const [id,r] of Object.entries(q)) {
     need(/^[a-z][a-z0-9-]*$/.test(id),`resource ID ${id}`);
@@ -19,11 +19,21 @@ export function validateData(d) {
   const effects=(e,path)=>{need(e&&typeof e==='object'&&!Array.isArray(e),path);for(const [k,v]of Object.entries(e))need(k in q&&finite(v),path+'.'+k)};
   unique(d.flows,'flows');
   for(const f of d.flows)need(f.quantity in q&&finite(f.amount)&&['perSol','perCrewEarthDay'].includes(f.basis)&&['reference','simulated'].includes(f.kind),'flow '+f.id);
-  unique(d.cards,'cards');need(!d.mission.avoidConsecutive||d.cards.length>=2,'cards: need at least two');
+  unique(d.cards,'cards');
+  if (!legacy) {
+    unique(d.categories,'categories');
+    const chance = n => finite(n) && n >= 0 && n <= 1;
+    const sum = list => Math.abs(list.reduce((n,x)=>n+x.probability,0)-1)<1e-9;
+    need(d.categories.every(c=>typeof c.name==='string'&&c.name.trim()&&chance(c.probability))&&sum(d.categories),'categories.probability');
+    const ids=new Set(d.categories.map(c=>c.id));
+    need(d.cards.every(c=>ids.has(c.category)&&chance(c.probability)),'cards.category/probability');
+    for(const c of d.categories){const group=d.cards.filter(card=>card.category===c.id);need(group.length>0&&sum(group),'category '+c.id+'.cards.probability')}
+  }
   for(const c of d.cards){
+    need(c.imageCaption===undefined||typeof c.imageCaption==='string','card '+c.id+'.imageCaption');
     need(c.description&&c.image&&['easy','medium','hard'].includes(c.difficulty)&&c.source?.institution&&/^https?:\/\//.test(c.source.url),'card '+c.id);
     for(const side of ['left','right']){
-      const a=c[side];need(a&&typeof a.label==='string','card '+c.id+'.'+side);effects(a.effects||{},c.id+'.effects');
+      const a=c[side];need(a&&typeof a.label==='string','card '+c.id+'.'+side);need(a.description===undefined||typeof a.description==='string',c.id+'.'+side+'.description');effects(a.effects||{},c.id+'.effects');
       for(const o of a.ongoing||[]){effects(o.rates,c.id+'.ongoing');need(Object.keys(o.rates).length&& (o.after==null||Number.isInteger(o.after)&&o.after>=0)&&(o.for==null||Number.isInteger(o.for)&&o.for>0),c.id+'.ongoing.duration')}
       for(const l of a.later||[]){effects(l.effects,c.id+'.later');need(Object.keys(l.effects).length&&Number.isInteger(l.after)&&l.after>0,c.id+'.later.after')}
     }
@@ -32,7 +42,7 @@ export function validateData(d) {
   return d;
 }
 export function validateSave(s){
- if(s?.version!==1)throw Error('Unsupported save version');validateData(s.data);
+ if(s?.version!==1)throw Error('Unsupported save version');validateData(s.data, {legacy: !Object.hasOwn(s.data || {}, 'categories')});
  const need=(ok)=>{if(!ok)throw Error('Invalid saved mission')};
  need(s.mission&&Number.isInteger(s.mission.sol)&&s.mission.sol>=1&&s.mission.sol<=s.data.mission.totalSols&&Number.isInteger(s.mission.elapsed)&&s.mission.elapsed>=0&&typeof s.mission.ended==='boolean');
  need(Array.isArray(s.schedule)&&s.schedule.length===s.data.mission.totalSols&&s.schedule.every(n=>n===1||n===2));

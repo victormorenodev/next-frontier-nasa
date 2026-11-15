@@ -6,6 +6,5 @@
   "eventChances": {
     "one": 0.8,
     "two": 0.2
-  },
-  "avoidConsecutive": true
+  }
 }

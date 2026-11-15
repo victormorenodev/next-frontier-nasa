@@ -682,3 +682,81 @@ A fonte editável é `data/`: missão, recursos/indicadores, fluxos, cartas e in
 O slot `next-frontier-save` contém versão, dados completos usados pela partida, recursos, relógio, cronograma, ordem das cartas, posição, resposta e fluxos pendentes. Valores infinitos de duração usam um marcador no JSON. Ao continuar, os dados do save prevalecem para essa partida; começar novamente recarrega os dados atuais. Saves incompatíveis são preservados até confirmação de substituição. Outra aba que salva suspende a interface antiga.
 
 Validação: `npm test` cobre indicadores, missão, fluxos, baralho, JSONs e ações/saves. Teste real no Chromium por HTTP confirmou início, escolha, recarga, retorno pelo verso sem reaplicar efeitos e conclusão da missão no sol 40, sem erros JavaScript. O workflow GitHub Pages executa testes e publica somente arquivos de execução, sem documentos internos ou ferramentas. Publicação remota ainda não realizada.
+
+
+## Passo 24 — Vista da janela da base
+
+O background usa uma ilustração SVG local simples de Marte (`assets/images/mars-window.svg`), com céu, sol, montanhas em camadas e pedras. `.base-window` fica atrás do jogo, com moldura de habitat e reflexo discreto no vidro; é decorativa, `aria-hidden` e sem interação. A moldura reduz em celulares. As cartas e indicadores mantêm seu layout e fundos opacos; a luz de passagem de sol continua por cima da paisagem, sem bloquear o jogo. A publicação já inclui todo o diretório assets.
+
+## Passo 25 — Área interna e tela sem rolagem
+
+A página usa `100dvh`, overflow oculto em html/body e overscroll desativado. O padding interno é independente da moldura e respeita safe areas. A carta usa somente o espaço restante, sem a antiga altura mínima que forçava rolagem. Tablets mantêm a escala ampliada com margens internas maiores.
+
+Celulares em paisagem baixa usam console à esquerda e carta à direita. O briefing passa a duas colunas nesses formatos e compacta a tipografia em alturas menores. Quando há save, os botões de continuar/nova missão ficam lado a lado; a imagem reduz nos celulares para reservar espaço ao texto. O verso de cartas estreitas tem espaçamentos compactos. A lista interna de efeitos conserva overflow de segurança para conteúdo futuro extenso; a página inteira não rola.
+
+Conferido no Chromium com cache desativado em 320×568, 375×667, 390×844, 768×1024, 1032×1376, 1366×1024, 844×390, 667×375 e 568×320: apresentação, retomada e faces das cartas dentro de suas regiões; contador e botões acessíveis sem rolagem da tela. `npm test` passou.
+
+
+## Experimento — tablet do astronauta para efeitos ativos
+
+Branch `experiment/astronaut-effects-tablet`, criada a partir de dev com as alterações locais existentes preservadas. Remove a seção fixa de efeitos acima da carta. A faixa de detalhe dos indicadores deixa de ocupar altura; o detalhe aparece como tooltip abaixo da linha, por hover de mouse no PC ou segurar/deslizar no toque, mantendo acesso por foco de teclado.
+
+O botão **Crew tablet** abaixo da carta mostra o total de efeitos e abre um dialog nativo, com animação de entrada de baixo, tablet e luvas/mangas de astronauta em SVG local. O painel apresenta até três efeitos por página, sem limitar o total: nome, duração restante, recurso e variação física por sol. Páginas permitem consultar todos os efeitos sem rolar a tela; estado vazio exibe **All clear**. Fechar, Escape e clique fora encerram o painel e devolvem foco ao botão. O dialog impede respostas às cartas enquanto está aberto. Movimento reduzido desativa a entrada animada.
+
+Textos do tablet ficam no JSON de interface; `Copy` usa o conteúdo atual como fallback para chaves novas ausentes em saves antigos. O desenho e o layout permanecem no CSS/SVG. Em paisagem baixa o botão ocupa a coluna dos controles; o tablet usa três colunas para os efeitos. Conferido no Chromium com sete efeitos em 1032×1376, 375×667, 320×568 e 844×390: hover, ausência da seção antiga, botão dentro da tela, abertura, três páginas e último efeito acessível, sem erros JavaScript. `npm test` passou.
+
+O desenho das luvas foi refinado para uma visão em primeira pessoa: antebraços entram pelos cantos inferiores, quatro dedos arredondados fecham ao redor de cada lateral, e os polegares prendem a borda interna do tablet. Contornos grossos, cores suaves, punhos sanfonados e faixas laranja reforçam o estilo cartunesco. O SVG é simétrico e limita as mãos às bordas para preservar a leitura da tela.
+
+## Revisão do tablet — relatório de missão
+
+As mãos e o SVG do astronauta foram removidos. O tablet sobe ao abrir e desce ao recolher; botão, Escape e clique fora usam o mesmo fluxo de fechamento animado, com fallback de timer e retorno de foco. Movimento reduzido fecha imediatamente. O botão **Outpost report** ganhou visual de controle da base, contador e estado `aria-expanded`.
+
+O relatório mostra **Mars Outpost Status**, uma saudação ao capitão e os efeitos com frases curtas sobre os recursos aumentando/diminuindo, além do tempo restante. Sem efeitos, mostra **All clear, Captain! No active effects right now.** Mantém paginação para não exigir rolagem. Textos atuais da interface têm prioridade sobre os textos de saves antigos; os dados e regras da partida salva continuam preservados.
+
+Validado no Chromium em 1032×1376, 375×667, 320×568 e 844×390: sete efeitos em três páginas, hover, botão e tablet dentro da tela, fechamento com animação e sem erros JavaScript. `npm test` e `git diff --check` passaram.
+
+
+## Sorteio por categorias
+
+`data/categories.json` define Routine (35%), Maintenance (25%), Exploration (20%), Science (15%) e Emergency (5%). Cada carta em `data/cards.json` tem `category` e `probability` condicional à categoria. As chances iniciais das cartas são iguais dentro de cada grupo. Os números são frações 0–1, com soma 1 para categorias e separadamente para as cartas de cada categoria.
+
+`Deck.createDeck` agora faz duas seleções ponderadas independentes por evento, com reposição. Repetições consecutivas são permitidas, incluindo dentro do mesmo sol; não há rodadas balanceadas. A política antiga avoidConsecutive foi removida da configuração atual. Validação cobre IDs duplicados, referências desconhecidas, probabilidades inválidas, somas e categorias sem cartas. Uma categoria com uma única carta funciona normalmente. A interface preserva a distribuição de 1/2 eventos e a duração de 40 sols.
+
+O bootstrap inclui categories no carregamento. Saves antigos sem categorias são aceitos somente pelo caminho de compatibilidade de saves, preservando cartas e ordem originais; dados atuais precisam das categorias. Novos saves incluem a configuração e o baralho já sorteado. Testes incluem limites de sorteio, zero, uma carta por categoria, repetição consecutiva, distribuição em 100 mil sorteios e restauração de snapshots antigos/novos.
+
+Conferência no Chromium por HTTP com cache desativado confirmou carregamento das cinco categorias, sequência com repetições consecutivas sob sorteio controlado, save e retomada sem reaplicar a escolha, e conclusão no sol 40 sem erros JavaScript.
+
+
+## Recursos explicados e virada de sol
+
+Cada recurso possui `description` em resources.json, com uma frase simples em inglês sobre sua função na base. O detalhe mostra a reserva e uma previsão escrita: **If nothing else changes: After 1 sol, you will have 4 L less.** A diferença vem da projeção pura `Flows.passTime` de um sol, incluindo limites, fluxos e entregas agendadas; não aplica essa projeção à partida. Saves anteriores recebem a descrição atual como fallback. Setas de tendência dos ícones foram removidas, assim como dificuldade e contador de eventos da frente da carta; as propriedades de dados continuam disponíveis para validação.
+
+Após o último evento, o motor calcula e salva o novo snapshot; a interface anima os níveis por 320 ms com borda verde para aumento e vermelha para queda, mantendo o contador do sol anterior nessa breve etapa. Depois atualiza o contador/carta e anima a luz do background da direita para a esquerda por 600 ms. A carta fica inert e botões ficam desativados somente durante os 320 ms, evitando dupla aplicação; o novo estado já está salvo se houver recarga nesse intervalo. Movimento reduzido pula a espera e as animações.
+
+Verificado no Chromium em 320×568, 375×667, 1032×1376 e 844×390: descrições, previsão de água, ausência de setas/rótulos, borda vermelha antes de atualizar o sol e animação posterior do background. Sem erros JavaScript. Testes do motor e dados passaram.
+
+A frase “If nothing else changes” foi removida do detalhe dos recursos por solicitação do usuário; a previsão continua mostrando diretamente a variação após 1 sol.
+
+## Contornos persistentes e ícones no verso
+
+Mudanças imediatas de estoque ao responder uma carta mantêm os contornos verde/vermelho até avançar para o evento seguinte. Apenas o pulso termina automaticamente. Ao avançar, os destaques da carta são limpos; a animação breve de consumo do sol mantém seu comportamento. `cardChanges` no save registra as diferenças reais de estoque e restaura os contornos quando a partida retorna ao verso, sem reaplicar efeitos. Saves anteriores sem esse campo continuam válidos.
+
+Os desenhos dos indicadores foram extraídos para `src/icons.js` e são compartilhados com as linhas do verso: ícone do recurso, nome por escrito e quantidade. Ícones são decorativos para leitores de tela, pois o nome já identifica o recurso. Bolinhas foram removidas das linhas, e o layout compacto usa ícones menores em cartas estreitas. Conferido no Chromium: destaque ainda visível após 1 segundo, ícones com nomes, restauração após recarga e limpeza ao avançar, sem erros. `npm test` passou.
+
+
+## Descrição opcional de cada escolha
+
+`left.description` e `right.description` em cards.json são textos opcionais independentes. Todas as escolhas atuais possuem string vazia. `CardUI.showBack` exibe somente a descrição da escolha feita, abaixo do título e acima da lista de efeitos. Texto ausente, vazio ou só espaços oculta o elemento sem reservar espaço; cada troca limpa o conteúdo anterior. Renderização usa textContent. Validação aceita campo ausente para compatibilidade com saves anteriores e rejeita tipos diferentes de string quando presente. CSS ajusta a tipografia à largura da carta.
+
+
+## Legendas das imagens e tablet temporariamente oculto
+
+O botão do tablet foi ocultado com hidden, saindo do layout e do teclado; o recurso permanece implementado para uso futuro. A frente da carta agrupa imagem e legenda em figure/figcaption. `imageCaption` vem de cards.json e descreve a imagem real; as dez cartas atuais compartilham a legenda do desenho de teste. Saves antigos podem usar a legenda atual quando ID e imagem coincidem. Legendas ausentes/vazias não ocupam espaço. O grupo da imagem encolhe com a altura disponível, mantendo legenda, descrição e respostas visíveis.
+
+## Variações acima dos indicadores
+
+Cada indicador agora vive em `.indicator-slot`, com uma faixa superior permanente de 38 px (46 px em tablets) reservada para o número de variação. Mudanças reais mostram sinal e quantidade, com unidade em segunda linha para caber em celulares estreitos. A informação usa verde para aumento e vermelho para queda e é anunciada com role=status. Estoques limitados pela capacidade mostram somente a diferença realmente aplicada.
+
+O pulso e os números permanecem por 1,4 s; a altura do preenchimento interpola por 1,1 s, ficando verde/vermelha durante a animação e voltando à cor original depois. O contorno de uma mudança de carta continua até avançar, como antes. Avançar limpa timers/números antigos antes de iniciar outra mudança. A passagem de sol espera 1,4 s para a leitura da mudança diária antes de atualizar contador e animar o fundo. Movimento reduzido evita deslocamento e espera de sol, mantendo a leitura estática da variação.
+
+Conferido no Chromium em 320×568, 375×667, 1032×1376 e 844×390: valor e unidade acima do recurso, preenchimento vermelho durante queda, número visível durante a leitura, limpeza posterior sem perder contorno e carta dentro da área disponível. Sem erros JavaScript; `npm test` passou.

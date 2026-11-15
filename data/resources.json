@@ -5,35 +5,40 @@
       "unit": "kg",
       "unitName": "kilograms",
       "start": 60,
-      "max": 60
+      "max": 60,
+      "description": "Air for your crew to breathe."
     },
     "water": {
       "name": "Water",
       "unit": "L",
       "unitName": "liters",
       "start": 600,
-      "max": 700
+      "max": 700,
+      "description": "Water for your crew to drink and use in the base."
     },
     "shield": {
       "name": "Shield",
-      "unit": "g/cm\u00b2",
+      "unit": "g/cm²",
       "unitName": "grams per square centimeter",
       "start": 8,
-      "max": 10
+      "max": 10,
+      "description": "Material around the shelter helps protect your crew from radiation."
     },
     "energy": {
       "name": "Energy",
       "unit": "kWh",
       "unitName": "kilowatt-hours",
       "start": 240,
-      "max": 300
+      "max": 300,
+      "description": "Stored power keeps the lights and machines running."
     },
     "food": {
       "name": "Food",
       "unit": "kg",
       "unitName": "kilograms of dry food",
       "start": 100,
-      "max": 100
+      "max": 100,
+      "description": "Food gives your crew energy to work and explore."
     }
   },
   "indicators": [

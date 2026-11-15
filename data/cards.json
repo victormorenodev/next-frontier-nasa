@@ -21,15 +21,20 @@
           "for": 3,
           "note": "Dusty panels"
         }
-      ]
+      ],
+      "description": ""
     },
     "right": {
       "label": "Clean them",
       "effects": {
         "energy": -8,
         "oxygen": -2
-      }
-    }
+      },
+      "description": ""
+    },
+    "category": "maintenance",
+    "probability": 0.3333333333333333,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-oxygen-repair",
@@ -53,7 +58,8 @@
           "for": 4,
           "note": "Weaker machine"
         }
-      ]
+      ],
+      "description": ""
     },
     "right": {
       "label": "Repair now",
@@ -68,8 +74,12 @@
           "for": 1,
           "note": "Machine off for repair"
         }
-      ]
-    }
+      ],
+      "description": ""
+    },
+    "category": "maintenance",
+    "probability": 0.3333333333333333,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-solar-storm",
@@ -84,7 +94,8 @@
     },
     "left": {
       "label": "Keep it as is",
-      "effects": {}
+      "effects": {},
+      "description": ""
     },
     "right": {
       "label": "Add water to walls",
@@ -92,8 +103,12 @@
         "water": -100,
         "shield": 0.5,
         "energy": -6
-      }
-    }
+      },
+      "description": ""
+    },
+    "category": "emergency",
+    "probability": 0.3333333333333333,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-lettuce",
@@ -110,7 +125,8 @@
       "label": "Pick it now",
       "effects": {
         "food": 3
-      }
+      },
+      "description": ""
     },
     "right": {
       "label": "Let it grow",
@@ -132,8 +148,12 @@
           },
           "note": "Bigger lettuce"
         }
-      ]
-    }
+      ],
+      "description": ""
+    },
+    "category": "routine",
+    "probability": 0.5,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-water-filter",
@@ -157,14 +177,19 @@
           "for": 3,
           "note": "Dirty filter"
         }
-      ]
+      ],
+      "description": ""
     },
     "right": {
       "label": "Clean the filter",
       "effects": {
         "energy": -14
-      }
-    }
+      },
+      "description": ""
+    },
+    "category": "maintenance",
+    "probability": 0.3333333333333333,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-supply-depot",
@@ -179,15 +204,20 @@
     },
     "left": {
       "label": "Stay home",
-      "effects": {}
+      "effects": {},
+      "description": ""
     },
     "right": {
       "label": "Drive the rover",
       "effects": {
         "energy": -22,
         "food": 5
-      }
-    }
+      },
+      "description": ""
+    },
+    "category": "exploration",
+    "probability": 1.0,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-hot-battery",
@@ -205,7 +235,8 @@
       "effects": {
         "energy": -25,
         "water": -10
-      }
+      },
+      "description": ""
     },
     "right": {
       "label": "Lights off",
@@ -219,8 +250,12 @@
           "for": 2,
           "note": "Lights off"
         }
-      ]
-    }
+      ],
+      "description": ""
+    },
+    "category": "emergency",
+    "probability": 0.3333333333333333,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-spoiled-food",
@@ -237,15 +272,20 @@
       "label": "Throw them out",
       "effects": {
         "food": -4
-      }
+      },
+      "description": ""
     },
     "right": {
       "label": "Check each one",
       "effects": {
         "energy": -6,
         "food": -1
-      }
-    }
+      },
+      "description": ""
+    },
+    "category": "emergency",
+    "probability": 0.3333333333333333,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-thirsty-crew",
@@ -263,7 +303,8 @@
       "effects": {
         "shield": -0.5,
         "water": 100
-      }
+      },
+      "description": ""
     },
     "right": {
       "label": "Save water",
@@ -276,8 +317,12 @@
           "for": 3,
           "note": "Saving water"
         }
-      ]
-    }
+      ],
+      "description": ""
+    },
+    "category": "routine",
+    "probability": 0.5,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   },
   {
     "id": "mock-plant-seeds",
@@ -292,7 +337,8 @@
     },
     "left": {
       "label": "Keep the seeds",
-      "effects": {}
+      "effects": {},
+      "description": ""
     },
     "right": {
       "label": "Plant them",
@@ -316,7 +362,11 @@
           "for": 10,
           "note": "New plants"
         }
-      ]
-    }
+      ],
+      "description": ""
+    },
+    "category": "science",
+    "probability": 1.0,
+    "imageCaption": "A small Mars base with a dome and a solar panel."
   }
 ]

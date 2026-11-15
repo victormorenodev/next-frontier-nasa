@@ -14,7 +14,7 @@ Esta seção substitui as referências históricas abaixo a 30 sols, 45 cartas, 
 - Cada sol sorteia **1 evento (80%)** ou **2 eventos (20%)**, conforme definido pelo usuário. Não há sols sem cartas.
 - As cartas não têm duração individual. Resolver eventos não avança o relógio; concluir o sol contabiliza uma vez o consumo, a produção e os efeitos agendados, com 1 ou 2 eventos.
 - Não há períodos jogáveis de manhã/tarde/noite. Ao passar de sol, apenas o background anima uma virada de dia com luz quente atravessando o céu e voltando ao fundo escuro. O próximo sol aparece e fica jogável imediatamente; a luz discreta do fundo dura 450 ms, sem bloquear entradas. Cartas e indicadores permanecem visíveis, sem tela de transição nem órbita em primeiro plano. Respeitar movimento reduzido.
-- O baralho é dimensionado pelo total de eventos sorteados nos 40 sols (40 a 80 cartas). As cartas se repetem ao longo da missão; continua sem cartas iguais consecutivas.
+- O baralho é dimensionado pelo total de eventos sorteados nos 40 sols (40 a 80 cartas). As cartas se repetem livremente, inclusive consecutivamente e no mesmo sol. O sorteio é em duas etapas: categoria e carta, com probabilidades em data/categories.json e data/cards.json. Rotina 35%, Manutenção 25%, Exploração 20%, Ciência 15%, Emergência 5%.
 - O motor de fluxos conserva terços de sol apenas como unidade interna de integração; a energia solar é um orçamento diário distribuído nesses passos.
 
 ## 1. Origem e objetivo
