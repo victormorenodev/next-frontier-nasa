@@ -38,7 +38,14 @@
     const figure = el('figure', 'card-figure');
     const image = el('img', 'card-image');
     const caption = el('figcaption', 'card-caption');
-    figure.append(image, caption);
+    const imagePanel = el('div', 'card-image-panel');
+    const imageLoading = el('div', 'card-image-loading');
+    imageLoading.setAttribute('role', 'status');
+    const spinner = el('span', 'loading-orbit');
+    spinner.setAttribute('aria-hidden', 'true');
+    imageLoading.append(spinner, el('span', null, Copy('cardImageLoading')));
+    imagePanel.append(image, imageLoading);
+    figure.append(imagePanel, caption);
     const text = el('p', 'card-text');
     const answers = el('div', 'answers');
     const leftBtn = el('button', 'answer left');
@@ -157,8 +164,10 @@
 
       cancelImage();
       const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&c.image===card.image);
-      const renderCaption = available => {
-        caption.textContent=available ? (currentCard?.imageCaption ?? card.imageCaption ?? '').trim() : Copy('cardImageMissing');
+      const renderCaption = (available, loading = false) => {
+        imageLoading.hidden = !loading;
+        imagePanel.setAttribute('aria-busy', String(loading));
+        caption.textContent=available ? (currentCard?.imageCaption ?? card.imageCaption ?? '').trim() : Copy(loading ? 'cardImageLoading' : 'cardImageMissing');
         caption.append(` ${Copy('imageSourceLabel')}`);
         const imageSource=currentCard?.imageSource ?? card.imageSource ?? (card.source?.kind==='image' ? card.source.url : '');
         if(imageSource){

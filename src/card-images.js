@@ -7,8 +7,9 @@ globalThis.CardImages = {
  show(image,card,onStatus) {
   let cancelled=false,timer,settle;
   image.loadingReady=new Promise(resolve=>{settle=resolve;});
-  image.src=this.placeholder;image.alt='Image not available yet.';onStatus(false);
+  image.src=this.placeholder;image.alt='Image not available yet.';
   const attempt=async()=>{
+   onStatus(false,true);
    for(const path of this.candidates(card)){
     if(cancelled)return;
     // A fresh URL avoids cached 404s when an image is added later.
@@ -16,8 +17,14 @@ globalThis.CardImages = {
     const probe=new Image();
     const loaded=await new Promise(resolve=>{probe.onload=()=>resolve(true);probe.onerror=()=>resolve(false);probe.src=url.href;});
     if(cancelled)return;
-    if(loaded){image.src=url.href;image.alt=card.imageAlt||'';onStatus(true);settle();return;}
+    if(loaded){
+     image.src=url.href;image.alt=card.imageAlt||'';
+     try{await image.decode()}catch(_){}
+     if(cancelled)return;
+     onStatus(true,false);settle();return;
+    }
    }
+   onStatus(false,false);
    settle();
    timer=setTimeout(attempt,15000);
   };
