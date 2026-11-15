@@ -13,6 +13,7 @@ export function validateData(d, {legacy = false, allowLegacyShield = false} = {}
     for(const id of ['easy','hard']){
       const mode=d.mission.difficulties[id];
       need(mode&&Array.isArray(mode.allowedCardDifficulties)&&mode.allowedCardDifficulties.length>0&&mode.allowedCardDifficulties.every(v=>['easy','medium','hard'].includes(v)),'mission.difficulties.'+id);
+      if(mode.totalSols!==undefined)need(Number.isInteger(mode.totalSols)&&mode.totalSols>0,'mission.difficulties.'+id+'.totalSols');
       if(mode.initialResourceFraction!==undefined)need(finite(mode.initialResourceFraction)&&mode.initialResourceFraction>0&&mode.initialResourceFraction<=1,'mission.difficulties.'+id+'.initialResourceFraction');
       need(mode.display===(id==='easy'?'percentage':'physical'),'mission.difficulties.'+id+'.display');
       need(id!=='easy'||!mode.allowedCardDifficulties.includes('hard'),'easy mode cannot include hard cards');
@@ -86,8 +87,10 @@ export function validateData(d, {legacy = false, allowLegacyShield = false} = {}
 export function validateSave(s){
  if(s?.version!==1)throw Error('Unsupported save version');validateData(s.data, {legacy: !Object.hasOwn(s.data || {}, 'categories'), allowLegacyShield:true});
  const need=(ok)=>{if(!ok)throw Error('Invalid saved mission')};
- need(s.mission&&Number.isInteger(s.mission.sol)&&s.mission.sol>=1&&s.mission.sol<=s.data.mission.totalSols&&Number.isInteger(s.mission.elapsed)&&s.mission.elapsed>=0&&typeof s.mission.ended==='boolean');
- need(Array.isArray(s.schedule)&&s.schedule.length===s.data.mission.totalSols&&s.schedule.every(n=>n===1||n===2));
+ const totalSols=s.mission?.totalSols ?? s.data.mission.totalSols;
+ need(Number.isInteger(totalSols)&&totalSols>0);
+ need(s.mission&&Number.isInteger(s.mission.sol)&&s.mission.sol>=1&&s.mission.sol<=totalSols&&Number.isInteger(s.mission.elapsed)&&s.mission.elapsed>=0&&typeof s.mission.ended==='boolean');
+ need(Array.isArray(s.schedule)&&s.schedule.length===totalSols&&s.schedule.every(n=>n===1||n===2));
  need(Array.isArray(s.deck)&&s.deck.length===s.schedule.reduce((a,b)=>a+b,0));
  need(Number.isInteger(s.index)&&s.index>=0&&s.index<=s.deck.length&&Number.isInteger(s.eventIndex)&&s.eventIndex>=0&&s.eventIndex<2);
  need(s.mission.ended||s.index<s.deck.length&&s.eventIndex<s.schedule[s.mission.sol-1]);

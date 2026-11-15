@@ -398,7 +398,7 @@
   }
 
   function renderMission() {
-    document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.TOTAL_SOLS});
+    document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.duration(mission)});
     endButton.disabled = mission.ended;
     if (!mission.ended) return;
     const done = mission.reason === 'complete';
@@ -407,7 +407,7 @@
       ? 'life-support' : mission.failedResource;
     cardUI.showMessage(
       failed ? Copy("failedTitle") : done ? Copy("completeTitle") : Copy("endedTitle"),
-      failed ? Copy(`failedBody-${resource}`) : done ? Copy("completeBody", {totalSols: Mission.TOTAL_SOLS, events: index})
+      failed ? Copy(`failedBody-${resource}`) : done ? Copy("completeBody", {totalSols: Mission.duration(mission), events: index})
            : Copy("endedBody", {sol: mission.sol}),
       Copy("newMission"),
       showDifficultyScreen, failed ? resource : done ? 'complete' : 'quit',

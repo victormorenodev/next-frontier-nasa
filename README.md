@@ -1,6 +1,6 @@
 # Mission: Perseverance
 
-Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **35 sols**. O jogador assume o papel de capitão. Textos do jogo em inglês simples, voltados ao público de 7–12 anos.
+Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **25 sols no Easy ou 30 no Hard**. O jogador assume o papel de capitão. Textos do jogo em inglês simples, voltados ao público de 7–12 anos.
 
 Documentação revisada contra o código e os JSONs em **15/11/2026**. Pesquisa e modelos históricos estão em [docs/RESEARCH.md](docs/RESEARCH.md); não definem as regras atuais.
 
@@ -25,7 +25,7 @@ Start New Mission abre o briefing com imagem NASA e crédito. Botão, arrasto ou
 | Operation Steins | Easy | Ages 7–10 | 75% da capacidade | 27 (easy/medium) |
 | Operation Gate | Hard | Ages 11+ | 50% da capacidade | 31 (easy/medium/hard) |
 
-Cada sol tem uma carta (80%) ou duas (20%). Responda por botão, arrasto ou setas; o verso mostra a escolha, explicação opcional, efeitos imediatos e **Source:** quando há referência. Efeitos diários são aplicados uma vez, após a última carta do sol. Repetições são permitidas, inclusive no mesmo sol. Completar 35 sols vence; qualquer recurso interno em zero causa **Mission Failed**, com prioridade sobre a vitória.
+Cada sol tem uma carta (80%) ou duas (20%). Responda por botão, arrasto ou setas; o verso mostra a escolha, explicação opcional, efeitos imediatos e **Source:** quando há referência. Efeitos diários são aplicados uma vez, após a última carta do sol. Repetições são permitidas, inclusive no mesmo sol. Completar 25 sols no Easy ou 30 no Hard vence; qualquer recurso interno em zero causa **Mission Failed**, com prioridade sobre a vitória.
 
 ## Recursos e consumo
 

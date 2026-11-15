@@ -7,7 +7,7 @@ Revisada contra o código e os JSONs em **15/11/2026**. Orientações em [AGENTS
 | Caminho | Responsabilidade |
 | --- | --- |
 | `index.html` | Menu, briefing, seletor, HUD, carta e diálogos |
-| `data/mission.json` | 35 sols, quatro astronautas, eventos/sol, modos e frações iniciais |
+| `data/mission.json` | 25/30 sols por dificuldade, quatro astronautas, eventos/sol, modos e frações iniciais |
 | `data/resources.json` | Unidades, máximos, descrições, indicadores e Life Support visual |
 | `data/cards.json`, `data/categories.json` | 31 cartas e pesos gerados das planilhas |
 | `data/flows.json` | Quatro perdas-base por sol, classificadas simulated |
@@ -37,7 +37,7 @@ Menu centralizado mobile-first com Start New Mission, Continue mission, Glossary
 
 O briefing/seletor não substitui o save; escolher modo substitui sem confirmação. Se GameData veio de um save, a UI recarrega usando sessionStorage para transportar a escolha e iniciar com CurrentGameData. Novas missões passam `dailyCostResource: null`, sem seletor de consumo acelerado. End mission mantém diálogo de confirmação.
 
-`Engine.start` gera um cronograma de 35 entradas, cada uma com 1 evento (80%) ou 2 (20%), e sorteia um baralho de 35–70 eventos. Inicializa cada recurso com `max × initialResourceFraction`: 0,75 no Easy, 0,5 no Hard. Sem esse parâmetro, usa o fallback start de resources.json. Não arredonda o estado.
+`Engine.start` gera um cronograma de 25 entradas no Easy ou 30 no Hard, cada uma com 1 evento (80%) ou 2 (20%), e sorteia um baralho de 25–50 eventos no Easy ou 30–60 no Hard. Inicializa cada recurso com `max × initialResourceFraction`: 0,75 no Easy, 0,5 no Hard. Sem esse parâmetro, usa o fallback start de resources.json. Não arredonda o estado.
 
 ## Catálogo, probabilidades e fontes
 
@@ -82,7 +82,7 @@ Snapshot do motor: state, mission, flows, deck, index, eventIndex, schedule, sav
 3. `next` avança à outra carta do mesmo sol ou integra um sol após a última carta.
 4. `end` marca encerramento manual. A UI salva somente snapshots ativos e remove o slot ao encerrar.
 
-mission.elapsed é um contador de terços de sol; cada sol integra três passos internos, sem fases jogáveis. O sucesso ocorre após 105 terços nas novas missões, ao concluir o sol 35; não há sol 36. Saves mantêm sua duração original.
+mission.elapsed é um contador de terços de sol; cada sol integra três passos internos, sem fases jogáveis. O sucesso ocorre após 75 terços no Easy (sol 25) ou 90 no Hard (sol 30). A duração fica em mission.totalSols no snapshot; saves antigos sem esse campo usam data.mission.totalSols do próprio save. Saves mantêm sua duração original.
 
 `Indicators.depleted` usa o valor interno real, nunca o inteiro visual. `Engine.checkFailure` verifica após resposta e na retomada; Flows.passTime com stopOnEmpty verifica cada passo e consequência agendada. Ao zerar, interrompe, sem permitir recuperação posterior no mesmo sol. Falha tem prioridade sobre sucesso. Empate segue oxygen, water, shield, energy, food.
 

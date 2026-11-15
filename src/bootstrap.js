@@ -34,7 +34,7 @@ try {
  }
  catch(error){console.warn('Saved mission unavailable',error)}
  globalThis.GameData=window.savedMission?.data||data;
- globalThis.Copy=(key,values={})=>(CurrentGameData.interface[key]||GameData.interface[key]||key).replace(/\{(\w+)\}/g,(_,k)=>String({...GameData.mission,...values}[k]??`{${k}}`));
+ globalThis.Copy=(key,values={})=>(CurrentGameData.interface[key]||GameData.interface[key]||key).replace(/\{(\w+)\}/g,(_,k)=>String({...GameData.mission,easySols:CurrentGameData.mission.difficulties.easy.totalSols,hardSols:CurrentGameData.mission.difficulties.hard.totalSols,...values}[k]??`{${k}}`));
  document.title=Copy('pageTitle');
  const image=document.querySelector('.briefing-image');image.src=Copy('briefingImage');image.alt=Copy('briefingImageAlt');
  for(const el of document.querySelectorAll('[data-copy]'))el.textContent=Copy(el.dataset.copy);

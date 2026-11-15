@@ -17,7 +17,7 @@ assert.deepEqual(counts, [0, 8000, 2000]);
 // One or two events still consume exactly one sol of resources.
 for (const events of [1, 2]) {
   let mission = M.createMission(), state = I.createState(), flows = F.createFlows();
-  for (let sol = 1; sol <= 35; sol++) {
+  for (let sol = 1; sol <= M.TOTAL_SOLS; sol++) {
     assert.equal(mission.sol, sol);
     assert.equal(mission.ended, false);
     for (let event = 0; event < events; event++) {
@@ -27,13 +27,13 @@ for (const events of [1, 2]) {
     const passed = F.passTime(state, flows, mission.elapsed, M.THIRDS_PER_SOL);
     state = passed.state; flows = passed.flows;
     mission = M.advance(mission);
-    if (sol === 34) assert.equal(mission.ended, false);
+    if (sol === M.TOTAL_SOLS - 1) assert.equal(mission.ended, false);
   }
-  assert.equal(mission.elapsed, 105);
-  assert.equal(mission.sol, 35);
+  assert.equal(mission.elapsed, M.TOTAL_SOLS * 3);
+  assert.equal(mission.sol, M.TOTAL_SOLS);
   assert.equal(mission.reason, 'complete');
   assert.equal(M.advance(mission), mission);
-  assert.ok(Math.abs(state.water - Math.max(0, 600 - 35 * 10 * (require('../data/mission.json').dailyCostMultiplier ?? 1))) < 1e-8);
+  assert.ok(Math.abs(state.water - Math.max(0, 600 - M.TOTAL_SOLS * 10 * (require('../data/mission.json').dailyCostMultiplier ?? 1))) < 1e-8);
 }
 assert.equal(m.elapsed, 0);
 const ended = M.endMission(m);

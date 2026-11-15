@@ -110,7 +110,7 @@ Prioridade analítica anteriormente sugerida: DONKI → toolkit alimentar CSA �
 
 ## Referências da apresentação
 
-- Texto do briefing: [NASA Moon to Mars Architecture Definition Document, revisão C, dezembro de 2025](https://www.nasa.gov/wp-content/uploads/2025/12/add-revision-c-20251211.pdf), especialmente habitação, proteção da saúde e resposta a emergências em Marte (UC-H-103 M, UC-H-107 M e UC-H-108 M, página impressa 129). Quatro astronautas e 35 sols são regras atuais do jogo, sem equivalência a um planejamento de missão real.
+- Texto do briefing: [NASA Moon to Mars Architecture Definition Document, revisão C, dezembro de 2025](https://www.nasa.gov/wp-content/uploads/2025/12/add-revision-c-20251211.pdf), especialmente habitação, proteção da saúde e resposta a emergências em Marte (UC-H-103 M, UC-H-107 M e UC-H-108 M, página impressa 129). Quatro astronautas e 25/30 sols por dificuldade são regras atuais do jogo, sem equivalência a um planejamento de missão real.
 - Imagem do briefing: [NASA Science — First Humans on Mars (Artist’s Concept), PIA23302](https://science.nasa.gov/photojournal/first-humans-on-mars-artists-concept/). Crédito visível no jogo: NASA, sem link na legenda.
 - PDFs locais de pesquisa anteriores: `../Analise_Resources_Junior_Astronaut.pdf` e `../Reigns_Marciano_Resources_e_Mecanicas.pdf`. Estão fora do repositório e não são necessários para executar ou compreender o código.
 
@@ -154,4 +154,4 @@ Os estoques iniciais atuais são uma fração da capacidade por dificuldade: 75%
 
 ## Limites da pesquisa e glossário
 
-As propostas acima não são autorização de novas funcionalidades. A referência vigente de operação é ARCHITECTURE.md, e os parâmetros ativos ficam nos JSONs. A duração atual é 35 sols; a meta histórica de 15–20 minutos ainda não foi validada com crianças. O glossário atual tem 41 definições didáticas, incluindo siglas e termos das cartas; [GLOSSARY.md](GLOSSARY.md) registra a auditoria e fontes específicas. Definir proteção eletromagnética como ideia experimental não valida as consequências físicas da carta 25.
+As propostas acima não são autorização de novas funcionalidades. A referência vigente de operação é ARCHITECTURE.md, e os parâmetros ativos ficam nos JSONs. A duração atual é 25 sols no Easy ou 30 no Hard; a meta histórica de 15–20 minutos ainda não foi validada com crianças. O glossário atual tem 41 definições didáticas, incluindo siglas e termos das cartas; [GLOSSARY.md](GLOSSARY.md) registra a auditoria e fontes específicas. Definir proteção eletromagnética como ideia experimental não valida as consequências físicas da carta 25.

@@ -4,7 +4,7 @@ Revisado em **15/11/2026** contra o código e os JSONs atuais. Leia este documen
 
 ## Produto e regras atuais
 
-- Jogo de decisões por cartas inspirado em Reigns, com quatro astronautas numa base marciana e **35 sols** por nova missão. Surgiu a partir do desafio Junior Astronaut Mission Trainer do NASA Space Apps; não afirmar endosso, premiação ou submissão oficial sem evidência.
+- Jogo de decisões por cartas inspirado em Reigns, com quatro astronautas numa base marciana e **25 sols no Easy ou 30 no Hard** por nova missão. Surgiu a partir do desafio Junior Astronaut Mission Trainer do NASA Space Apps; não afirmar endosso, premiação ou submissão oficial sem evidência.
 - Textos visíveis em inglês simples. Público de referência: crianças de 7–12 anos; interface indica Operation Steins / Easy para 7–10 e Operation Gate / Hard para 11+. Priorizar legibilidade, contraste, ícones claros e controles de toque/teclado.
 - Menu com Start New Mission, Continue mission, Glossary, Credits e controle de som, sem sair. Briefing usa imagem NASA com crédito; botão, arrasto ou setas levam ao seletor “Welcome, Captain!”. Esquerda escolhe Operation Steins; direita, Operation Gate; botões/setas também funcionam.
 - Cada sol tem uma carta (80%) ou duas (20%), nunca zero. Sortear categoria e depois carta com reposição, permitindo repetições consecutivas. Não introduzir períodos jogáveis de manhã/tarde/noite: terços de sol são integração interna.
@@ -37,7 +37,7 @@ Revisado em **15/11/2026** contra o código e os JSONs atuais. Leia este documen
 
 ## Finais e persistência
 
-- Qualquer recurso interno em zero encerra com Mission Failed, após efeitos imediatos e em cada passo diário/agendado. Parar ao zerar, sem resgate posterior; falha tem prioridade no sol 35. Empate usa a ordem oxygen, water, shield, energy, food.
+- Qualquer recurso interno em zero encerra com Mission Failed, após efeitos imediatos e em cada passo diário/agendado. Parar ao zerar, sem resgate posterior; falha tem prioridade no último sol. Empate usa a ordem oxygen, water, shield, energy, food.
 - Easy tem quatro causas visuais de falha (Life Support para água/O₂, Shield, Energy, Food); Hard, cinco. Seis imagens aprovadas em images/endings/ são usadas integralmente, com botão Start New Mission fora, texto acessível e ícones vetoriais de fallback. Sucesso e desistência usam ícones vetoriais. Artes de falha não entram no sorteio. Originais/prompts em docs/previews/endings/.
 - Um único slot versionado `next-frontier-save` guarda apenas a última missão em andamento. Vitória, derrota ou desistência remove o save; tela final só permanece na sessão atual. Saves antigos encerrados são descartados na inicialização. Continue desativado sem save válido; inválidos podem ser substituídos por nova missão sem confirmação.
 - Abrir briefing/seletor preserva a partida; escolher modo substitui o slot. End mission ainda pede confirmação. Outra aba alterando o save suspende ações até recarregar. Progresso pertence ao navegador/origem, sem login, sincronização ou suporte offline dedicado.

@@ -7,6 +7,10 @@ let snapshot=Engine.start(()=>.99);assert.ok(snapshot.schedule.every(n=>n===2));
 assert.equal(snapshot.mission.difficulty,'hard');
 for(const [mode,fraction] of [['easy',.75],['hard',.5]]){
  const started=Engine.start(()=>0,mode);
+ const duration=mode==='easy'?25:30;
+ assert.equal(started.mission.totalSols,duration);
+ assert.equal(started.schedule.length,duration);
+ assert.equal(started.deck.length,duration);
  for(const [key,q] of Object.entries(data.resources.quantities))assert.equal(started.state[key],q.max*fraction,mode+' '+key);
  const saved=JSON.parse(JSON.stringify({version:1,data,...started}));
  saved.state.food-=.125;
@@ -54,16 +58,30 @@ const fractional=Engine.start(()=>0,'easy');
 assert.equal(Engine.checkFailure({...fractional,state:{...fractional.state,oxygen:0.01}}).mission.ended,false);
 const simultaneous=Engine.checkFailure({...fractional,state:{...fractional.state,water:0,oxygen:0}});
 assert.equal(simultaneous.mission.failedResource,'oxygen');
-// Supply enough production to test the successful 35-sol ending independently of balance.
+// Supply enough production to test the successful difficulty-specific ending independently of balance.
 const F=require('./load-engine.cjs').Flows;
 let success=Engine.start(()=>0);
 success={...success,deck:success.deck.map(c=>({...c,left:{label:'Wait',effects:{}}})),
  flows:{ongoing:[{rates:Object.fromEntries(Object.entries(F.ratesPerSol(F.createFlows(),0)).map(([q,n])=>[q,-n])) ,start:0,end:Infinity}],later:[]}};
 while(!success.mission.ended)success=Engine.next(Engine.answer(success,'left')).snapshot;
-assert.equal(success.mission.reason,'complete');assert.equal(success.mission.elapsed,105);
+assert.equal(success.mission.reason,'complete');assert.equal(success.mission.elapsed,90);
+// Easy ends at 25 sols; old snapshots retain their own duration.
+let easySuccess=Engine.start(()=>0,'easy');
+easySuccess={...easySuccess,deck:easySuccess.deck.map(c=>({...c,left:{label:'Wait',effects:{}}})),flows:success.flows};
+while(!easySuccess.mission.ended)easySuccess=Engine.next(Engine.answer(easySuccess,'left')).snapshot;
+assert.equal(easySuccess.mission.reason,'complete');assert.equal(easySuccess.mission.elapsed,75);assert.equal(easySuccess.mission.sol,25);
+const oldSave=structuredClone(roundtrip);delete oldSave.mission.totalSols;
+oldSave.data.mission.totalSols=35;oldSave.schedule=Array(35).fill(2);oldSave.deck=Array(70).fill(oldSave.deck[0]);validateSave(oldSave);
+const {Mission}=require('./load-engine.cjs');
+const vm=require('node:vm');const oldContext=vm.createContext({GameData:oldSave.data});
+vm.runInContext(fs.readFileSync('src/mission.js','utf8'),oldContext);
+assert.equal(oldContext.Mission.advance({...oldSave.mission,sol:30,elapsed:87}).ended,false);
+assert.equal(oldContext.Mission.advance({...oldSave.mission,sol:35,elapsed:102}).reason,'complete');
+assert.equal(Mission.advance({...Mission.createMission(),totalSols:35,sol:30,elapsed:87}).ended,false);
+assert.equal(Mission.advance({...Mission.createMission(),totalSols:35,sol:35,elapsed:102}).reason,'complete');
 // Failure on the final sol takes precedence over success.
 let last=Engine.start(()=>0);
-last={...last,mission:{...last.mission,sol:35,elapsed:102},state:{...last.state,food:0.01},savedSide:'left'};
+last={...last,mission:{...last.mission,sol:30,elapsed:87},state:{...last.state,food:0.01},savedSide:'left'};
 assert.equal(Engine.next(last).snapshot.mission.reason,'failed');
 assert.throws(()=>validateSave({...roundtrip,mission:{...roundtrip.mission,ended:true,reason:'failed',failedResource:'unknown'}}));
 const legacyHidden=Engine.start(()=>0,'hard');
