@@ -1,4 +1,4 @@
-# Arquitetura atual — Next Frontier
+# Arquitetura atual — Mission: Perseverance
 
 Revisada contra o código e os JSONs em **15/11/2026**. Orientações em [AGENTS.md](AGENTS.md), execução em [README.md](README.md), conteúdo em [docs/CARDS.md](docs/CARDS.md) e [docs/GLOSSARY.md](docs/GLOSSARY.md). Pesquisa em [docs/RESEARCH.md](docs/RESEARCH.md); cronologia anterior em [docs/history/](docs/history/), sem valor de regra atual.
 
@@ -33,7 +33,7 @@ Uma camada opaca “Loading…” cobre o carregamento inicial e as transições
 
 ## Navegação e início
 
-Menu centralizado mobile-first com Start New Mission, Continue mission, Glossary, Credits e som. Continue exige save válido em andamento. Nova missão abre briefing NASA; botão, arrasto ou setas levam ao seletor Welcome, Captain!. MARINER 4 é easy, OPPORTUNITY é hard. Arrastar o painel à esquerda/direita escolhe respectivamente easy/hard, com movimento e realce antes de soltar; gesto curto/cancelado não inicia. Botões/setas também funcionam.
+Menu centralizado mobile-first com Start New Mission, Continue mission, Glossary, Credits e som. Continue exige save válido em andamento. Nova missão abre briefing NASA; botão, arrasto ou setas levam ao seletor Welcome, Captain!. Operation Steins é easy, Operation Gate é hard. Arrastar o painel à esquerda/direita escolhe respectivamente easy/hard, com movimento e realce antes de soltar; gesto curto/cancelado não inicia. Botões/setas também funcionam.
 
 O briefing/seletor não substitui o save; escolher modo substitui sem confirmação. Se GameData veio de um save, a UI recarrega usando sessionStorage para transportar a escolha e iniciar com CurrentGameData. Novas missões passam `dailyCostResource: null`, sem seletor de consumo acelerado. End mission mantém diálogo de confirmação.
 

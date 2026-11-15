@@ -1,4 +1,4 @@
-# Next Frontier — contexto para Claude
+# Mission: Perseverance — contexto para Claude
 
 As orientações vigentes para todos os agentes estão em [AGENTS.md](AGENTS.md). Leia-o junto dos documentos abaixo antes de sugerir ou implementar alterações:
 

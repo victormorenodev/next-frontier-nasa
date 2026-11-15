@@ -1,4 +1,4 @@
-# Pesquisa e referências — Next Frontier
+# Pesquisa e referências — Mission: Perseverance
 
 Revisão documental em 15/11/2026. Referências e contexto preservados da pesquisa existente; os links externos não foram revalidados nesta revisão do estado local. Este documento não define regras do jogo. Valores implementados estão nos JSONs e a operação atual está em [ARCHITECTURE.md](../ARCHITECTURE.md). Exemplos marcados como feature são propostas de pesquisa, não funcionalidades necessariamente implementadas.
 

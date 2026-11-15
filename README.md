@@ -1,4 +1,4 @@
-# Next Frontier
+# Mission: Perseverance
 
 Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **35 sols**. O jogador assume o papel de capitão. Textos do jogo em inglês simples, voltados ao público de 7–12 anos.
 
@@ -18,12 +18,12 @@ Abra **http://127.0.0.1:8000/**. São módulos JavaScript nativos e JSONs por fe
 
 O menu tem **Start New Mission**, **Continue mission**, **Glossary**, **Credits** e controle de som, sem botão de sair. Continue fica desativado quando não há missão válida em andamento no navegador.
 
-Start New Mission abre o briefing com imagem NASA e crédito. Botão, arrasto ou setas levam à seleção **Welcome, Captain!**. Arrastar à esquerda escolhe MARINER 4; à direita, OPPORTUNITY. Botões e setas também funcionam. O seletor de consumo acelerado foi retirado; novas missões usam consumo normal.
+Start New Mission abre o briefing com imagem NASA e crédito. Botão, arrasto ou setas levam à seleção **Welcome, Captain!**. Arrastar à esquerda escolhe Operation Steins; à direita, Operation Gate. Botões e setas também funcionam. O seletor de consumo acelerado foi retirado; novas missões usam consumo normal.
 
 | Missão | Modo interno | Indicação na interface | Recursos iniciais | Cartas elegíveis |
 | --- | --- | --- | ---: | ---: |
-| MARINER 4 | Easy | Ages 7–10 | 75% da capacidade | 27 (easy/medium) |
-| OPPORTUNITY | Hard | Ages 11+ | 50% da capacidade | 31 (easy/medium/hard) |
+| Operation Steins | Easy | Ages 7–10 | 75% da capacidade | 27 (easy/medium) |
+| Operation Gate | Hard | Ages 11+ | 50% da capacidade | 31 (easy/medium/hard) |
 
 Cada sol tem uma carta (80%) ou duas (20%). Responda por botão, arrasto ou setas; o verso mostra a escolha, explicação opcional, efeitos imediatos e **Source:** quando há referência. Efeitos diários são aplicados uma vez, após a última carta do sol. Repetições são permitidas, inclusive no mesmo sol. Completar 35 sols vence; qualquer recurso interno em zero causa **Mission Failed**, com prioridade sobre a vitória.
 
