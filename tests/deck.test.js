@@ -49,6 +49,14 @@ assert.throws(()=>D.createDeck(CARDS,-1));
 const disabled=[{...only,probability:0},{...only,id:'enabled',probability:1}];
 assert.equal(D.createDeck(disabled,1,()=>0,[{id:'solo',name:'Solo',probability:1}])[0].id,'enabled');
 
+// Filtering removes ineligible categories and renormalizes remaining probabilities.
+const fixtureCards=[{...CARDS[0],id:'safe',category:'safe',probability:1,difficulty:'easy'}, {...CARDS[0],id:'risk',category:'risk',probability:1,difficulty:'hard'}];
+const fixtureCategories=[{id:'safe',name:'Safe',probability:.2},{id:'risk',name:'Risk',probability:.8}];
+const easyDeck=D.createDeck(fixtureCards,20,()=>.99,fixtureCategories,['easy','medium']);
+assert.ok(easyDeck.every(c=>c.id==='safe'));
+assert.throws(()=>D.createDeck(fixtureCards,1,()=>0,fixtureCategories,['medium']));
+assert.equal(fixtureCards[0].probability,1);
+
 // Answer effects change the indicators, and water ↔ shield keeps the mass (100 L = 0.5 g/cm²).
 const storm = CARDS.find(c => c.id === 'mock-solar-storm');
 const s0 = I.createState(), s1 = I.apply(s0, storm.right.effects);

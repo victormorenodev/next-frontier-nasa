@@ -68,5 +68,16 @@
   "resourceLose": "After 1 sol, you will have {amount} {unit} less.",
   "resourceGain": "After 1 sol, you will have {amount} {unit} more.",
   "resourceSteady": "After 1 sol, this amount will stay the same.",
-  "resourceCapacity": "of {max} {unit}"
+  "resourceCapacity": "of {max} {unit}",
+  "difficultyTitle": "Choose your mission",
+  "difficultyIntro": "Pick the mission that fits you.",
+  "difficultyEasy": "Easy",
+  "difficultyEasyAge": "For scientists ages 7–10",
+  "difficultyEasyHint": "Simple numbers from 0 to 100. Easy and medium cards.",
+  "difficultyHard": "Hard",
+  "difficultyHardAge": "For astronauts ages 11+",
+  "difficultyHardHint": "Real units. All cards can appear.",
+  "difficultyBack": "← Back",
+  "resourceLoseEasy": "After 1 sol, this number will go down by {amount}.",
+  "resourceGainEasy": "After 1 sol, this number will go up by {amount}."
 }

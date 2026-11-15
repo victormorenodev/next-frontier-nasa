@@ -31,3 +31,10 @@ Draws are with replacement: the same card may appear consecutively, even twice i
 Each card answer (`left` and `right`) may include `description`: a short English explanation shown on the back above resource effects, only after choosing that answer. All current answers start with `"description": ""`. Missing, empty or whitespace-only descriptions display nothing and reserve no space. The two choices have independent descriptions; keep them brief for small screens. Existing saved cards without this field remain supported.
 
 Cards also support `imageCaption`, a brief English description of what the picture actually shows. It appears immediately below the image. Current mock cards share the same image, so they share an accurate caption. The report-tablet button is temporarily hidden.
+
+
+## Mission difficulty
+
+After the briefing, choose **Easy — For scientists ages 7–10** or **Hard — For astronauts ages 11+**. Easy displays every resource value as an integer from 0 to 100 (`round(amount / max * 100)`), without a percent sign or physical unit. Forecasts and floating changes use the difference between rounded before/after values, so the displayed numbers stay consistent. Fractions remain in the simulation and accumulate without loss. The simulation, stock limits and scientific coefficients remain in physical units internally. Hard preserves physical units and allows all cards.
+
+`mission.json` configures the allowed card difficulty tags for each mode. Easy permits only easy/medium cards. The category/card distribution is filtered before drawing, and eligible probabilities are renormalized within each category. Categories with no eligible cards are removed and the remaining category chances are renormalized. A mode with no eligible positive-probability cards is invalid. `mission.difficulty` persists with the save; existing saves without a mode resume in Hard. Starting a new mission opens the selector again.

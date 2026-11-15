@@ -57,7 +57,7 @@
       const trend = trendOf(rates[ind.lowest]);
       tile.dataset.trend = trend;
       tile.setAttribute('aria-label', `${ind.name}: ${ind.parts.map(p =>
-        `${p.name} ${fmt(p.value)} of ${fmt(p.max)} ${p.unitName}, ${TREND_WORDS[trendOf(p.rate)]}`).join('; ')}`);
+        `${p.name} ${fmt(ResourceDisplay.read(p.id,p.value).value)} of ${ResourceDisplay.read(p.id,p.value).max} ${ResourceDisplay.read(p.id,p.value).unitName}, ${TREND_WORDS[trendOf(p.rate)]}`).join('; ')}`);
     });
     renderDetail(view.find(ind => ind.id === active));
     renderActive();
@@ -132,12 +132,12 @@
       const description=document.createElement('p');description.className='resource-description';
       description.textContent=GameData.resources.quantities[p.id].description || CurrentGameData.resources.quantities[p.id]?.description || '';
       const value=document.createElement('div');value.className='value';
-      const amount=document.createElement('strong');amount.className='amount';amount.textContent=`${fmt(p.value)} ${p.unit}`;
-      const capacity=document.createElement('span');capacity.className='of';capacity.textContent=Copy('resourceCapacity',{max:fmt(p.max),unit:p.unit});
+      const amount=document.createElement('strong');amount.className='amount';const display=ResourceDisplay.read(p.id,p.value);amount.textContent=`${fmt(display.value)} ${display.unit}`;
+      const capacity=document.createElement('span');capacity.className='of';capacity.textContent=Copy('resourceCapacity',{max:fmt(display.max),unit:display.unit});
       value.append(amount,capacity);
-      const delta=forecast[p.id]-p.value;
+      const delta=ResourceDisplay.change(p.id,p.value,forecast[p.id]).value;
       const change=document.createElement('p');change.className='resource-change';change.dataset.trend=trendOf(delta);
-      change.textContent=Copy(Math.abs(delta)<STEADY?'resourceSteady':delta<0?'resourceLose':'resourceGain',{amount:fmt(Math.abs(delta)),unit:p.unit});
+      change.textContent=Copy(Math.abs(delta)<STEADY?'resourceSteady':delta<0?(ResourceDisplay.mode==='easy'?'resourceLoseEasy':'resourceLose'):(ResourceDisplay.mode==='easy'?'resourceGainEasy':'resourceGain'),{amount:fmt(Math.abs(delta)),unit:display.unit});
       part.append(description,value,change);parts.append(part);
     });
     detail.append(title, parts);
@@ -216,20 +216,21 @@
   const background = document.getElementById('sol-transition');
   const solNotice = document.getElementById('sol-notice');
 
-  function startMission() {
+  function startMission(difficulty = 'hard') {
     clearTimeout(solTimer); solTransition=false;
     clearResourceHighlights(); cardChanges={};
     if (window.savedMission) {
       localStorage.removeItem('next-frontier-save');
-      sessionStorage.setItem('next-frontier-start', 'yes');
+      sessionStorage.setItem('next-frontier-start', difficulty);
       location.reload();
       return;
     }
     intro.hidden = true;
+    document.getElementById('difficulty-screen').hidden=true;
     game.hidden = false;
     background.hidden = true;
     solNotice.textContent = Copy("missionProgress");
-    adopt(Engine.start());
+    adopt(Engine.start(Math.random,difficulty));
     render();
     renderMission();
     showSol();
@@ -251,12 +252,12 @@
     bumpChanged(before, state, true);
     render();
     const last = eventIndex + 1 === schedule[mission.sol - 1];
-    cardUI.showBack(card, side, last, []);
+    cardUI.showBack(card, side, last, [], before);
     savedSide = side; save();
   }
 
   function snapshot() { return {state,mission,flows,deck,index,schedule,eventIndex,savedSide}; }
-  function adopt(value) { ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=value); }
+  function adopt(value) { ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=value); ResourceDisplay.mode=mission.difficulty || 'hard'; }
   function onNext() {
     if(solTransition) return;
     const before=state;
@@ -312,9 +313,11 @@
       const slot=tile.parentElement;
       const label=slot.querySelector('.resource-delta');label.replaceChildren();
       ind.parts.filter(q=>after[q]!==before[q]).forEach(q=>{
-        const difference=after[q]-before[q];
+        const display=ResourceDisplay.change(q,before[q],after[q]);
+        const difference=display.value;
+        if(ResourceDisplay.mode==='easy' && difference===0)return;
         const number=document.createElement('strong');number.textContent=`${difference>0?'+':'−'}${fmt(Math.abs(difference))}`;
-        const unit=document.createElement('small');unit.textContent=Indicators.QUANTITIES[q].unit;
+        const unit=document.createElement('small');unit.textContent=display.unit;
         label.append(number,unit);
       });
       label.dataset.change=tile.dataset.change;
@@ -343,7 +346,7 @@
       done ? Copy("completeBody", {totalSols: Mission.TOTAL_SOLS, events: index})
            : Copy("endedBody", {sol: mission.sol}),
       Copy("newMission"),
-      () => { startMission(); endButton.focus(); });
+      showDifficultyScreen);
   }
 
   endButton.addEventListener('click', () => dialog.showModal());
@@ -362,10 +365,23 @@
     introDrag = null;
     briefing.style.transform = '';
     if ((stored || window.invalidSavedMission) && !confirm(Copy("replaceSave"))) return;
-    startMission();
+    showDifficultyScreen();
     document.querySelector('#card .answer')?.focus({preventScroll: true});
   }
 
+  function showDifficultyScreen() {
+    intro.hidden=true;game.hidden=true;
+    document.getElementById('difficulty-screen').hidden=false;
+    document.querySelector('[data-mode="easy"]').focus({preventScroll:true});
+  }
+  document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>{
+    startMission(button.dataset.mode);
+    document.querySelector('#card .answer')?.focus({preventScroll:true});
+  }));
+  document.getElementById('difficulty-back').addEventListener('click',()=>{
+    document.getElementById('difficulty-screen').hidden=true;intro.hidden=false;
+    document.getElementById('start-mission').focus();
+  });
   document.getElementById('start-mission').addEventListener('click', beginFromIntro);
   briefing.addEventListener('pointerdown', e => {
     if (e.button > 0 || e.target.closest('button, a')) return;
@@ -412,7 +428,7 @@
   const stored = window.savedMission;
   if (stored) {
     const button = document.createElement('button'); button.className='start-mission'; button.textContent=Copy("continueMission");
-    button.onclick=()=>{ ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=stored); intro.hidden=true;game.hidden=false;render();renderMission(); if(!mission.ended) {const side=savedSide;cardUI.showFront(deck[index],eventIndex+1,schedule[mission.sol-1]);if(side){cardUI.showBack(deck[index],side,eventIndex+1===schedule[mission.sol-1],[]);cardChanges=stored.cardChanges||{};restoreResourceHighlights();}} };
+    button.onclick=()=>{ ResourceDisplay.mode=stored.mission.difficulty||'hard';({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=stored); intro.hidden=true;game.hidden=false;render();renderMission(); if(!mission.ended) {const side=savedSide;cardUI.showFront(deck[index],eventIndex+1,schedule[mission.sol-1]);if(side){cardChanges=stored.cardChanges||{};const before=Object.fromEntries(Object.entries(state).map(([q,n])=>[q,n-(cardChanges[q]||0)]));cardUI.showBack(deck[index],side,eventIndex+1===schedule[mission.sol-1],[],before);restoreResourceHighlights();}} };
     const startButton = document.getElementById('start-mission');
     const actions = document.createElement('div');
     actions.className = 'briefing-actions';
@@ -422,9 +438,10 @@
   window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
   buildTiles();
   try {
-    if (sessionStorage.getItem('next-frontier-start') === 'yes') {
+    const pendingDifficulty=sessionStorage.getItem('next-frontier-start');
+    if (pendingDifficulty) {
       sessionStorage.removeItem('next-frontier-start');
-      startMission();
+      startMission(pendingDifficulty==='easy'?'easy':'hard');
     }
   } catch (_) { /* The game remains playable when browser storage is disabled. */ }
 })();

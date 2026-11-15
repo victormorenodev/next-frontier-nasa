@@ -1025,3 +1025,53 @@ main {
   .tile.bump { animation: none; }
   .change-visible .resource-delta { animation: none; opacity: 1; }
 }
+
+/* Age-appropriate mission selection between the briefing and the first event. */
+.difficulty-screen { height: 100dvh; display: grid; place-items: center; padding: var(--screen-pad); }
+.difficulty-panel { width: min(100%, 800px); padding: clamp(20px, 4vw, 44px); border: 1px solid var(--edge); border-radius: 28px; background: #282740f5; box-shadow: 0 20px 60px #0005; }
+.difficulty-panel h1 { font-size: clamp(26px, 4vw, 42px); line-height: 1.15; margin: 8px 0 12px; }
+.difficulty-intro { margin: 0 0 24px; color: var(--muted); font-size: 17px; }
+.difficulty-options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.difficulty-option { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: clamp(18px, 3vw, 30px); border: 2px solid #777193; border-radius: 20px; background: #34304e; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.difficulty-option[data-mode=easy] { border-color: #81c8ad; }
+.difficulty-option[data-mode=hard] { border-color: #e4ad83; }
+.difficulty-option strong { font-size: 28px; }
+.difficulty-option > span:not(.difficulty-symbol) { font-size: 17px; font-weight: 650; }
+.difficulty-option small { color: var(--muted); line-height: 1.4; font-size: 15px; }
+.difficulty-symbol { font-size: 32px; color: #c5ded8; }
+.difficulty-option:hover { background: #44405f; }
+.difficulty-option:focus-visible, .difficulty-back:focus-visible { outline: 3px solid #e4f7ed; outline-offset: 4px; }
+.difficulty-back { border: none; background: transparent; color: var(--muted); margin-top: 16px; padding: 10px 0; min-height: 44px; font: inherit; font-size: 15px; cursor: pointer; }
+@media (max-width: 599px) and (orientation: portrait) {
+  .difficulty-panel { padding: 20px; }
+  .difficulty-options { grid-template-columns: 1fr; gap: 12px; }
+  .difficulty-option { position: relative; padding: 14px 16px 14px 56px; gap: 5px; }
+  .difficulty-symbol { position: absolute; left: 16px; top: 16px; font-size: 25px; }
+  .difficulty-option strong { font-size: 23px; }
+  .difficulty-option > span:not(.difficulty-symbol) { font-size: 14px; }
+  .difficulty-option small { font-size: 13px; }
+  .difficulty-intro { font-size: 14px; margin-bottom: 16px; }
+}
+@media (max-height: 450px) and (orientation: landscape) {
+  .difficulty-panel { padding: 16px 20px; }
+  .difficulty-panel h1 { font-size: 24px; margin: 4px 0 6px; }
+  .difficulty-panel .briefing-eyebrow { display: none; }
+  .difficulty-intro { font-size: 13px; margin-bottom: 10px; }
+  .difficulty-options { gap: 12px; }
+  .difficulty-option { padding: 12px; gap: 4px; }
+  .difficulty-symbol { display: none; }
+  .difficulty-option strong { font-size: 21px; }
+  .difficulty-option > span:not(.difficulty-symbol) { font-size: 14px; }
+  .difficulty-option small { font-size: 12px; }
+  .difficulty-back { margin-top: 4px; padding: 4px 0; min-height: 32px; }
+}
+@media (max-width: 599px) and (max-height: 650px) and (orientation: portrait) {
+  .difficulty-panel { padding: 16px; }
+  .difficulty-panel h1 { font-size: 24px; margin-bottom: 8px; }
+  .difficulty-panel .briefing-eyebrow { font-size: 11px; }
+  .difficulty-intro { margin-bottom: 12px; }
+  .difficulty-options { gap: 10px; }
+  .difficulty-option { padding-block: 12px; }
+  .difficulty-option small { font-size: 12px; }
+  .difficulty-back { margin-top: 8px; }
+}

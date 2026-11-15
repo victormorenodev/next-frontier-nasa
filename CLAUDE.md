@@ -17,6 +17,10 @@ Esta seção substitui as referências históricas abaixo a 30 sols, 45 cartas, 
 - O baralho é dimensionado pelo total de eventos sorteados nos 40 sols (40 a 80 cartas). As cartas se repetem livremente, inclusive consecutivamente e no mesmo sol. O sorteio é em duas etapas: categoria e carta, com probabilidades em data/categories.json e data/cards.json. Rotina 35%, Manutenção 25%, Exploração 20%, Ciência 15%, Emergência 5%.
 - O motor de fluxos conserva terços de sol apenas como unidade interna de integração; a energia solar é um orçamento diário distribuído nesses passos.
 
+## Dificuldade da missão
+
+Após o briefing, escolher Easy (cientistas de 7–10 anos) ou Hard (astronautas de 11+). Easy mostra recursos normalizados à capacidade em inteiros de 0 a 100, sem %, e variações como diferenças dos inteiros exibidos (sem arredondar os valores internos) e sorteia apenas cartas easy/medium; Hard mantém unidades físicas e todos os níveis. O motor continua calculando em unidades físicas em ambos. Após filtragem, normalizar probabilidades e excluir categorias sem cartas elegíveis. Modo fica salvo em mission.difficulty; saves anteriores usam Hard.
+
 ## 1. Origem e objetivo
 
 O projeto foi concebido para o **NASA International Space Apps Challenge 2026**, especificamente o desafio **Build a Junior Astronaut Mission Trainer**.

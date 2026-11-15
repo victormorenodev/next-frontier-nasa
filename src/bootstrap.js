@@ -16,7 +16,7 @@ try {
  for(const el of document.querySelectorAll('[data-copy]'))el.textContent=Copy(el.dataset.copy);
  if(window.invalidSavedMission){const p=document.createElement('p');p.textContent=Copy('invalidSave');document.getElementById('start-mission').before(p)}
  globalThis.CardData={CARDS:GameData.cards};
- for(const file of ['indicators','mission','flows','deck','engine','icons','card-ui','ui'])await import(`./${file}.js`);
+ for(const file of ['indicators','mission','flows','deck','engine','icons','display','card-ui','ui'])await import(`./${file}.js`);
 }catch(error){
  console.error(error);
  const p=document.createElement('p');p.textContent='The mission could not load.';

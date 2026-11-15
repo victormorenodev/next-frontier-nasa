@@ -1,9 +1,12 @@
 /* Pure mission actions. UI and persistence consume snapshots, never DOM state. */
 globalThis.Engine = {
-  start(random = Math.random) {
+  start(random = Math.random, difficulty = 'hard') {
+    if (!['easy','hard'].includes(difficulty)) throw Error('Unknown mission difficulty');
+    const settings=GameData.mission.difficulties?.[difficulty];
+    const allowed=settings?.allowedCardDifficulties || (difficulty==='easy'?['easy','medium']:['easy','medium','hard']);
     const schedule = Array.from({length: Mission.TOTAL_SOLS}, () => Mission.eventsForSol(random));
-    return {state: Indicators.createState(), mission: Mission.createMission(), flows: Flows.createFlows(),
-      deck: Deck.createDeck(CardData.CARDS, schedule.reduce((a,b)=>a+b,0), random),
+    return {state: Indicators.createState(), mission: {...Mission.createMission(), difficulty}, flows: Flows.createFlows(),
+      deck: Deck.createDeck(CardData.CARDS, schedule.reduce((a,b)=>a+b,0), random, GameData.categories, allowed),
       index: 0, eventIndex: 0, schedule, savedSide: null};
   },
   answer(snapshot, side) {

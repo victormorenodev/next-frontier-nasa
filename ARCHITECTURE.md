@@ -760,3 +760,21 @@ Cada indicador agora vive em `.indicator-slot`, com uma faixa superior permanent
 O pulso e os números permanecem por 1,4 s; a altura do preenchimento interpola por 1,1 s, ficando verde/vermelha durante a animação e voltando à cor original depois. O contorno de uma mudança de carta continua até avançar, como antes. Avançar limpa timers/números antigos antes de iniciar outra mudança. A passagem de sol espera 1,4 s para a leitura da mudança diária antes de atualizar contador e animar o fundo. Movimento reduzido evita deslocamento e espera de sol, mantendo a leitura estática da variação.
 
 Conferido no Chromium em 320×568, 375×667, 1032×1376 e 844×390: valor e unidade acima do recurso, preenchimento vermelho durante queda, número visível durante a leitura, limpeza posterior sem perder contorno e carta dentro da área disponível. Sem erros JavaScript; `npm test` passou.
+
+
+## Seletor de dificuldade e apresentação normalizada
+
+Após o briefing, `#difficulty-screen` oferece **Easy** para cientistas de 7–10 anos e **Hard** para astronautas a partir de 11. O seletor tem controles de teclado, botão de retorno e layouts compactos para celular/paisagem. Continuar missão restaura o modo salvo sem reapresentar o seletor; nova missão permite escolher novamente.
+
+`Engine.start(random, difficulty)` grava `mission.difficulty`. Easy filtra cartas easy/medium usando `mission.difficulties`; Hard permite todos os níveis. `Deck.createDeck` aceita a lista de níveis permitidos como quinto argumento, valida o conjunto original e renormaliza chances após filtrar. Categorias sem cartas elegíveis saem do sorteio; as restantes mantêm as proporções relativas. Não altera os JSONs originais nem cria novas cartas.
+
+`src/display.js` centraliza a conversão de apresentação: Easy mostra valor/capacidade × 100, com limite visual de 100%, enquanto os recursos do motor continuam físicos. Detalhes, previsão de um sol, acessibilidade, efeitos no verso e números flutuantes usam a mesma conversão. Variações representam porcentagem da capacidade (diferença em pontos percentuais), nunca porcentagem do estoque restante. Saves sem dificuldade usam Hard.
+
+`npm test` inclui conversões, filtragem, categoria sem cartas elegíveis, erro de conjunto vazio e save Easy. No Chromium, em 320×568, 1032×1376 e 844×390: seletor cabe na tela, Easy exclui cartas hard, água aparece como 85,7% de 100%, previsões/verso/animação usam %, recarga preserva o modo/verso, Hard mostra litros, sem erros JavaScript.
+
+
+## Inteiros sem símbolo no modo fácil
+
+Easy continua normalizado pela capacidade, mas mostra somente inteiros de 0 a 100, sem símbolo % nem unidade física. `ResourceDisplay` usa arredondamento ao inteiro mais próximo, simétrico para sinais, sem alterar valores físicos ou saves. Estoques, previsões e números flutuantes usam diferenças entre os inteiros exibidos antes e depois, evitando divergência entre −1 e uma queda aparente diferente. Mudanças sem alteração no inteiro não geram número flutuante; frações continuam acumulando no motor. Efeitos imediatos no verso consideram a reserva anterior e limites reais; taxas contínuas e efeitos futuros são convertidos e arredondados sem modificar os valores de cálculo. Hard preserva unidades e casas decimais.
+
+Testes verificam arredondamento, sinais, capacidade cheia, diferenças acumuladas e preservação das frações. No Chromium em celular, tablet e paisagem: reserva de água 86 de 100, efeitos −3 e −5/sol, variação −3 sem %, save Easy restaurado e modo Hard em litros. Sem erros JavaScript.

@@ -8,6 +8,14 @@ export function validateData(d, {legacy = false} = {}) {
   const p=d.mission.eventChances;
   need(p&&[p.one,p.two].every(n=>finite(n)&&n>=0&&n<=1)&&Math.abs(p.one+p.two-1)<1e-9,'mission.eventChances');
 
+  if(d.mission.difficulties!==undefined){
+    for(const id of ['easy','hard']){
+      const mode=d.mission.difficulties[id];
+      need(mode&&Array.isArray(mode.allowedCardDifficulties)&&mode.allowedCardDifficulties.length>0&&mode.allowedCardDifficulties.every(v=>['easy','medium','hard'].includes(v)),'mission.difficulties.'+id);
+      need(mode.display===(id==='easy'?'percentage':'physical'),'mission.difficulties.'+id+'.display');
+      need(id!=='easy'||!mode.allowedCardDifficulties.includes('hard'),'easy mode cannot include hard cards');
+    }
+  }
   const q=d.resources?.quantities; need(q&&Object.keys(q).length,'resources.quantities');
   for(const [id,r] of Object.entries(q)) {
     need(/^[a-z][a-z0-9-]*$/.test(id),`resource ID ${id}`);
@@ -50,6 +58,8 @@ export function validateSave(s){
  need(Number.isInteger(s.index)&&s.index>=0&&s.index<=s.deck.length&&Number.isInteger(s.eventIndex)&&s.eventIndex>=0&&s.eventIndex<2);
  need(s.mission.ended||s.index<s.deck.length&&s.eventIndex<s.schedule[s.mission.sol-1]);
  need(s.savedSide===null||['left','right'].includes(s.savedSide));
+ need(s.mission.difficulty===undefined||['easy','hard'].includes(s.mission.difficulty));
+ if(s.mission.difficulty==='easy')need(s.deck.every(c=>c.difficulty==='easy'||c.difficulty==='medium'));
  for(const [k,r] of Object.entries(s.data.resources.quantities))need(Number.isFinite(s.state?.[k])&&s.state[k]>=0&&s.state[k]<=r.max);
  need(s.flows&&Array.isArray(s.flows.ongoing)&&Array.isArray(s.flows.later));
  for(const o of s.flows.ongoing)need(Number.isFinite(o.start)&&(Number.isFinite(o.end)||o.end===Infinity)&&o.end>o.start&&Object.entries(o.rates).every(([k,n])=>k in s.state&&Number.isFinite(n)));

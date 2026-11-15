@@ -31,6 +31,19 @@
     </article>
   </section>
 
+  <section id="difficulty-screen" class="difficulty-screen" aria-labelledby="difficulty-title" hidden>
+    <div class="difficulty-panel">
+      <p class="briefing-eyebrow" data-copy="html3"></p>
+      <h1 id="difficulty-title" data-copy="difficultyTitle"></h1>
+      <p class="difficulty-intro" data-copy="difficultyIntro"></p>
+      <div class="difficulty-options">
+        <button type="button" class="difficulty-option" data-mode="easy"><span class="difficulty-symbol" aria-hidden="true">⚗</span><strong data-copy="difficultyEasy"></strong><span data-copy="difficultyEasyAge"></span><small data-copy="difficultyEasyHint"></small></button>
+        <button type="button" class="difficulty-option" data-mode="hard"><span class="difficulty-symbol" aria-hidden="true">✦</span><strong data-copy="difficultyHard"></strong><span data-copy="difficultyHardAge"></span><small data-copy="difficultyHardHint"></small></button>
+      </div>
+      <button type="button" class="difficulty-back" id="difficulty-back" data-copy="difficultyBack"></button>
+    </div>
+  </section>
+
   <main id="game" hidden>
     <!-- Mission bar: current sol, and the button to end the mission. -->
     <header class="topbar">

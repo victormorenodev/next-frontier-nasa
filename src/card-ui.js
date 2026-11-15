@@ -5,7 +5,7 @@
 
   const DRAG_START_PX = 8;       // smaller moves count as a tap, not a drag
   const ANSWER_SHARE = 0.28;     // drag past 28% of the card width to answer
-  const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 100 ? 1 : 0});
+  const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 1 ? 2 : Math.abs(n) < 100 ? 1 : 0});
 
   // Which indicator colour each quantity uses (one indicator per quantity).
   const COLOR_OF = {};
@@ -159,7 +159,7 @@
     }
 
     // One line of the back: coloured dot + name (+ small hint) on the left, amount on the right.
-    function effectRow(key, amount, unitSuffix, hint, cls) {
+    function effectRow(key, amount, unitSuffix, hint, cls, before) {
       const q = Indicators.QUANTITIES[key];
       const li = el('li', `${cls || ''} ${amount < 0 ? 'down' : 'up'}`.trim());
       li.style.setProperty('--c', COLOR_OF[key]);
@@ -170,7 +170,8 @@
       icon.innerHTML=ResourceIcons[indicator?.icon || key] || '';
       name.append(icon,el('span','effect-resource-name',q.name));
       if (hint) name.append(el('small', null, hint));
-      li.append(name, el('b', 'amount', `${amount < 0 ? '−' : '+'}${fmt(Math.abs(amount))} ${q.unit}${unitSuffix}`));
+      const display=ResourceDisplay.effect(key,amount,before);
+      li.append(name, el('b', 'amount', `${display.value === 0 ? '' : display.value < 0 ? '−' : '+'}${fmt(Math.abs(display.value))}${display.unit ? ' ' + display.unit : ''}${unitSuffix}`));
       return li;
     }
 
@@ -181,7 +182,7 @@
       return `${when}${howLong}${o.note ? ` · ${o.note}` : ''}`;
     }
 
-    function showBack(card, side, isLast, happened) {
+    function showBack(card, side, isLast, happened, beforeState) {
       const picked = card[side];
       chosen.textContent = picked.label;
       const explanation = typeof picked.description === 'string' ? picked.description.trim() : '';
@@ -190,7 +191,7 @@
       effects.replaceChildren();
       // Now: immediate changes.
       const now = Object.entries(picked.effects || {});
-      now.forEach(([key, amount]) => effects.append(effectRow(key, amount, '')));   // no hint: it is right now
+      now.forEach(([key, amount]) => effects.append(effectRow(key, amount, '', undefined, undefined, beforeState?.[key])));   // no hint: it is right now
       // Every sol: changes to what the base uses or makes.
       (picked.ongoing || []).forEach(o => Object.entries(o.rates).forEach(([key, rate]) =>
         effects.append(effectRow(key, rate, '/sol', ongoingHint(o), 'ongoing'))));

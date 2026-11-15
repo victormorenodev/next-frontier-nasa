@@ -4,6 +4,13 @@ const {Engine}=require('./load-engine.cjs');
 const fs=require('node:fs');const {validateSave}=await import('data:text/javascript;base64,'+Buffer.from(fs.readFileSync('src/validation.js')).toString('base64'));
 const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface'].map(k=>[k,require('../data/'+k+'.json')]));
 let snapshot=Engine.start(()=>.99);assert.ok(snapshot.schedule.every(n=>n===2));
+assert.equal(snapshot.mission.difficulty,'hard');
+for(let seed=0;seed<10;seed++){
+ const easy=Engine.start(()=>seed/10,'easy');
+ validateSave(JSON.parse(JSON.stringify({version:1,data,...easy})));
+ assert.equal(easy.mission.difficulty,'easy');assert.ok(easy.deck.every(c=>c.difficulty==='easy'||c.difficulty==='medium'));
+}
+assert.throws(()=>Engine.start(Math.random,'unknown'));
 const initial=snapshot;snapshot=Engine.answer(snapshot,'left');assert.equal(snapshot.mission.elapsed,0);assert.equal(Engine.answer(snapshot,'right'),snapshot);
 const roundtrip=JSON.parse(JSON.stringify({version:1,data,...snapshot},(k,v)=>v===Infinity?'__infinity':v),(k,v)=>v==='__infinity'?Infinity:v);
 validateSave(roundtrip);

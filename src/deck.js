@@ -78,10 +78,19 @@
     return errors;
   }
 
-  function createDeck(cards, size = DECK_SIZE, random = Math.random, categories = GameData.categories) {
+  function createDeck(cards, size = DECK_SIZE, random = Math.random, categories = GameData.categories, allowedDifficulties = null) {
     if (!Number.isInteger(size) || size < 0) throw Error('Deck size must be a nonnegative integer');
     const problems = [...cards.flatMap(validateCard), ...validateCategories(cards, categories)];
     if (problems.length) throw new Error(`Invalid deck: ${problems.join('; ')}`);
+    if (allowedDifficulties) {
+      cards=cards.filter(card=>allowedDifficulties.includes(card.difficulty)&&card.probability>0);
+      categories=categories.filter(category=>cards.some(card=>card.category===category.id&&card.probability>0));
+      if(!categories.length)throw Error('No eligible cards for this difficulty');
+      const categoryTotal=categories.reduce((sum,c)=>sum+c.probability,0);
+      if(categoryTotal<=0)throw Error('No eligible categories with positive probability');
+      categories=categories.map(c=>({...c,probability:c.probability/categoryTotal}));
+      cards=cards.map(card=>({...card,probability:card.probability/cards.filter(c=>c.category===card.category).reduce((sum,c)=>sum+c.probability,0)}));
+    }
     const groups = new Map(categories.map(category => [category.id, cards.filter(card => card.category === category.id)]));
     return Array.from({length: size}, () => {
       const category = weightedPick(categories, random);
