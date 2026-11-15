@@ -1,40 +1,98 @@
 # Next Frontier
 
-Run locally with `python -m http.server 8000`, then open http://localhost:8000.
-The game now requires HTTP to load JSON data; opening index.html directly is no longer supported.
+Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **40 sols**. Todo o conteúdo do jogo está em inglês simples.
 
-Edit mission settings in `data/mission.json`, stocks and indicators in `data/resources.json`, daily resource budgets in `data/flows.json`, cards in `data/cards.json`, and category chances in `data/categories.json`.
-JavaScript lives in `src/`; styles live in `assets/`. Images remain in `images/`.
+Documentação consolidada em **15/11/2026**, conforme o código e os JSONs atuais.
 
-Progress is automatically stored in localStorage on this browser. Continue mission restores the saved rules and card order. New missions replace the saved slot after confirmation. Clearing site data removes progress.
+## Executar localmente
 
-For GitHub Pages, select **Settings → Pages → Source → GitHub Actions**. Push to main or run the Publish game workflow. No deployment has been performed automatically from this workspace.
+Na raiz do repositório:
 
-## Data contract
+```bash
+python -m http.server 8000 --bind 127.0.0.1
+```
 
-`mission.json` defines `version`, `totalSols`, `crew`, `solHours`, event chances (sum = 1). `resources.json` defines quantities and ordered indicators, including icon identifiers and colors. Icon drawings are supplied by the interface; supported identifiers are oxygen, water, shield, energy and food.
+Abra **http://127.0.0.1:8000/**. O jogo precisa de HTTP para ler os JSONs; abrir index.html por duplo clique não é suportado. Não há framework, dependências npm ou build obrigatório. Python é uma opção de servidor local; jogadores acessam o endereço publicado pelo navegador.
 
-`flows.json` uses `amount` and `basis`: `perSol` or `perCrewEarthDay`. The latter multiplies the amount by crew size and solHours / 24. Preserve scientific notes and reference/simulated classification when editing.
+## Como funciona
 
-`cards.json` contains unique IDs, two answers, effects in resource units, ongoing rates per sol, and later effects. Durations are whole sols. Omitting an ongoing duration means it continues indefinitely. `interface.json` holds English copy, briefing image and credit. Templates accept `{crew}`, `{totalSols}` and message-specific values such as `{sol}` and `{events}`. JSON values are data, not executable expressions.
+O briefing apresenta a missão e a imagem da NASA com crédito. Clique, arraste ou use as setas para ir ao seletor:
 
-Run `npm test` (no dependency installation needed). `src/engine.js` exposes start, answer, next and end actions over complete snapshots; the UI renders those snapshots. Saves include the data snapshot so existing missions retain their rules after an update. An incompatible save is preserved until the player confirms replacement. A new mission loads the newest data. Storage failures do not stop an ongoing game; another tab's save suspends the older view until reloaded.
+| Modo | Público indicado | Recursos | Cartas permitidas |
+| --- | --- | --- | --- |
+| Easy | Cientistas de 7–10 anos | Inteiros de 0 a 100, sem % nem unidades | easy e medium |
+| Hard | Astronautas de 11+ anos | Quantidades com unidades físicas | easy, medium e hard |
 
+A simulação usa unidades físicas nos dois modos. Easy arredonda apenas a exibição; as frações continuam acumulando. Previsões e variações reais refletem a diferença entre os inteiros exibidos antes e depois.
 
-## Category-based card draws
+Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Ainda não há derrota automática por falta de recursos.
 
-Each event independently draws a category, then a card within that category. `data/categories.json` defines IDs, English names and `probability` values: Routine 0.35, Maintenance 0.25, Exploration 0.20, Science 0.15, Emergency 0.05. Each card has a `category` matching one category ID and its own `probability` within the category. Values are fractions from 0 to 1; categories sum to 1, and card probabilities in each category independently sum to 1 (tolerance 1e-9). Zero disables a selection, but every category must contain cards with total probability 1. A category containing one card gives that card probability 1.
+As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 35%, Maintenance 25%, Exploration 20%, Science 15%, Emergency 5%. No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
 
-Draws are with replacement: the same card may appear consecutively, even twice in the same sol. There are no balanced shuffled rounds. The existing 10 mock cards were assigned to categories with equal probability inside each category; scientific correctness/balance of these test events is unchanged. Cards are still preselected for the full mission and saved in order. Old saves without categories remain playable with their original sequence; starting a new mission uses the latest JSONs.
+Na frente, cada imagem tem legenda. No verso, a explicação da escolha aparece somente se preenchida; os resultados mostram ícones e nomes dos recursos. Dificuldade e número de eventos não aparecem na HUD.
 
+Passe o mouse sobre um indicador no PC ou segure/deslize no toque para ver a função do recurso e sua previsão após um sol. Números e preenchimento animam em verde/vermelho por 1,4 s; os contornos da carta permanecem até avançar. A passagem de sol anima primeiro os recursos e depois a luz do fundo, da direita para a esquerda. Movimento reduzido é respeitado. A página não rola e se adapta a celular/tablet em retrato/paisagem. O tablet de relatório está temporariamente oculto.
 
-Each card answer (`left` and `right`) may include `description`: a short English explanation shown on the back above resource effects, only after choosing that answer. All current answers start with `"description": ""`. Missing, empty or whitespace-only descriptions display nothing and reserve no space. The two choices have independent descriptions; keep them brief for small screens. Existing saved cards without this field remain supported.
+## Editar configuração e conteúdo
 
-Cards also support `imageCaption`, a brief English description of what the picture actually shows. It appears immediately below the image. Current mock cards share the same image, so they share an accurate caption. The report-tablet button is temporarily hidden.
+| Arquivo | O que editar |
+| --- | --- |
+| `data/mission.json` | Tripulação, duração do sol, duração da missão, chances de 1/2 eventos e modos |
+| `data/resources.json` | Estoques iniciais, capacidades, unidades, descrições, indicadores, ícones e cores |
+| `data/categories.json` | Categorias e chances-base |
+| `data/cards.json` | Eventos, imagens, legendas, fontes, alternativas e efeitos |
+| `data/flows.json` | Consumo/produção e coeficientes científicos ou simulados |
+| `data/interface.json` | Textos, templates, imagem e crédito do briefing |
 
+Probabilidades são frações entre 0 e 1. Categorias somam 1 e cartas somam 1 por categoria, com tolerância de 1e-9. Cada categoria precisa de cartas e total positivo. Probabilidade zero desabilita a seleção. Uma categoria com uma única carta usa probability 1 nessa carta. O filtro de dificuldade remove categorias sem cartas elegíveis e preserva a proporção entre as restantes.
 
-## Mission difficulty
+Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As dez cartas atuais são mock e compartilham uma imagem/legenda de teste; suas explicações de escolha começam vazias.
 
-After the briefing, choose **Easy — For scientists ages 7–10** or **Hard — For astronauts ages 11+**. Easy displays every resource value as an integer from 0 to 100 (`round(amount / max * 100)`), without a percent sign or physical unit. Forecasts and floating changes use the difference between rounded before/after values, so the displayed numbers stay consistent. Fractions remain in the simulation and accumulate without loss. The simulation, stock limits and scientific coefficients remain in physical units internally. Hard preserves physical units and allows all cards.
+- `effects`: mudanças imediatas nas unidades físicas dos recursos, inclusive no Easy.
+- `ongoing`: rates por sol, after opcional e for opcional; omitir for significa continuar indefinidamente.
+- `later`: efeitos após um número inteiro positivo de sols.
+- `left.description`/`right.description`: explicação no verso somente para a escolha feita; ausente, vazia ou só espaços não ocupa espaço.
+- `imageCaption`: legenda da imagem na frente; ausente/vazia não ocupa espaço. Saves antigos podem usar a legenda atual se ID e imagem coincidirem.
 
-`mission.json` configures the allowed card difficulty tags for each mode. Easy permits only easy/medium cards. The category/card distribution is filtered before drawing, and eligible probabilities are renormalized within each category. Categories with no eligible cards are removed and the remaining category chances are renormalized. A mode with no eligible positive-probability cards is invalid. `mission.difficulty` persists with the save; existing saves without a mode resume in Hard. Starting a new mission opens the selector again.
+Fluxos usam amount e basis: perSol ou perCrewEarthDay. Esta última multiplica amount por crew × solHours/24. Preserve unidade, fonte e classificação reference/simulated. Templates da interface aceitam campos como `{crew}`, `{totalSols}`, `{sol}` e `{amount}`, conforme a mensagem. JSONs não contêm fórmulas executáveis.
+
+Layout, animações, gestos, desenhos dos ícones e tipos de regras ficam em CSS/JavaScript. O motor não interpreta qualquer comportamento arbitrário só por adicioná-lo ao JSON. Código em src/, CSS/ilustração em assets/, imagens de briefing/cartas em images/.
+
+## Progresso salvo
+
+O jogo salva automaticamente em um slot de localStorage, incluindo dificuldade, recursos, efeitos pendentes, fase da carta, sequência e dados usados pela missão. **Continue mission** restaura a partida sem reaplicar escolhas. Novas missões usam os dados atuais. Saves anteriores sem modo retomam em Hard; alterações de textos da interface podem aparecer também em partidas anteriores.
+
+O progresso fica no mesmo navegador e origem do site. Limpar os dados remove o save; armazenamento privado/desativado pode não persistir. Não há login nem sincronização entre dispositivos. Mudar o domínio não transfere o progresso. Quando outra aba altera o save, a aba antiga suspende ações até recarregar. Saves incompatíveis não são apagados automaticamente: a interface pede confirmação para substituir ao iniciar novamente.
+
+## Validar
+
+```bash
+npm test
+git diff --check
+```
+
+Node é necessário apenas para desenvolvimento/testes. Não precisa instalar pacotes. São sete suítes: indicadores, missão, fluxos, baralho, dados/saves, ações do motor e apresentação dos recursos. Para alterações visuais, conferir também o navegador em celular e tablet, incluindo paisagem e movimento reduzido.
+
+## Publicar
+
+O workflow **Publish game**, em `.github/workflows/pages.yml`, testa e publica em GitHub Pages ao receber push na main ou execução manual. Em Settings → Pages, configurar Source como GitHub Actions. É preciso enviar as alterações e integrá-las à branch de publicação; commit local não publica sozinho.
+
+Para outra hospedagem estática, como Cloudflare, enviar somente:
+
+```text
+index.html
+src/
+data/
+assets/
+images/
+```
+
+Manter essa estrutura e verificar o resultado do deploy. O estado atual de disponibilidade pública não foi revalidado nesta revisão documental. Não enviar prints, ZIPs de logs, testes ou documentação interna como parte do pacote do jogo.
+
+## Documentos
+
+- [AGENTS.md](AGENTS.md): regras vigentes e orientações para agentes.
+- [ARCHITECTURE.md](ARCHITECTURE.md): estrutura e funcionamento atuais.
+- [CLAUDE.md](CLAUDE.md): ponto de entrada para a mesma documentação, sem regras duplicadas.
+- [docs/RESEARCH.md](docs/RESEARCH.md): pesquisa, fontes e cuidados científicos.
+- [Histórico de implementação](docs/history/ARCHITECTURE.md) e [contexto anterior](docs/history/PROJECT_CONTEXT.md): versões arquivadas, não instruções atuais.

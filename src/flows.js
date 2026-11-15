@@ -18,7 +18,7 @@
   const SOL_HOURS = GameData.mission.solHours;                 // NASA Mars24
   const perSolFromEarthDay = perDay => perDay * SOL_HOURS / 24;
 
-  // Base flows. `kind`: 'reference' = from a published source (see CLAUDE.md §7),
+  // Base flows. `kind`: 'reference' = from a published source (see docs/RESEARCH.md, studies and proposed applications),
   // 'simulated' = invented for the prototype. Daily budgets are split over three internal steps.
   const BASE_FLOWS = GameData.flows.map(f => ({...f, perSol: f.amount * (f.basis === 'perCrewEarthDay' ? CREW * SOL_HOURS / 24 : 1)}));
 
