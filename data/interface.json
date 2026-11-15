@@ -124,5 +124,6 @@
   "soundLabel": "Sound",
   "soundOn": "On",
   "soundOff": "Off",
-  "cardImageMissing": "Image not available yet."
+  "cardImageMissing": "Image not available yet.",
+  "tutorialRadiationBody": "Radiation is energy that travels as waves or tiny particles. Some kinds can harm astronauts."
 }

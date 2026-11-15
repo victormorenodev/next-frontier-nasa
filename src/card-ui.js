@@ -171,7 +171,7 @@
       text.textContent = card.description;
       leftBtn.textContent = `← ${card.left.label}`;
       rightBtn.textContent = `${card.right.label} →`;
-      [caption,text,leftBtn,rightBtn].forEach(node => Glossary.decorate(node));
+      [caption,text].forEach(node => Glossary.decorate(node));
       highlight(null);
       setFace(false);
       phase = 'front';

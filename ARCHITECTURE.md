@@ -41,7 +41,7 @@ Uma falha de fetch/JSON/validação na inicialização é registrada no console 
 
 ## Dados e sorteio
 
-Configuração padrão: 4 astronautas, 30 sols, 80% de um evento e 20% de dois. `Engine.start(random, difficulty)` gera o cronograma completo e pede ao Deck exatamente a soma dos eventos: de 30 a 60 cartas.
+Configuração padrão: 4 astronautas, 35 sols, 80% de um evento e 20% de dois. `Engine.start(random, difficulty)` gera o cronograma completo e pede ao Deck exatamente a soma dos eventos: de 35 a 70 cartas.
 
 | Categoria | Probabilidade-base |
 | --- | ---: |
@@ -65,7 +65,7 @@ O snapshot do motor contém `state`, `mission`, `flows`, `deck`, `index`, `event
 2. `answer` aplica a escolha e registra fluxos no instante atual, sem avançar o relógio. Não reaplica se a carta já tem savedSide.
 3. A interface vira a carta, mostra resultados e salva.
 4. `next` passa à próxima carta do mesmo sol ou integra um sol completo após a última.
-5. Ao concluir o sol 30 sem falha, marca `ended: true`, `reason: 'complete'`; não exibe um sol 41. Recurso zerado encerra com `reason: 'failed'` e `failedResource`; encerramento manual usa `reason: 'quit'`.
+5. Ao concluir o sol 35 sem falha, marca `ended: true`, `reason: 'complete'`; não exibe um sol 41. Recurso zerado encerra com `reason: 'failed'` e `failedResource`; encerramento manual usa `reason: 'quit'`.
 
 `mission.elapsed` usa terços inteiros de sol, sem períodos jogáveis. Fluxos são aplicados em três passos internos por sol. Coeficientes `perCrewEarthDay` multiplicam amount por crew × solHours/24; os `perSol` já são totais diários. Cada passo respeita os limites do estoque e executa efeitos agendados quando devidos. Blindagem não é consumida por radiação.
 
@@ -123,7 +123,7 @@ Nome, cor e descrição vêm de `data/resources.json` → `easyLifeSupport`; a c
 
 `Indicators.depleted` encontra o primeiro recurso interno em zero na ordem de `resources.quantities` (oxygen, water, shield, energy, food). Não usa os números arredondados do Easy. `Engine.checkFailure` aplica a regra às escolhas e à retomada de saves ativos antigos com estoque zerado. Saves de missões já encerradas são descartados no bootstrap.
 
-`Flows.passTime(..., {stopOnEmpty: true})` verifica após o saldo de cada terço interno e após cada efeito agendado. Ao zerar, interrompe a integração, mantém consequências não executadas e retorna `failedResource` e `thirdsPassed`. Não existe período jogável novo: são passos internos da resolução diária. `Engine.next` salva o tempo efetivamente integrado e conserva o sol em que houve falha, sem avançar para outro evento. A falha prevalece inclusive no sol 30. Previsões usam a mesma interrupção, sem alterar o estado real. Chamadas sem a opção preservam a integração genérica dos fluxos.
+`Flows.passTime(..., {stopOnEmpty: true})` verifica após o saldo de cada terço interno e após cada efeito agendado. Ao zerar, interrompe a integração, mantém consequências não executadas e retorna `failedResource` e `thirdsPassed`. Não existe período jogável novo: são passos internos da resolução diária. `Engine.next` salva o tempo efetivamente integrado e conserva o sol em que houve falha, sem avançar para outro evento. A falha prevalece inclusive no sol 35. Previsões usam a mesma interrupção, sem alterar o estado real. Chamadas sem a opção preservam a integração genérica dos fluxos.
 
 A UI mostra imediatamente a falha de uma escolha e salva o final, sem apresentar o verso como se a missão continuasse. Falhas durante a resolução diária usam a animação de recursos existente antes de mostrar o final. A tela usa `failedTitle` e `failedBody-*` de `interface.json`, com botão New mission. No Easy, failedResource oxygen/water seleciona o mesmo texto life-support; Hard conserva as cinco causas. O save guarda a causa física, validada contra um estoque realmente zerado, e mantém o final somente na sessão atual, removendo o save ao encerrar. Encerramento manual e sucesso permanecem distintos.
 
@@ -207,7 +207,7 @@ Em novas missões, o saldo-base por sol da base inteira de quatro pessoas é O�
 
 ## Glossário
 
-Glossary no menu inicial abre os dez termos de `data/glossary.json`, com nomes e definições em inglês simples. O glossário atual é usado também para partidas antigas, sem alterar seus dados de simulação. `src/glossary.js` destaca aliases completos, sem diferenciar maiúsculas, em legendas, enunciados, alternativas e descrições/efeitos do verso. Usa nós de texto, sem interpretar HTML; aliases mais longos têm prioridade. Os termos recebem cor e sublinhado pontilhado. Hover, toque ou foco de teclado mostram a definição em um popover acima da interface. Escape, toque fora ou mudança de carta fecham; consultar um termo não escolhe uma resposta nem inicia arrasto. A lista do menu tem rolagem interna em telas pequenas. Fontes e URLs não são anotadas.
+Glossary no menu inicial abre os 41 termos de `data/glossary.json`, com nomes e definições em inglês simples. O glossário atual é usado também para partidas antigas, sem alterar seus dados de simulação. `src/glossary.js` destaca aliases completos, sem diferenciar maiúsculas, em legendas, enunciados e descrições/efeitos do verso. Usa nós de texto, sem interpretar HTML; aliases mais longos têm prioridade. Os termos recebem cor e sublinhado pontilhado. Hover, toque ou foco de teclado mostram a definição em um popover acima da interface. Escape, toque fora ou mudança de carta fecham; consultar um termo não escolhe uma resposta nem inicia arrasto. A lista do menu tem rolagem interna em telas pequenas. Fontes e URLs não são anotadas.
 
 ## Seleção das missões MARINER 4 e OPPORTUNITY
 
@@ -250,4 +250,10 @@ Radiation Shield representa a proteção dos próprios astronautas contra radia�
 
 As probabilidades-base das categorias são proporcionais ao número de cartas no catálogo completo: contagem da categoria / total de cartas. O importador atualiza cards.json e categories.json juntos, sem arredondar os pesos. Cartas dentro da categoria permanecem equiprováveis. O filtro Easy continua removendo cartas Hard e normalizando os pesos existentes; saves preservam seus pesos anteriores.
 
-Novas missões duram 30 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.
+Novas missões duram 35 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.
+
+O glossário foi revisado sobre os textos visíveis das 31 cartas (frente, alternativas, versos e legendas). Agora tem 41 entradas em ordem alfabética, com definições curtas e aliases para siglas, plurais e nomes completos. Inclui LiOH, VCD, OGS, EVA, SEP, Sabatier, eletrólise, pressão e equipamentos. Solar flare é distinto de solar storm; proteção eletromagnética é identificada como ideia experimental, sem garantia de proteção completa. [Auditoria e fontes](docs/GLOSSARY.md).
+
+Na etapa Radiation Shield dos tutoriais Easy e Hard, a explicação começa definindo radiação como energia que viaja em ondas ou partículas pequenas, algumas capazes de prejudicar astronautas. O texto em inglês simples fica em interface.json (tutorialRadiationBody), antes da descrição de proteção e da previsão já compartilhadas com os detalhes do indicador.
+
+Os botões de escolha não recebem marcação nem popover do glossário; seus cliques continuam sempre escolhendo a alternativa. Os termos permanecem destacados nos textos da carta e no verso. Explicações longas do tutorial usam rolagem interna sem cobrir o indicador realçado, mantendo Skip/Next visíveis.

@@ -54,16 +54,16 @@ const fractional=Engine.start(()=>0,'easy');
 assert.equal(Engine.checkFailure({...fractional,state:{...fractional.state,oxygen:0.01}}).mission.ended,false);
 const simultaneous=Engine.checkFailure({...fractional,state:{...fractional.state,water:0,oxygen:0}});
 assert.equal(simultaneous.mission.failedResource,'oxygen');
-// Supply enough production to test the successful 30-sol ending independently of balance.
+// Supply enough production to test the successful 35-sol ending independently of balance.
 const F=require('./load-engine.cjs').Flows;
 let success=Engine.start(()=>0);
 success={...success,deck:success.deck.map(c=>({...c,left:{label:'Wait',effects:{}}})),
  flows:{ongoing:[{rates:Object.fromEntries(Object.entries(F.ratesPerSol(F.createFlows(),0)).map(([q,n])=>[q,-n])) ,start:0,end:Infinity}],later:[]}};
 while(!success.mission.ended)success=Engine.next(Engine.answer(success,'left')).snapshot;
-assert.equal(success.mission.reason,'complete');assert.equal(success.mission.elapsed,90);
+assert.equal(success.mission.reason,'complete');assert.equal(success.mission.elapsed,105);
 // Failure on the final sol takes precedence over success.
 let last=Engine.start(()=>0);
-last={...last,mission:{...last.mission,sol:30,elapsed:87},state:{...last.state,food:0.01},savedSide:'left'};
+last={...last,mission:{...last.mission,sol:35,elapsed:102},state:{...last.state,food:0.01},savedSide:'left'};
 assert.equal(Engine.next(last).snapshot.mission.reason,'failed');
 assert.throws(()=>validateSave({...roundtrip,mission:{...roundtrip.mission,ended:true,reason:'failed',failedResource:'unknown'}}));
 const legacyHidden=Engine.start(()=>0,'hard');

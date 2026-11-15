@@ -17,7 +17,19 @@
       const margin = 16, padding = steps[index].demo ? 20 : 7;
       const gap = padding + 10;
       const width = document.documentElement.clientWidth, height = window.innerHeight;
-      const pw = panel.offsetWidth, ph = panel.offsetHeight;
+      panel.style.maxHeight = '';
+      let pw = panel.offsetWidth, ph = panel.offsetHeight;
+      // Keep long resource explanations below/above the highlighted indicator.
+      // The copy scrolls internally while Skip and Next remain available.
+      if (!steps[index].demo) {
+        const belowSpace = height - margin - rect.bottom - gap;
+        const aboveSpace = rect.top - gap - margin;
+        const sideFits = rect.left - pw - gap >= margin || rect.right + gap + pw <= width - margin;
+        if (!sideFits && ph > Math.max(belowSpace, aboveSpace)) {
+          panel.style.maxHeight = `${Math.max(160, Math.floor(Math.max(belowSpace, aboveSpace)) - 1)}px`;
+          ph = panel.offsetHeight;
+        }
+      }
       if (steps[index].demo && window.matchMedia('(max-width: 700px) and (orientation: portrait)').matches) {
         const area = steps[index].target.closest('.card-area');
         const previous = parseFloat(area.style.getPropertyValue('--tutorial-card-offset')) || 0;

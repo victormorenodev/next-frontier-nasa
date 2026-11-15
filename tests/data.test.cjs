@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');const code=fs.readFileSync('src/validation.js','utf8');const {validateData,validateSave,migrateShieldSave}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface','glossary'].map(k=>[k,require('../data/'+k+'.json')]));
 validateData(data);
-assert.equal(data.glossary.length,10);
+assert.equal(data.glossary.length,41);
 assert.ok(data.cards.filter(c=>!['12','13'].includes(c.id)).every(c=>c.source?.kind==='reference'));
 assert.ok(data.cards.filter(c=>['12','13'].includes(c.id)).every(c=>!c.source));
 assert.equal(data.cards.length,31);

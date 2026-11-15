@@ -577,6 +577,11 @@
       content: () => {
         renderDetail(Indicators.read(state, ResourceDisplay.indicators()).find(item => item.id === ind.id));
         const content = document.createElement('div'); content.className = 'tutorial-resource-detail';
+        if (ind.id === 'shield') {
+          const explanation = document.createElement('p');
+          explanation.textContent = Copy('tutorialRadiationBody');
+          content.append(explanation);
+        }
         detail.querySelectorAll('.resource-description, .resource-change').forEach(item => content.append(item.cloneNode(true)));
         renderDetail(null);
         return content;

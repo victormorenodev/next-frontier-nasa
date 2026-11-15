@@ -1,6 +1,6 @@
 # Next Frontier
 
-Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **30 sols**. Todo o conteúdo do jogo está em inglês simples.
+Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **35 sols**. Todo o conteúdo do jogo está em inglês simples.
 
 Documentação consolidada em **15/11/2026**, conforme o código e os JSONs atuais.
 
@@ -25,7 +25,7 @@ O briefing apresenta a missão e a imagem da NASA com crédito. Clique, arraste 
 
 O₂, água, energia e comida usam unidades físicas nos dois modos; Shield usa um índice percentual de 0 a 100. Easy arredonda apenas a exibição; as frações continuam acumulando. Previsões e variações reais refletem a diferença entre os inteiros exibidos antes e depois.
 
-Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 30. Qualquer recurso zerado encerra a missão com “Mission Failed”.
+Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 35. Qualquer recurso zerado encerra a missão com “Mission Failed”.
 
 As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 9/31 (29,03%), Maintenance 9/31 (29,03%), Exploration 1/31 (3,23%), Science 5/31 (16,13%), Emergency 7/31 (22,58%). No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
 
@@ -112,7 +112,7 @@ O índice simplifica a disponibilidade; não estima tempo de sobrevivência nem 
 
 ## Finais da missão e teste de consumo
 
-Concluir os 30 sols sem zerar recursos mantém o final de sucesso. Zerar um recurso, por escolha ou durante a resolução diária, mostra **Mission Failed** e uma explicação específica. Easy tem quatro finais de falha: Life Support (oxigênio ou água), Radiation Shield, Energy Supply e Food Stock. Hard separa oxigênio e água, com cinco finais de falha. Encerrar manualmente continua mostrando Mission ended.
+Concluir os 35 sols sem zerar recursos mantém o final de sucesso. Zerar um recurso, por escolha ou durante a resolução diária, mostra **Mission Failed** e uma explicação específica. Easy tem quatro finais de falha: Life Support (oxigênio ou água), Radiation Shield, Energy Supply e Food Stock. Hard separa oxigênio e água, com cinco finais de falha. Encerrar manualmente continua mostrando Mission ended.
 
 Temporariamente, `data/mission.json` → `dailyCostMultiplier: 3` triplica o consumo-base de apenas um recurso escolhido para facilitar testes. No seletor Easy/Hard, escolher em Faster daily use o recurso ou Normal daily use para consumo normal. Produção e efeitos das cartas permanecem com seus valores próprios. Os coeficientes científicos originais em `flows.json` foram preservados. Para restaurar o consumo normal, usar 1 e começar uma nova missão; continuar um save preserva o multiplicador salvo (saves anteriores usam 1).
 
@@ -185,7 +185,7 @@ Em novas missões, o saldo-base por sol da base inteira de quatro pessoas é O�
 
 ## Glossário
 
-Glossary no menu inicial abre os dez termos de `data/glossary.json`, com nomes e definições em inglês simples. O glossário atual é usado também para partidas antigas, sem alterar seus dados de simulação. `src/glossary.js` destaca aliases completos, sem diferenciar maiúsculas, em legendas, enunciados, alternativas e descrições/efeitos do verso. Usa nós de texto, sem interpretar HTML; aliases mais longos têm prioridade. Os termos recebem cor e sublinhado pontilhado. Hover, toque ou foco de teclado mostram a definição em um popover acima da interface. Escape, toque fora ou mudança de carta fecham; consultar um termo não escolhe uma resposta nem inicia arrasto. A lista do menu tem rolagem interna em telas pequenas. Fontes e URLs não são anotadas.
+Glossary no menu inicial abre os 41 termos de `data/glossary.json`, com nomes e definições em inglês simples. O glossário atual é usado também para partidas antigas, sem alterar seus dados de simulação. `src/glossary.js` destaca aliases completos, sem diferenciar maiúsculas, em legendas, enunciados e descrições/efeitos do verso. Usa nós de texto, sem interpretar HTML; aliases mais longos têm prioridade. Os termos recebem cor e sublinhado pontilhado. Hover, toque ou foco de teclado mostram a definição em um popover acima da interface. Escape, toque fora ou mudança de carta fecham; consultar um termo não escolhe uma resposta nem inicia arrasto. A lista do menu tem rolagem interna em telas pequenas. Fontes e URLs não são anotadas.
 
 ## Seleção das missões MARINER 4 e OPPORTUNITY
 
@@ -217,4 +217,10 @@ Radiation Shield representa a proteção dos próprios astronautas contra radia�
 
 As probabilidades-base das categorias são proporcionais ao número de cartas no catálogo completo: contagem da categoria / total de cartas. O importador atualiza cards.json e categories.json juntos, sem arredondar os pesos. Cartas dentro da categoria permanecem equiprováveis. O filtro Easy continua removendo cartas Hard e normalizando os pesos existentes; saves preservam seus pesos anteriores.
 
-Novas missões duram 30 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.
+Novas missões duram 35 sols; partidas salvas conservam a duração original do seu snapshot. O ícone Radiation Shield combina o contorno de um escudo com o capacete e os ombros de um astronauta: proteção pessoal, com menos detalhes para leitura em telas pequenas.
+
+O glossário foi revisado sobre os textos visíveis das 31 cartas (frente, alternativas, versos e legendas). Agora tem 41 entradas em ordem alfabética, com definições curtas e aliases para siglas, plurais e nomes completos. Inclui LiOH, VCD, OGS, EVA, SEP, Sabatier, eletrólise, pressão e equipamentos. Solar flare é distinto de solar storm; proteção eletromagnética é identificada como ideia experimental, sem garantia de proteção completa. [Auditoria e fontes](docs/GLOSSARY.md).
+
+Na etapa Radiation Shield dos tutoriais Easy e Hard, a explicação começa definindo radiação como energia que viaja em ondas ou partículas pequenas, algumas capazes de prejudicar astronautas. O texto em inglês simples fica em interface.json (tutorialRadiationBody), antes da descrição de proteção e da previsão já compartilhadas com os detalhes do indicador.
+
+Os botões de escolha não recebem marcação nem popover do glossário; seus cliques continuam sempre escolhendo a alternativa. Os termos permanecem destacados nos textos da carta e no verso. Explicações longas do tutorial usam rolagem interna sem cobrir o indicador realçado, mantendo Skip/Next visíveis.
