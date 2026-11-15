@@ -69,6 +69,8 @@ Arrasto real começa após 8 px, acompanha o deslocamento e inclina a carta. Ao 
 
 O painel inferior de efeitos foi removido. O tablet de relatório ainda existe (com paginação e efeitos legados), mas seu botão está oculto. Mãos removidas. A página não rola; usar safe areas, altura dinâmica e overflow interno para textos extensos.
 
+As imagens raster publicadas em `images/` e `assets/images/` têm limite de 1280×720 px em paisagem e 720×1280 px em retrato, preservando proporções e formatos, sem ampliar arquivos menores. JPEGs redimensionados usam qualidade 82; PNGs preservam compressão sem perdas após o redimensionamento. Originais de pesquisa em `docs/previews/` não são publicados. A hospedagem atual é Cloudflare Pages; o workflow GitHub Pages permanece como alternativa.
+
 ## Estado, tempo e falhas
 
 Snapshot do motor: state, mission, flows, deck, index, eventIndex, schedule, savedSide. A UI acrescenta cardChanges ao persistir destaques.
