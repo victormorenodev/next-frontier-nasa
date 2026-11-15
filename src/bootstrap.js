@@ -1,8 +1,15 @@
-import {validateData, validateSave} from './validation.js';
+// Keep all modules on the same release as the HTML entry point.
+const assetVersion = new URL(import.meta.url).searchParams.get('v');
+const moduleURL = file => {
+ const url = new URL(file, import.meta.url);
+ if (assetVersion) url.searchParams.set('v', assetVersion);
+ return url.href;
+};
 const names=['categories','mission','resources','flows','cards','interface'];
 try {
+ const {validateData, validateSave} = await import(moduleURL('./validation.js'));
  const data=validateData(Object.fromEntries(await Promise.all(names.map(async name=>{
-  const response=await fetch(new URL(`../data/${name}.json`,import.meta.url));
+  const response=await fetch(new URL(`../data/${name}.json`,import.meta.url), {cache:'no-store'});
   if(!response.ok)throw Error(`${name}.json: HTTP ${response.status}`);
   try{return [name,await response.json()]}catch(error){throw Error(`${name}.json: ${error.message}`)}
  }))));
@@ -16,9 +23,11 @@ try {
  for(const el of document.querySelectorAll('[data-copy]'))el.textContent=Copy(el.dataset.copy);
  if(window.invalidSavedMission){const p=document.createElement('p');p.textContent=Copy('invalidSave');document.getElementById('start-mission').before(p)}
  globalThis.CardData={CARDS:GameData.cards};
- for(const file of ['indicators','mission','flows','deck','engine','icons','display','card-ui','ui'])await import(`./${file}.js`);
+ for(const file of ['indicators','mission','flows','deck','engine','icons','display','card-ui','ui'])await import(moduleURL(`./${file}.js`));
 }catch(error){
  console.error(error);
+ document.getElementById('main-menu').hidden=true;
+ document.getElementById('mission-intro').hidden=false;
  const p=document.createElement('p');p.textContent='The mission could not load.';
  const retry=document.createElement('button');retry.className='start-mission';retry.textContent='Try again';retry.onclick=()=>location.reload();
  document.getElementById('briefing').replaceChildren(p,retry);

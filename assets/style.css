@@ -1131,3 +1131,53 @@ main {
 .ending-art { display: block; flex: 1 1 0; min-height: 0; width: 100%; object-fit: contain; }
 .illustrated-ending .new-mission { flex: 0 0 auto; max-width: 100%; min-height: 48px; padding-inline: 16px; }
 .ending-accessible-copy { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px !important; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Mobile-first entry menu: one centered column at every viewport size. */
+.main-menu { position: fixed; inset: 0; display: grid; place-items: center; isolation: isolate; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); background: #211f38 url('images/mars-menu.svg?v=20261115-menu3') 79% bottom / cover no-repeat; }
+.main-menu::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 50% 45%, #171a2be8, #1d1d3099 55%, #24203133), linear-gradient(#171a2b88, #171a2b33); }
+.main-menu::after { content: ''; position: absolute; inset: 16px; border: 1px solid #b3aaa42e; border-radius: 22px; pointer-events: none; }
+.main-menu-content { width: min(100%, 360px); position: relative; text-align: center; }
+.menu-orbit { display: block; width: 48px; height: 30px; fill: none; stroke: #e0ad80; stroke-width: 1.5; margin: 0 auto 16px; }
+.main-menu h1 { margin: 0 0 24px; line-height: .96; letter-spacing: -.045em; text-shadow: 0 4px 32px #10121c80; }
+.menu-title-next { display: block; color: #ddb28f; font-size: 26px; font-weight: 500; letter-spacing: .12em; margin-bottom: 6px; }
+.menu-title-frontier { display: block; color: #fff1de; font-size: clamp(55px, 15vw, 68px); font-weight: 800; }
+.main-menu-actions { display: grid; gap: 10px; width: 100%; }
+.main-menu-actions button { display: grid; grid-template-columns: 23px minmax(0, 1fr) 23px; align-items: center; gap: 10px; width: 100%; min-height: 56px; border: 1px solid #a4b1c04a; border-radius: 12px; background: #252b3df5; padding: 12px 14px; color: #e9e7e3; font: inherit; font-size: 17px; font-weight: 650; text-align: center; cursor: pointer; box-shadow: 0 5px 16px #10121e20; }
+.main-menu-actions button svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.main-menu-actions #menu-start { background: #dfb38c; border-color: #f1d2b2; color: #292733; box-shadow: inset 0 1px #fff2dc6e, 0 5px 20px #0e101b40; }
+#menu-start svg { fill: currentColor; stroke: none; }
+.menu-action-arrow { font-size: 24px; line-height: 1; font-weight: 400; }
+.main-menu-actions button:not(:disabled):hover { background: #344056; border-color: #bac8d4; }
+.main-menu-actions #menu-start:hover { background: #edc6a3; border-color: #ffe2c8; }
+.main-menu-actions button:disabled { background: #242839; border-color: #777e8e40; color: #969aaa; cursor: default; box-shadow: none; }
+.main-menu-actions button:focus-visible, .menu-dialog button:focus-visible { outline: 3px solid #f6dbaf; outline-offset: 4px; }
+.menu-save-note { display: table; max-width: 100%; margin: 12px auto 0; padding: 6px 10px; border-radius: 6px; background: #1a1e2ee8; color: #b7bdca; font-size: 13px; }
+.menu-dialog { width: min(calc(100vw - 48px), 520px); max-height: calc(100dvh - 48px); padding: 28px; border: 1px solid #8d9aa8; border-radius: 20px; background: #25283b; color: #f7f1e6; box-shadow: 0 24px 80px #0008; }
+.menu-dialog::backdrop { background: #101324bd; }
+.menu-dialog h2 { margin: 0 0 20px; font-size: 28px; }
+.menu-dialog p { margin: 0 0 16px; font-size: 16px; line-height: 1.45; }
+.menu-dialog button { width: 100%; min-height: 48px; margin-top: 8px; padding: 12px; border: 1px solid #f1d2b2; border-radius: 10px; background: #dfb38c; color: #292733; font: inherit; font-size: 17px; font-weight: 650; cursor: pointer; }
+@media (min-width: 768px) and (min-height: 600px) {
+  .main-menu { padding: 40px; }
+  .main-menu-content { width: min(100%, 440px); }
+  .menu-orbit { width: 62px; height: 40px; margin-bottom: 20px; }
+  .main-menu h1 { margin-bottom: 32px; }
+  .menu-title-next { font-size: 34px; margin-bottom: 10px; }
+  .menu-title-frontier { font-size: 88px; }
+  .main-menu-actions { gap: 12px; }
+  .main-menu-actions button { min-height: 62px; padding: 14px 20px; font-size: 19px; }
+}
+@media (max-height: 500px) {
+  .main-menu { padding-block: max(20px, env(safe-area-inset-top)); }
+  .main-menu-content { width: min(100%, 360px); }
+  .menu-orbit { display: none; }
+  .main-menu h1 { margin-bottom: 20px; }
+  .menu-title-next { font-size: 22px; margin-bottom: 4px; }
+  .menu-title-frontier { font-size: 50px; }
+  .main-menu-actions { gap: 8px; }
+  .main-menu-actions button { min-height: 46px; padding-block: 8px; font-size: 16px; }
+  .menu-save-note { font-size: 12px; }
+  .menu-dialog { padding: 18px 24px; }
+  .menu-dialog h2 { margin-bottom: 12px; }
+  .menu-dialog p { margin-bottom: 10px; font-size: 14px; }
+}

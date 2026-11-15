@@ -287,7 +287,17 @@
   row.addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
 
   // ── Mission flow: deck, answers, end ────────────────────
+  const mainMenu = document.getElementById('main-menu');
   const intro = document.getElementById('mission-intro');
+  document.getElementById('menu-start').addEventListener('click', () => {
+    mainMenu.hidden = true;
+    intro.hidden = false;
+    document.getElementById('start-mission').focus({preventScroll:true});
+  });
+  const creditsDialog = document.getElementById('credits-dialog');
+  document.getElementById('menu-credits').addEventListener('click', () => creditsDialog.showModal());
+  document.getElementById('credits-close').addEventListener('click', () => creditsDialog.close());
+  creditsDialog.addEventListener('click', event => { if (event.target === creditsDialog) creditsDialog.close(); });
   const briefing = document.getElementById('briefing');
   const game = document.getElementById('game');
   let introDrag = null;
@@ -315,6 +325,7 @@
       location.reload();
       return;
     }
+    mainMenu.hidden = true;
     intro.hidden = true;
     document.getElementById('difficulty-screen').hidden=true;
     game.hidden = false;
@@ -532,16 +543,28 @@
     catch (_) { solNotice.textContent = Copy("storageUnavailable"); }
   }
   const stored = window.savedMission;
+  const continueButton = document.getElementById('menu-continue');
+  continueButton.disabled = !stored;
+  document.getElementById('menu-save-note').hidden = Boolean(stored);
   if (stored) {
-    const button = document.createElement('button'); button.className='start-mission'; button.textContent=Copy("continueMission");
-    button.onclick=()=>{ ResourceDisplay.mode=stored.mission.difficulty||'hard';adopt(Engine.checkFailure(stored)); if(mission.ended)save(); intro.hidden=true;game.hidden=false;render();renderMission(); if(!mission.ended) {const side=savedSide;cardUI.showFront(deck[index],eventIndex+1,schedule[mission.sol-1]);if(side){cardChanges=stored.cardChanges||{};const before=Object.fromEntries(Object.entries(state).map(([q,n])=>[q,n-(cardChanges[q]||0)]));cardUI.showBack(deck[index],side,eventIndex+1===schedule[mission.sol-1],[],before);restoreResourceHighlights();}} };
-    const startButton = document.getElementById('start-mission');
-    const actions = document.createElement('div');
-    actions.className = 'briefing-actions';
-    startButton.before(actions);
-    actions.append(button, startButton);
+    continueButton.addEventListener('click', () => {
+      adopt(Engine.checkFailure(stored));
+      if (mission.ended) save();
+      mainMenu.hidden = true; intro.hidden = true; game.hidden = false;
+      render(); renderMission();
+      if (!mission.ended) {
+        const side = savedSide;
+        cardUI.showFront(deck[index], eventIndex + 1, schedule[mission.sol - 1]);
+        if (side) {
+          cardChanges = stored.cardChanges || {};
+          const before = Object.fromEntries(Object.entries(state).map(([q,n]) => [q,n-(cardChanges[q]||0)]));
+          cardUI.showBack(deck[index], side, eventIndex + 1 === schedule[mission.sol - 1], [], before);
+          restoreResourceHighlights();
+        }
+      }
+    });
   }
-  window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
+  window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ continueButton.disabled=true; game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
   buildTiles();
   try {
     const pendingDifficulty=sessionStorage.getItem('next-frontier-start');

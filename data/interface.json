@@ -102,5 +102,14 @@
   "endingImage-water": "images/endings/water.png",
   "endingImage-shield": "images/endings/shield.png",
   "endingImage-energy": "images/endings/energy.png",
-  "endingImage-food": "images/endings/food.png"
+  "endingImage-food": "images/endings/food.png",
+  "menuStart": "Start New Mission",
+  "menuCredits": "Credits",
+  "menuBack": "Back to menu",
+  "creditsProject": "Next Frontier — an educational Mars mission game.",
+  "creditsNasa": "Briefing image: NASA — First Humans on Mars (artist’s concept).",
+  "creditsArt": "Ending card illustrations: created with OpenAI image generation.",
+  "menuTitleNext": "Next",
+  "menuTitleFrontier": "Frontier",
+  "menuNoSave": "No saved mission yet."
 }
