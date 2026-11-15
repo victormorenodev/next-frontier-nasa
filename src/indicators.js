@@ -1,7 +1,7 @@
 /* Indicator system.
    Holds the base's quantities and derives the five indicators from them.
    No DOM here, so it also runs in Node for tests.
-   Every quantity has a physical unit; values stay between 0 and their max. */
+   Shield is a percentage score; other quantities use physical units; values stay between 0 and their max. */
 (function (root) {
   'use strict';
 
@@ -53,7 +53,7 @@
     });
   }
 
-  // Physical depletion only: a rounded Easy display of zero is not failure.
+  // Actual depletion only: a rounded display of zero is not failure.
   const depleted = state => Object.keys(QUANTITIES).find(q => state[q] <= 0) || null;
 
   const api = {depleted, QUANTITIES, INDICATORS, createState, change, apply, level, read};

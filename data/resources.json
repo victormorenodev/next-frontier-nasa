@@ -18,11 +18,11 @@
     },
     "shield": {
       "name": "Shield",
-      "unit": "g/cm²",
-      "unitName": "grams per square centimeter",
-      "start": 8,
-      "max": 10,
-      "description": "Material around the shelter helps protect your crew from radiation."
+      "unit": "%",
+      "unitName": "percent",
+      "start": 80,
+      "max": 100,
+      "description": "Shows how ready the shelter is to protect the crew from radiation."
     },
     "energy": {
       "name": "Energy",

@@ -24,17 +24,17 @@ A associação ao hackathon descreve a origem e a proposta do projeto; não impl
 | --- | --- | --- |
 | Oxygen Level | O₂ em kg; produção/consumo por sol; futuramente remoção de CO₂ | Manter ar respirável |
 | Water Stock | Água utilizável em litros; perdas e reciclagem | Manter reserva de água, separada da água da blindagem |
-| Radiation Shield | Material, cobertura e densidade superficial em g/cm²; futuramente exposição acumulada | Preparar e utilizar um abrigo físico |
+| Radiation Shield | Índice de proteção de 0 a 100%, sem unidade física | Representar a preparação do abrigo no jogo |
 | Energy Supply | Energia da bateria em kWh; geração e demanda em kW | Balancear geração, operação e períodos de déficit |
 | Food Stock | Massa por categoria, energia alimentar, validade e produção | Manter alimentação adequada ao longo da missão |
 
 Não confundir kW (potência) e kWh (energia), kg de comida hidratada e kg de sólidos alimentares, nem Gy e Sv.
 
-### Modelo de blindagem do protótipo
+### Modelo histórico de blindagem (substituído pelo índice percentual)
 
 Representar a proteção física do habitat/abrigo e a possibilidade de proteger os quatro astronautas. A radiação **não consome a blindagem como combustível**. Materiais podem ser redistribuídos e a configuração pode mudar; a exposição da equipe é uma variável distinta.
 
-O protótipo usa água sobre uma área total de 20 m². 1 g/cm² corresponde a 10 kg/m²; portanto, 2.000 kg distribuídos uniformemente sobre 20 m² equivalem a 10 g/cm². É apenas uma relação geométrica de massa e área, não uma garantia de redução de dose. Geometria, composição, direções de exposição e espectro de partículas importam.
+No modelo antigo, o protótipo usava água sobre uma área total de 20 m². 1 g/cm² corresponde a 10 kg/m²; portanto, 2.000 kg distribuídos uniformemente sobre 20 m² equivalem a 10 g/cm². É apenas uma relação geométrica de massa e área, não uma garantia de redução de dose. Geometria, composição, direções de exposição e espectro de partículas importam.
 
 Mover água utilizável para a blindagem deve conservar a massa total, sem duplicar o recurso. Uso de água para consumo pode modificar a cobertura. Não atribuir um fator de proteção radiológica sem modelo/documentação específicos.
 
@@ -137,3 +137,17 @@ Antes de escolher o modo, **Faster daily use** permite selecionar um recurso fí
 A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
 
 O limite de três efeitos contínuos/agendados simultaneamente registrados é uma regra de balanceamento do protótipo, não uma limitação científica da base. Retirar um efeito da fila interrompe apenas suas contribuições futuras no modelo; não devolve massa ou energia já consumida nem desfaz transferências imediatas.
+
+## Cartas autorais importadas do CSV
+
+O catálogo atual tem 13 eventos fornecidos pelo autor. Links de referência e origens das imagens são preservados, mas as influências são escolhas de balanceamento: percentuais da capacidade do jogo, não consumos ou produções medidos por NASA/ESA. A conversão usa as capacidades atuais de `resources.json`, mantendo unidades físicas nos estoques e pontos percentuais no índice Shield; as notas laterais do CSV não redefinem os estoques nem suas unidades.
+
+Algumas narrativas tratam de remoção de CO₂, eletrólise e reciclagem. Seus deltas simplificados não implementam as reações químicas ou um balanço detalhado de massas desses equipamentos. Campos sem quantificação receberam zero por autorização; isso não demonstra que os problemas ou escolhas sejam fisicamente inofensivos. Não há dose humana nem morte inferida de um evento de radiação.
+
+As duas menções a uma reserva de 15 kWh foram retiradas da apresentação para não confundir um equipamento citado com a bateria de 300 kWh da base. O texto original permanece em sourceDescription e no CSV. [Registro editorial e conversões](CARDS.md).
+
+## Shield percentual atual
+
+Shield é um índice de proteção de 0 a 100% nos dois modos, iniciado em 80%. Não é densidade superficial, dose nem porcentagem de radiação bloqueada; não permite inferir autonomia, proteção clínica ou conversão direta para massa de água. O modelo geométrico de 20 m² descrito acima é histórico e não governa mais o indicador atual.
+
+Os efeitos percentuais fornecidos pelo autor são somados em pontos do índice. Não existe desgaste diário por radiação. Saves antigos preservam o nível proporcional à antiga capacidade, sem apresentar essa normalização como cálculo físico de proteção. O₂, água, energia e alimento seco continuam nas unidades físicas já documentadas.

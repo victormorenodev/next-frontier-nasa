@@ -1,4 +1,4 @@
-export function validateData(d, {legacy = false} = {}) {
+export function validateData(d, {legacy = false, allowLegacyShield = false} = {}) {
   const need=(ok,path)=>{if(!ok)throw Error(`Invalid data: ${path}`)};
   const finite=Number.isFinite;
   need(d?.mission?.version===1,'mission.version');
@@ -22,6 +22,7 @@ export function validateData(d, {legacy = false} = {}) {
     need(/^[a-z][a-z0-9-]*$/.test(id),`resource ID ${id}`);
     need(r.name&&r.unit&&r.unitName&&finite(r.start)&&finite(r.max)&&r.max>0&&r.start>=0&&r.start<=r.max,`resource ${id}`);
   }
+  need(q.shield && (q.shield.unit==='%' && q.shield.max===100 || allowLegacyShield && q.shield.unit==='g/cm²'), 'resources.shield.scale');
   const unique=(list,label)=>{need(Array.isArray(list)&&list.length>0,label);const ids=new Set();for(const item of list){need(item&&typeof item.id==='string'&&!ids.has(item.id),label+'.id');ids.add(item.id)}};
   unique(d.resources.indicators,'indicators');
   for(const i of d.resources.indicators)need(i.name&&/^#[0-9a-f]{6}$/i.test(i.color)&&['oxygen','water','shield','energy','food'].includes(i.icon)&&Array.isArray(i.parts)&&i.parts.length&&i.parts.every(k=>k in q),'indicator '+i.id);
@@ -46,10 +47,17 @@ export function validateData(d, {legacy = false} = {}) {
     for(const c of d.categories){const group=d.cards.filter(card=>card.category===c.id);need(group.length>0&&sum(group),'category '+c.id+'.cards.probability')}
   }
   for(const c of d.cards){
+    need(c.sourceDescription===undefined||typeof c.sourceDescription==='string','card '+c.id+'.sourceDescription');
+    need(c.imageSource===undefined||typeof c.imageSource==='string'&&/^https?:\/\//.test(c.imageSource),'card '+c.id+'.imageSource');
     need(c.imageCaption===undefined||typeof c.imageCaption==='string','card '+c.id+'.imageCaption');
     need(c.description&&c.image&&['easy','medium','hard'].includes(c.difficulty)&&c.source?.institution&&/^https?:\/\//.test(c.source.url),'card '+c.id);
+    need(c.source.kind===undefined||['reference','image'].includes(c.source.kind),'card '+c.id+'.source.kind');
     for(const side of ['left','right']){
-      const a=c[side];need(a&&typeof a.label==='string','card '+c.id+'.'+side);need(a.description===undefined||typeof a.description==='string',c.id+'.'+side+'.description');effects(a.effects||{},c.id+'.effects');
+      const a=c[side];need(a&&typeof a.label==='string','card '+c.id+'.'+side);need(a.description===undefined||typeof a.description==='string',c.id+'.'+side+'.description');need(a.sourceResponse===undefined||typeof a.sourceResponse==='string',c.id+'.'+side+'.sourceResponse');effects(a.effects||{},c.id+'.effects');
+      if(a.effectPercentages!==undefined){
+        effects(a.effectPercentages,c.id+'.'+side+'.effectPercentages');
+        for(const key of Object.keys(q))need(Math.abs((a.effects?.[key]||0)-(a.effectPercentages[key]||0)*q[key].max/100)<1e-9,c.id+'.'+side+'.effectPercentages conversion');
+      }
       for(const o of a.ongoing||[]){effects(o.rates,c.id+'.ongoing');need(Object.keys(o.rates).length&& (o.after==null||Number.isInteger(o.after)&&o.after>=0)&&(o.for==null||Number.isInteger(o.for)&&o.for>0),c.id+'.ongoing.duration')}
       for(const l of a.later||[]){effects(l.effects,c.id+'.later');need(Object.keys(l.effects).length&&Number.isInteger(l.after)&&l.after>0,c.id+'.later.after')}
     }
@@ -58,7 +66,7 @@ export function validateData(d, {legacy = false} = {}) {
   return d;
 }
 export function validateSave(s){
- if(s?.version!==1)throw Error('Unsupported save version');validateData(s.data, {legacy: !Object.hasOwn(s.data || {}, 'categories')});
+ if(s?.version!==1)throw Error('Unsupported save version');validateData(s.data, {legacy: !Object.hasOwn(s.data || {}, 'categories'), allowLegacyShield:true});
  const need=(ok)=>{if(!ok)throw Error('Invalid saved mission')};
  need(s.mission&&Number.isInteger(s.mission.sol)&&s.mission.sol>=1&&s.mission.sol<=s.data.mission.totalSols&&Number.isInteger(s.mission.elapsed)&&s.mission.elapsed>=0&&typeof s.mission.ended==='boolean');
  need(Array.isArray(s.schedule)&&s.schedule.length===s.data.mission.totalSols&&s.schedule.every(n=>n===1||n===2));
@@ -76,4 +84,31 @@ export function validateSave(s){
  for(const l of s.flows.later)need(Number.isFinite(l.at)&&Object.entries(l.effects).every(([k,n])=>k in s.state&&Number.isFinite(n)));
  const ids=new Set(s.data.cards.map(c=>c.id));need(s.deck.every(c=>ids.has(c.id)));
  return s;
+}
+
+// Convert a validated old save by its former capacity, preserving all relative
+// effects and timing. Every transformation is immutable, even for shared cards.
+export function migrateShieldSave(save, currentShield) {
+ const old = save.data.resources.quantities.shield;
+ if (old.unit === '%' && old.max === 100) return save;
+ const factor = 100 / old.max;
+ const scale = effects => effects && Object.hasOwn(effects,'shield') ? {...effects,shield:effects.shield*factor} : effects;
+ const ongoing = list => list.map(o=>({...o,rates:scale(o.rates)}));
+ const later = list => list.map(o=>({...o,effects:scale(o.effects)}));
+ const answer = a => ({...a,...(a.effects?{effects:scale(a.effects)}:{}),...(a.ongoing?{ongoing:ongoing(a.ongoing)}:{}),...(a.later?{later:later(a.later)}:{})});
+ const card = c => ({...c,left:answer(c.left),right:answer(c.right)});
+ const clamp = value => Math.max(0,Math.min(100,value*factor));
+ const converted = {
+  ...save,
+  data:{...save.data,
+   resources:{...save.data.resources,quantities:{...save.data.resources.quantities,shield:{...old,...currentShield,start:clamp(old.start),max:100}}},
+   cards:save.data.cards.map(card),
+   flows:save.data.flows.map(f=>f.quantity==='shield'?{...f,amount:f.amount*factor}:f)
+  },
+  state:{...save.state,shield:clamp(save.state.shield)},
+  deck:save.deck.map(card),
+  flows:{...save.flows,ongoing:ongoing(save.flows.ongoing),later:later(save.flows.later)},
+  ...(save.cardChanges?{cardChanges:scale(save.cardChanges)}:{})
+ };
+ return validateSave(converted);
 }

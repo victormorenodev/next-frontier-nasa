@@ -65,5 +65,16 @@ assert.equal(restoredQueue.flows.ongoing.length,0);
 assert.deepEqual(restoredQueue.state,legacyHidden.state);
 assert.equal(restoredQueue.mission,legacyHidden.mission);
 validateSave(JSON.parse(JSON.stringify({version:1,data,...restoredQueue})));
+// Imported percentage effects are immediate physical changes, in either display mode.
+const I=require('./load-engine.cjs').Indicators;
+for(const mode of ['easy','hard'])for(const card of data.cards.filter(c=>mode==='hard'||c.difficulty!=='hard'))for(const side of ['left','right']){
+ let fresh=Engine.start(()=>0,mode);
+ const mid=Object.fromEntries(Object.entries(I.QUANTITIES).map(([q,r])=>[q,r.max/2]));
+ fresh={...fresh,state:mid,deck:fresh.deck.map(()=>card)};
+ const answered=Engine.answer(fresh,side);
+ assert.deepEqual(answered.state,I.apply(mid,card[side].effects),card.id+' '+side+' '+mode);
+ assert.equal(answered.mission.elapsed,0);
+ assert.equal(answered.flows.ongoing.length,0);assert.equal(answered.flows.later.length,0);
+}
 console.log('engine and save: ok');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -47,3 +47,16 @@ assert.equal(Indicators.read(initial, display.indicators())[0].lowest, 'oxygen')
 display.mode = 'hard';
 assert.equal(display.indicators().length, 5);
 assert.equal(display.indicators()[0].id, 'oxygen');
+
+// Both modes use the same Shield percentage, with visual rounding only.
+for(const mode of ['easy','hard']){
+ display.mode=mode;
+ assert.equal(display.read('shield',80).value,80);assert.equal(display.read('shield',80).unit,'%');
+ assert.equal(display.read('shield',80).max,100);
+ assert.equal(display.change('shield',80.1,80.4).value,0);
+ assert.equal(display.change('shield',80.4,80.6).value,1);
+ assert.equal(display.effect('shield',-5,80).value,-5);
+ assert.equal(display.effect('shield',10,95).value,5);
+ const ind=display.indicators().find(i=>i.id==='shield');
+ assert.equal(display.indicatorChange(ind,{shield:80.1},{shield:80.4}),0);
+}

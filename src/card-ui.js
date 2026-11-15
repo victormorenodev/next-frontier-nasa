@@ -176,7 +176,7 @@
       if (isLife) hint = [Copy(key === 'water' ? 'lifeWaterEffect' : 'lifeOxygenEffect'), hint].filter(Boolean).join(' · ');
       if (hint) name.append(el('small', null, hint));
       const display=ResourceDisplay.effect(key,amount,before);
-      li.append(name, el('b', 'amount', `${display.value === 0 ? '' : display.value < 0 ? '−' : '+'}${fmt(Math.abs(display.value))}${display.unit ? ' ' + display.unit : ''}${unitSuffix}`));
+      li.append(name, el('b', 'amount', `${display.value === 0 ? '' : display.value < 0 ? '−' : '+'}${fmt(Math.abs(display.value))}${display.unit === '%' ? '%' : display.unit ? ' ' + display.unit : ''}${unitSuffix}`));
       return li;
     }
 
@@ -211,7 +211,7 @@
         effects.append(effectRow(key, amount, '', `just happened${h.note ? ` · ${h.note}` : ''}`, 'happened'))));
 
       // Institution only; it links to the full reference.
-      source.replaceChildren(Copy("source"));
+      source.replaceChildren(Copy(card.source.kind === 'image' ? 'imageSourceLabel' : 'source'));
       const link = el('a', null, card.source.institution);
       link.href = card.source.url;
       link.target = '_blank';

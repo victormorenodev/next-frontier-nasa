@@ -1210,3 +1210,9 @@ main {
 @media (max-width: 700px) and (orientation: portrait) {
   #game.tutorial-card-step #effect-panel { display: none; }
 }
+
+/* Authored event text stays readable inside the smallest portrait cards. */
+@container card (max-width: 240px) {
+  .card-text { font-size: 14px; line-height: 1.3; margin-block: 8px; }
+  .answer { font-size: 12px; }
+}

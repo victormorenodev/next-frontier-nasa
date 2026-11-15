@@ -92,7 +92,7 @@ assert.equal(stopped.thirdsPassed, 1);
 assert.equal(stopped.state.food, 0);
 assert.equal(stopped.happened.length, 0);
 assert.equal(stopped.flows.later.length, 1);
-const delayedFailure = F.passTime(s0, {ongoing: [], later: [{at:1,effects:{shield:-10}}]}, 0, 3, {stopOnEmpty:true});
+const delayedFailure = F.passTime(s0, {ongoing: [], later: [{at:1,effects:{shield:-100}}]}, 0, 3, {stopOnEmpty:true});
 assert.equal(delayedFailure.failedResource, 'shield');
 assert.equal(delayedFailure.happened.length, 1);
 
@@ -122,7 +122,7 @@ const deliveries=F.passTime(s0,planned,0,3);
 assert.deepEqual(deliveries.happened.map(o=>o.note),['Event 1','Event 2','Event 3']);
 assert.equal(deliveries.state.shield,s0.shield);
 // Legacy hidden flows are cancelled on reads, integration, and restore normalization.
-const legacyQueue={ongoing:[{rates:{water:-1000},start:0,end:30,panelHidden:true,panelOrder:1}],later:[{effects:{shield:-8},at:1,panelHidden:true,panelOrder:2}]};
+const legacyQueue={ongoing:[{rates:{water:-1000},start:0,end:30,panelHidden:true,panelOrder:1}],later:[{effects:{shield:-100},at:1,panelHidden:true,panelOrder:2}]};
 close(F.ratesPerSol(legacyQueue,0).water,base.water);
 assert.equal(F.active(legacyQueue,0).length,0);
 const migrated=F.limitEffects(legacyQueue,0);

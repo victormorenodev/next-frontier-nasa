@@ -118,5 +118,6 @@
   "tutorialCardTitle": "Make a choice",
   "tutorialCardBody": "Each choice has a trade-off: it can help one supply but use another. Tap a choice, or swipe left or right.",
   "tutorialEffectsTitle": "Lasting effects",
-  "tutorialEffectsBody": "Lasting effects and planned changes appear here. Hover or tap an icon to see its changes per sol, or when it happens."
+  "tutorialEffectsBody": "Lasting effects and planned changes appear here. Hover or tap an icon to see its changes per sol, or when it happens.",
+  "imageSourceLabel": "Image source: "
 }

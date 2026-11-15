@@ -10,12 +10,12 @@ Consolidada em **15/11/2026** a partir do código atual. Este documento descreve
 | `data/mission.json` | Tripulação, duração do sol, duração da missão, eventos/sol e configurações dos modos |
 | `data/resources.json` | Quantidades, capacidades, unidades, descrições e indicadores |
 | `data/categories.json` | IDs, nomes e probabilidades das categorias |
-| `data/cards.json` | Dez cartas mock, escolhas, descrições opcionais, efeitos, imagens, legendas, fontes e probabilidades condicionais |
+| `data/cards.json` | Treze cartas do CSV, escolhas, descrições, percentuais autorais, efeitos em unidades de simulação, imagens, legendas, fontes e probabilidades condicionais |
 | `data/flows.json` | Consumos/produções, bases de conversão e classificação reference/simulated |
 | `data/interface.json` | Textos, templates, imagem e crédito do briefing |
 | `src/bootstrap.js` | Carregamento HTTP, validação, leitura do save, inicialização e tratamento de falha |
 | `src/validation.js` | Validação dos dados e snapshots salvos; compatibilidade com saves anteriores |
-| `src/indicators.js` | Estado físico dos recursos, aplicação de efeitos e limites 0–capacidade |
+| `src/indicators.js` | Estoques físicos e índice Shield, aplicação de efeitos e limites 0–capacidade |
 | `src/mission.js` | Relógio, sorteio de 1/2 eventos e encerramento |
 | `src/flows.js` | Conversão de coeficientes, fluxos contínuos e efeitos futuros |
 | `src/deck.js` | Validação, filtragem por dificuldade e sorteio ponderado categoria → carta |
@@ -64,15 +64,15 @@ O snapshot do motor contém `state`, `mission`, `flows`, `deck`, `index`, `event
 2. `answer` aplica a escolha e registra fluxos no instante atual, sem avançar o relógio. Não reaplica se a carta já tem savedSide.
 3. A interface vira a carta, mostra resultados e salva.
 4. `next` passa à próxima carta do mesmo sol ou integra um sol completo após a última.
-5. Ao concluir o sol 40 sem falha, marca `ended: true`, `reason: 'complete'`; não exibe um sol 41. Recurso físico zerado encerra com `reason: 'failed'` e `failedResource`; encerramento manual usa `reason: 'quit'`.
+5. Ao concluir o sol 40 sem falha, marca `ended: true`, `reason: 'complete'`; não exibe um sol 41. Recurso zerado encerra com `reason: 'failed'` e `failedResource`; encerramento manual usa `reason: 'quit'`.
 
 `mission.elapsed` usa terços inteiros de sol, sem períodos jogáveis. Fluxos são aplicados em três passos internos por sol. Coeficientes `perCrewEarthDay` multiplicam amount por crew × solHours/24; os `perSol` já são totais diários. Cada passo respeita os limites do estoque e executa efeitos agendados quando devidos. Blindagem não é consumida por radiação.
 
-Recursos internos: O₂ em kg, água em L, blindagem em g/cm², energia em kWh e comida seca em kg. Valores iniciais e capacidades são escolhas de protótipo nos JSONs, não dimensionamento científico de uma base.
+Recursos internos: O₂ em kg, água em L, Shield em pontos de 0 a 100%, energia em kWh e comida seca em kg. Valores iniciais e capacidades são escolhas de protótipo nos JSONs, não dimensionamento científico de uma base.
 
 ## Apresentação dos recursos e animações
 
-Hard mostra unidades físicas. Easy usa `round(value / max * 100)`, sem % e sem unidade. Arredondamento é simétrico para sinais e somente visual: valores fracionários continuam no estado e no save. Variações reais/previsões são a diferença entre os inteiros antes e depois. Efeitos imediatos do verso podem usar a reserva anterior e o limite da capacidade; taxas e efeitos futuros são convertidos e arredondados como quantidades previstas. Mudanças sem alteração no inteiro não mostram número flutuante no Easy.
+Hard mostra unidades físicas nos estoques; Easy usa `round(value / max * 100)`, sem unidade nos estoques. Shield usa a mesma escala 0–100 e símbolo % nos dois modos. Arredondamento é simétrico para sinais e somente visual: valores fracionários continuam no estado e no save. Variações reais/previsões são a diferença entre os inteiros antes e depois. Efeitos imediatos do verso podem usar a reserva anterior e o limite da capacidade; taxas e efeitos futuros são convertidos e arredondados como quantidades previstas. Mudanças sem alteração no inteiro não mostram número flutuante no Easy.
 
 Os indicadores mostram ícones e nível de preenchimento, sem setas de tendência. Hover de mouse, segurar/deslizar no toque e foco de teclado abrem detalhes: função do recurso, estoque e previsão escrita após um sol. A previsão usa `Flows.passTime` sem modificar a partida.
 
@@ -106,7 +106,7 @@ O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos cont�
 
 ## Life Support no Easy
 
-No Easy, a HUD tem quatro indicadores: **Life Support**, Radiation Shield, Energy Supply e Food Stock. Life Support usa uma cruz de saúde e substitui visualmente Oxygen Level e Water Stock. No Hard continuam os cinco indicadores físicos separados.
+No Easy, a HUD tem quatro indicadores: **Life Support**, Radiation Shield, Energy Supply e Food Stock. Life Support usa uma cruz de saúde e substitui visualmente Oxygen Level e Water Stock. No Hard continuam os cinco indicadores separados.
 
 A fusão é somente visual. O motor, os JSONs de cartas/fluxos e o save mantêm oxigênio em kg e água em L como estoques independentes, com seus próprios limites, consumos, produção e transferências. Não somar nem converter água em oxigênio por causa do indicador.
 
@@ -120,7 +120,7 @@ Nome, cor e descrição vêm de `data/resources.json` → `easyLifeSupport`; a c
 
 ## Finais por esgotamento e multiplicador de teste
 
-`Indicators.depleted` encontra o primeiro estoque físico em zero na ordem de `resources.quantities` (oxygen, water, shield, energy, food). Não usa os números arredondados do Easy. `Engine.checkFailure` aplica a regra às escolhas e à retomada de saves ativos antigos com estoque zerado. Missões já encerradas preservam seu final.
+`Indicators.depleted` encontra o primeiro recurso interno em zero na ordem de `resources.quantities` (oxygen, water, shield, energy, food). Não usa os números arredondados do Easy. `Engine.checkFailure` aplica a regra às escolhas e à retomada de saves ativos antigos com estoque zerado. Missões já encerradas preservam seu final.
 
 `Flows.passTime(..., {stopOnEmpty: true})` verifica após o saldo de cada terço interno e após cada efeito agendado. Ao zerar, interrompe a integração, mantém consequências não executadas e retorna `failedResource` e `thirdsPassed`. Não existe período jogável novo: são passos internos da resolução diária. `Engine.next` salva o tempo efetivamente integrado e conserva o sol em que houve falha, sem avançar para outro evento. A falha prevalece inclusive no sol 40. Previsões usam a mesma interrupção, sem alterar o estado real. Chamadas sem a opção preservam a integração genérica dos fluxos.
 
@@ -134,7 +134,7 @@ As telas finais sem imagem (e o fallback de carregamento) usam título e descri�
 
 O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
 
-Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+Antes de escolher o modo, **Faster daily use** permite selecionar um recurso ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
 
 A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
 
@@ -158,7 +158,7 @@ Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os l
 
 ## Tutorial modal da missão
 
-`src/tutorial.js` expõe `MissionTutorial.create`. `ui.js` o inicia depois de renderizar e salvar a primeira carta de uma nova missão Easy. Easy tem cinco etapas: os quatro indicadores atuais de ResourceDisplay, na ordem da HUD, e a carta real. Hard tem sete: os cinco indicadores físicos, o painel real de efeitos e a carta. A continuação de saves não inicia a guia. Se houver recarga durante a guia, o save retoma a primeira carta sem escolhas já aplicadas e sem reiniciar a guia; a apresentação não é persistida.
+`src/tutorial.js` expõe `MissionTutorial.create`. `ui.js` o inicia depois de renderizar e salvar a primeira carta de uma nova missão de qualquer modo. Easy tem cinco etapas: os quatro indicadores atuais de ResourceDisplay, na ordem da HUD, e a carta real. Hard tem sete: os cinco indicadores, o painel real de efeitos e a carta. A continuação de saves não inicia a guia. Se houver recarga durante a guia, o save retoma a primeira carta sem escolhas já aplicadas e sem reiniciar a guia; a apresentação não é persistida.
 
 O diálogo nativo `mission-tutorial` torna o restante da página inerte e mantém o foco em seus controles. Um realce com sombra ao redor destaca o elemento real. A explicação tenta se posicionar abaixo/acima ou ao lado do alvo, recalculando em resize e visualViewport resize; texto longo tem overflow interno de segurança. No passo da carta, celulares em retrato reservam temporariamente uma margem maior antes dela para a explicação não a cobrir; fechar/pular restaura o layout normal. Cada etapa de recurso chama a mesma renderização dos detalhes e copia somente descrição e previsão, sem duplicar regras científicas ou cálculo.
 
@@ -177,3 +177,23 @@ No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do pai
 Taxas de um efeito removido param nas integrações futuras, e consequências agendadas removidas não disparam. O cancelamento não reverte estoques alterados antes dele, não restitui recursos consumidos e não reativa efeitos anteriores quando uma vaga fica livre. Previsões, active e integração usam a mesma normalização. `Engine.checkFailure` normaliza saves antigos na retomada; a UI salva essa migração quando os fluxos mudam, preservando estado físico, relógio e sequência.
 
 O tutorial do painel fala somente sobre consultar alterações por sol e eventos agendados; a regra de cancelamento não aparece na explicação ao jogador.
+
+## Importação das 13 cartas autorais
+
+`scripts/import_event_cards.py` lê o CSV original sem modificá-lo, localiza o cabeçalho Id, ignora linhas sem ID e exige os 13 IDs únicos. Liga cada ID à única imagem correspondente em `images/cards/`, respeitando JPG/PNG. Dificuldades vêm do CSV. Categorias são uma classificação editorial por assunto; as probabilidades-base continuam as atuais e as chances das cartas são iguais dentro de cada categoria. Easy tem oito cartas elegíveis e exclui Exploration, cuja única carta é Hard; Hard tem as 13.
+
+Influências separadas por `\` ou `/` são pares da resposta 1/2. O importador usa Decimal para converter pontos percentuais da capacidade para kg, L, kWh e pontos percentuais de Shield, sem arredondar estado em execução. Vazios e pares vazios viram zero. `effects` é o valor nas unidades de simulação usado pelo motor; `effectPercentages` é metadado numérico de auditoria e a validação verifica sua correspondência com a capacidade. Alterar capacidades exige regenerar os efeitos antes de iniciar novas missões.
+
+A primeira resposta é left e a segunda right. Rótulos e descrições da frente são curtos; as respostas completas ficam nas descrições do verso, com a menção da carta 10 a 15 kWh ajustada à bateria atual; `sourceResponse` e `sourceDescription` preservam os textos originais. A segunda resposta da carta 7 e as duas da 8 foram completadas por autorização. Não foram inventadas taxas, durações, colheitas ou SFX. Textos 8/10 evitam a capacidade de 15 kWh de outro equipamento; cartas 10/13 são independentes de uma escolha anterior, conforme o sorteio com reposição.
+
+Referências preenchidas no CSV usam `source.kind: reference`; quando só existe a origem da imagem, `source.kind: image` faz a UI mostrar Image source, sem apresentar o link como sustentação científica dos valores. `imageSource` preserva a origem informada para cada imagem. Os coeficientes de efeito são balanceamento do autor, não medições dos artigos citados. `source.kind`, `sourceDescription`, `sourceResponse`, `imageSource` e `effectPercentages` são opcionais para continuar validando saves anteriores.
+
+A substituição afeta o catálogo de novas missões. Snapshots anteriores mantêm cartas, sequência e dados físicos salvos; o asset mock não é removido para não quebrar essas partidas. [Auditoria do conteúdo](docs/CARDS.md).
+
+## Escala percentual de Shield e migração
+
+`resources.quantities.shield` usa `start: 80`, `max: 100`, `unit: %` e `unitName: percent`. Shield é um índice abstrato; os outros quatro recursos continuam físicos. `ResourceDisplay.read` arredonda Shield para inteiro com % em ambos os modos. Mudanças reais usam a diferença dos valores arredondados; frações permanecem no motor. Não se aplica conversão física de água para pontos do índice.
+
+O bootstrap valida o save antigo com `allowLegacyShield` e chama `migrateShieldSave` antes de importar o motor/UI. Para a unidade antiga g/cm², multiplica os valores de Shield por `100 / old.max`: estado, estoque inicial, cards/deck, efeitos imediatos, rates ongoing, later, fluxos-base e cardChanges. Copia os objetos sem mutar a origem nem aplicar o fator duas vezes a cartas compartilhadas. Percentuais originais de auditoria, relógio, sequência, dificuldade e resultados da missão são preservados. Infinity continua sendo serializado pelo marcador existente.
+
+O resultado é validado e salvo automaticamente; se a gravação falhar, a partida convertida continua disponível em memória. A migração é idempotente: saves com unidade % e capacidade 100 não são convertidos novamente. Novos dados exigem a escala percentual; a escala g/cm² é aceita somente para carregar e migrar saves antigos. O formato do slot continua na versão 1, discriminando a escala pela unidade/capacidade.

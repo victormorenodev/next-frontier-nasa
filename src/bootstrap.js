@@ -7,14 +7,26 @@ const moduleURL = file => {
 };
 const names=['categories','mission','resources','flows','cards','interface'];
 try {
- const {validateData, validateSave} = await import(moduleURL('./validation.js'));
+ const {validateData, validateSave, migrateShieldSave} = await import(moduleURL('./validation.js'));
  const data=validateData(Object.fromEntries(await Promise.all(names.map(async name=>{
   const response=await fetch(new URL(`../data/${name}.json`,import.meta.url), {cache:'no-store'});
   if(!response.ok)throw Error(`${name}.json: HTTP ${response.status}`);
   try{return [name,await response.json()]}catch(error){throw Error(`${name}.json: ${error.message}`)}
  }))));
  globalThis.CurrentGameData=data;
- try{const raw=localStorage.getItem('next-frontier-save');if(raw){window.invalidSavedMission=true;window.savedMission=validateSave(JSON.parse(raw,(k,v)=>v==='__infinity'?Infinity:v));window.invalidSavedMission=false}}
+ try {
+  const raw=localStorage.getItem('next-frontier-save');
+  if(raw){
+   window.invalidSavedMission=true;
+   const stored=validateSave(JSON.parse(raw,(k,v)=>v==='__infinity'?Infinity:v));
+   window.savedMission=migrateShieldSave(stored,data.resources.quantities.shield);
+   window.invalidSavedMission=false;
+   if(window.savedMission!==stored){
+    try{localStorage.setItem('next-frontier-save',JSON.stringify(window.savedMission,(k,v)=>v===Infinity?'__infinity':v))}
+    catch(error){console.warn('Converted Shield save could not be written',error)}
+   }
+  }
+ }
  catch(error){console.warn('Saved mission unavailable',error)}
  globalThis.GameData=window.savedMission?.data||data;
  globalThis.Copy=(key,values={})=>(CurrentGameData.interface[key]||GameData.interface[key]||key).replace(/\{(\w+)\}/g,(_,k)=>String({...GameData.mission,...values}[k]??`{${k}}`));

@@ -20,12 +20,12 @@ O briefing apresenta a missão e a imagem da NASA com crédito. Clique, arraste 
 
 | Modo | Público indicado | Recursos | Cartas permitidas |
 | --- | --- | --- | --- |
-| Easy | Cientistas de 7–10 anos | Inteiros de 0 a 100, sem % nem unidades | easy e medium |
-| Hard | Astronautas de 11+ anos | Quantidades com unidades físicas | easy, medium e hard |
+| Easy | Cientistas de 7–10 anos | Estoques de 0 a 100 sem unidade; Shield de 0 a 100% | easy e medium |
+| Hard | Astronautas de 11+ anos | Estoques com unidades físicas; Shield de 0 a 100% | easy, medium e hard |
 
-A simulação usa unidades físicas nos dois modos. Easy arredonda apenas a exibição; as frações continuam acumulando. Previsões e variações reais refletem a diferença entre os inteiros exibidos antes e depois.
+O₂, água, energia e comida usam unidades físicas nos dois modos; Shield usa um índice percentual de 0 a 100. Easy arredonda apenas a exibição; as frações continuam acumulando. Previsões e variações reais refletem a diferença entre os inteiros exibidos antes e depois.
 
-Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Qualquer recurso físico zerado encerra a missão com “Mission Failed”.
+Cada sol tem uma carta (80%) ou duas (20%). Resolva todas para concluir o sol; ler ou responder não gasta um sol por carta. Consumo, produção e efeitos programados são calculados uma vez ao concluir cada sol. O objetivo implementado é concluir o sol 40. Qualquer recurso zerado encerra a missão com “Mission Failed”.
 
 As cartas podem repetir, inclusive consecutivamente. O sorteio seleciona categoria e depois carta dentro dela. Chances-base: Routine 35%, Maintenance 25%, Exploration 20%, Science 15%, Emergency 5%. No Easy, cartas não elegíveis são removidas e as chances restantes são normalizadas.
 
@@ -46,9 +46,9 @@ Passe o mouse sobre um indicador no PC ou segure/deslize no toque para ver a fun
 
 Probabilidades são frações entre 0 e 1. Categorias somam 1 e cartas somam 1 por categoria, com tolerância de 1e-9. Cada categoria precisa de cartas e total positivo. Probabilidade zero desabilita a seleção. Uma categoria com uma única carta usa probability 1 nessa carta. O filtro de dificuldade remove categorias sem cartas elegíveis e preserva a proporção entre as restantes.
 
-Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As dez cartas atuais são mock e compartilham uma imagem/legenda de teste; suas explicações de escolha começam vazias.
+Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As 13 cartas atuais vêm de `Cartas de evento - Página1.csv`, usam suas imagens por ID e têm rótulos curtos com a resposta completa no verso. As respostas ausentes das cartas 7/8 foram completadas e influências vazias receberam zero, conforme autorizado.
 
-- `effects`: mudanças imediatas nas unidades físicas dos recursos, inclusive no Easy.
+- `effects`: mudanças imediatas nas unidades físicas dos estoques e pontos percentuais de Shield, inclusive no Easy.
 - `ongoing`: rates por sol, after opcional e for opcional; omitir for significa continuar indefinidamente.
 - `later`: efeitos após um número inteiro positivo de sols.
 - `left.description`/`right.description`: explicação no verso somente para a escolha feita; ausente, vazia ou só espaços não ocupa espaço.
@@ -115,7 +115,7 @@ Concluir os 40 sols sem zerar recursos mantém o final de sucesso. Zerar um recu
 
 Temporariamente, `data/mission.json` → `dailyCostMultiplier: 3` triplica o consumo-base de apenas um recurso escolhido para facilitar testes. No seletor Easy/Hard, escolher em Faster daily use o recurso ou Normal daily use para consumo normal. Produção e efeitos das cartas permanecem com seus valores próprios. Os coeficientes científicos originais em `flows.json` foram preservados. Para restaurar o consumo normal, usar 1 e começar uma nova missão; continuar um save preserva o multiplicador salvo (saves anteriores usam 1).
 
-Não há desgaste diário de blindagem: ela pode zerar por efeitos de cartas. O zero da derrota é o estoque físico real; um indicador Easy arredondado para zero ainda pode conter uma pequena reserva.
+Não há desgaste diário de blindagem: ela pode zerar por efeitos de cartas. O zero da derrota é o valor interno do recurso; um indicador Easy arredondado para zero ainda pode conter uma pequena reserva.
 
 As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado; o painel de efeitos fica oculto ao encerrar para reservar espaço ao final. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
 
@@ -123,7 +123,7 @@ As telas finais sem imagem (e o fallback de carregamento) usam título e descri�
 
 O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
 
-Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+Antes de escolher o modo, **Faster daily use** permite selecionar um recurso ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
 
 A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
 
@@ -154,3 +154,28 @@ Toque em Next, deslize para qualquer lado ou use as setas para avançar; na últ
 O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.
 
 No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do painel, sem criar efeitos fictícios. Explica alterações por sol e eventos agendados, sem explicar a remoção de efeitos pela fila. Em celulares em retrato, somente no passo da carta o painel é ocultado temporariamente para manter a carta legível; ao concluir ou pular, ele reaparece sem alterar os efeitos.
+
+## Catálogo atual de eventos
+
+As novas missões usam as 13 cartas do CSV e as imagens `images/cards/1.jpg` a `13.jpg` (6 e 12 são PNG). As influências são percentuais da capacidade máxima do recurso, convertidos antes do jogo para unidades de simulação (físicas nos estoques e pontos percentuais em Shield): `efeito = percentual × capacidade / 100`. Por exemplo, 15 pontos de Oxygen equivalem a 9 kg; 15 de Water, 105 L; 15 de Energy, 45 kWh. As capacidades atuais não foram alteradas pelas notas laterais da planilha.
+
+Os valores da primeira resposta vão para left e os da segunda para right. O arquivo usa barra invertida como separador; o importador também aceita `/`. Esses efeitos são imediatos. Influências vazias são zero; não há durações ou taxas criadas para preencher lacunas. O JSON guarda `effectPercentages` para auditoria, mas o motor aplica apenas `effects`, em unidades físicas dos estoques e pontos percentuais de Shield.
+
+Para regenerar após editar o CSV ou as capacidades:
+
+```bash
+python scripts/import_event_cards.py
+python scripts/import_event_cards.py --check
+```
+
+O Python é necessário apenas para essa conversão editorial; jogar e executar `npm test` continuam sem essa etapa. O navegador lê o JSON, não o CSV. [Mapeamento, respostas completadas e conversões](docs/CARDS.md).
+
+Continuar missões antigas preserva o baralho salvo, inclusive cartas mock. Inicie uma nova missão para usar o catálogo novo. A imagem mock e sua apresentação ficam disponíveis somente para compatibilidade dos saves antigos.
+
+## Shield em porcentagem
+
+Shield vai de **0 a 100% no Easy e no Hard**, começando em **80%**. É um índice de proteção do jogo, não g/cm², dose ou porcentagem garantida de radiação bloqueada. Os demais recursos mantêm suas unidades físicas internas e a apresentação de cada modo. No Easy, Shield é a exceção à regra de números sem %.
+
+Os valores de Shield das cartas são pontos percentuais: −5 muda 80% para 75%. O estado mantém frações, mas a interface arredonda para inteiros; previsões e números de variação comparam os inteiros exibidos. Não há consumo diário de Shield por radiação.
+
+Saves antigos em g/cm² são convertidos automaticamente, preservando a proporção da capacidade: 8 de 10 vira 80%. A conversão inclui efeitos das cartas, efeitos pendentes e destaques já salvos, sem reaplicar escolhas ou alterar os outros recursos.

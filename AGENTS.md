@@ -6,13 +6,13 @@ Consolidado em **15/11/2026** a partir do código e dos JSONs atuais. Leia este 
 
 - Jogo de decisões por cartas inspirado em Reigns: administrar uma base marciana com **quatro astronautas**. O projeto surgiu a partir do desafio Junior Astronaut Mission Trainer do NASA Space Apps; não afirmar endosso, premiação ou submissão oficial sem evidência.
 - Todo texto visível ao jogador é **em inglês simples**. Documentação interna pode ser em português. Priorizar crianças: ícones claros, frases curtas, contraste e controles de toque/teclado acessíveis.
-- A missão termina ao concluir **40 sols** ou quando qualquer recurso físico zera. Cada sol tem **1 carta (80%)** ou **2 cartas (20%)**; não há sols sem eventos. A meta histórica de 15–20 minutos ainda não foi validada com usuários.
+- A missão termina ao concluir **40 sols** ou quando qualquer recurso zera. Cada sol tem **1 carta (80%)** ou **2 cartas (20%)**; não há sols sem eventos. A meta histórica de 15–20 minutos ainda não foi validada com usuários.
 - Sortear primeiro categoria, depois carta da categoria, com reposição. Repetições consecutivas são permitidas, inclusive no mesmo sol. Categorias-base: Routine 35%, Maintenance 25%, Exploration 20%, Science 15%, Emergency 5%.
 - Após o briefing, escolher **Easy** (cientistas de 7–10 anos) ou **Hard** (astronautas de 11+). Easy sorteia somente cartas easy/medium; Hard permite os três níveis. Após filtrar, normalizar probabilidades e excluir categorias sem cartas elegíveis.
-- A simulação usa unidades físicas em ambos os modos. Easy exibe inteiros normalizados de **0 a 100, sem símbolo %** e sem unidade. Não arredondar o estado interno. Previsões e variações reais usam a diferença dos valores arredondados antes/depois; frações continuam acumulando. Hard exibe unidades físicas.
-- Cinco recursos: Oxygen Level (kg), Water Stock (L), Radiation Shield (g/cm²), Energy Supply (kWh) e Food Stock (kg de alimento seco). Quantidades iniciais, capacidades, explicações e cores vêm dos JSONs.
+- O₂, água, energia e comida usam unidades físicas internas em ambos os modos; Shield usa uma escala interna de 0 a 100 pontos percentuais. Easy exibe os estoques normalizados de **0 a 100, sem símbolo %**, e Shield com %. Não arredondar o estado interno. Previsões e variações reais usam a diferença dos valores arredondados antes/depois; frações continuam acumulando. Hard exibe unidades físicas nos estoques e % em Shield.
+- Cinco recursos: Oxygen Level (kg), Water Stock (L), Radiation Shield (0–100%), Energy Supply (kWh) e Food Stock (kg de alimento seco). Quantidades iniciais, capacidades, explicações e cores vêm dos JSONs.
 - As cartas não possuem duração individual. Escolhas aplicam efeitos imediatos e registram efeitos contínuos/agendados; consumo e produção de um sol são aplicados uma única vez após sua última carta. Terços de sol são apenas passos internos de integração, sem manhã/tarde/noite jogáveis.
-- Existem dez cartas mock, com efeitos simulados. Recursos zerados causam derrota automática; as cartas ainda não são cientificamente dimensionadas para uma base real.
+- Existem 13 cartas fornecidas no CSV do projeto, com IDs de 1 a 13 e imagens correspondentes em `images/cards/`. Os efeitos são balanceamento autoral convertido de percentuais da capacidade para unidades de simulação (físicas nos estoques, pontos percentuais em Shield). Recursos zerados causam derrota automática; as cartas ainda não são cientificamente dimensionadas para uma base real.
 
 ## Interface e comportamento atuais
 
@@ -37,7 +37,7 @@ Consolidado em **15/11/2026** a partir do código e dos JSONs atuais. Leia este 
 ## Precisão científica e escopo
 
 - Separar medição real, hipótese/modelo e balanceamento. Preservar fontes, unidades, ambiente e transformações dos coeficientes científicos.
-- Preservar massa em transferências de água/blindagem. Radiação não consome blindagem; densidade superficial não é dose nem garantia de proteção. Não confundir kW/kWh, comida hidratada/seca ou Gy/Sv.
+- Preservar massa em transferências físicas de água. Shield é um índice de proteção de 0 a 100%, sem conversão automática de água para pontos nem equivalência direta a dose ou massa. Radiação não consome blindagem. Não confundir kW/kWh, comida hidratada/seca ou Gy/Sv.
 - Construir incrementalmente conforme os pedidos. Propostas na pesquisa ou no histórico não são autorização de implementação.
 - Atualizar os documentos vigentes quando comportamento/estrutura mudar; registrar histórico separadamente e evitar regras duplicadas em CLAUDE.md.
 
@@ -72,8 +72,8 @@ O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos cont�
 
 ## Finais e consumo temporário para teste
 
-- Recurso físico em zero encerra com “Mission Failed”. Easy tem quatro finais de falha: Life Support (água ou oxigênio), blindagem, energia e comida. Hard tem cinco: oxigênio, água, blindagem, energia e comida. Os textos ficam em `data/interface.json` (`failedTitle`, `failedBody-*`).
-- Verificar após efeitos imediatos e em cada passo interno dos fluxos diários/agendados; interromper ao zerar, sem permitir resgate posterior. Falha tem prioridade sobre sucesso no sol 40. O zero arredondado do Easy não causa derrota se o estoque físico ainda for positivo. Empate usa a ordem dos recursos em `resources.quantities` (atualmente oxygen, water, shield, energy, food).
+- Recurso em zero encerra com “Mission Failed”. Easy tem quatro finais de falha: Life Support (água ou oxigênio), blindagem, energia e comida. Hard tem cinco: oxigênio, água, blindagem, energia e comida. Os textos ficam em `data/interface.json` (`failedTitle`, `failedBody-*`).
+- Verificar após efeitos imediatos e em cada passo interno dos fluxos diários/agendados; interromper ao zerar, sem permitir resgate posterior. Falha tem prioridade sobre sucesso no sol 40. Um zero arredondado na apresentação não causa derrota se o valor interno ainda for positivo, inclusive em Shield. Empate usa a ordem dos recursos em `resources.quantities` (atualmente oxygen, water, shield, energy, food).
 - `mission.dailyCostMultiplier` está temporariamente em **3**: triplica somente consumos-base negativos do recurso escolhido na nova missão, mantendo coeficientes originais e produção. Efeitos de cartas não são multiplicados. Voltar para 1 encerra o ajuste de teste em novas missões. Saves preservam a configuração com que começaram; ausência do campo equivale a 1.
 - Blindagem continua sem consumo diário por radiação. O final é uma regra do jogo, não um cálculo de dose ou sobrevivência.
 
@@ -83,7 +83,7 @@ As telas finais sem imagem (e o fallback de carregamento) usam título e descri�
 
 O botão do briefing e dos finais é **Start New Mission**. Ele abre o seletor sem confirmação de substituição. O save anterior só é substituído ao escolher Easy ou Hard; voltar ao briefing preserva Continue mission. Saves inválidos também podem ser substituídos sem confirmação.
 
-Antes de escolher o modo, **Faster daily use** permite selecionar um recurso físico ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
+Antes de escolher o modo, **Faster daily use** permite selecionar um recurso ou **Normal daily use** (padrão). Apenas os fluxos-base negativos do recurso escolhido recebem `mission.dailyCostMultiplier` (3). Produção e efeitos de cartas mantêm seus valores. Shield está identificado como sem consumo diário: selecionar essa opção não cria desgaste nem consumo por radiação. Água e oxigênio são opções físicas separadas também no Easy.
 
 A escolha é guardada em `flows.dailyCostResource`: `null` significa consumo normal; um ID de recurso significa multiplicar somente seu consumo-base. A escolha atravessa respostas, integração, saves e reinício após recarga dos dados. Saves antigos sem esse campo preservam o multiplicador global de sua configuração original; não recebem silenciosamente a seleção atual. A confirmação de encerramento manual e o aviso de alteração por outra aba continuam independentes do início de missão.
 
@@ -107,7 +107,7 @@ Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os l
 
 ## Mini tutorial dos modos Easy e Hard
 
-- Cada nova missão Easy mostra cinco etapas sobre a interface real: Life Support, Radiation Shield, Energy Supply, Food Stock e a carta. Hard tem sete: os cinco indicadores físicos separados, o painel de efeitos e a carta. Continue mission entra diretamente na partida, sem repetir o tutorial.
+- Cada nova missão Easy mostra cinco etapas sobre a interface real: Life Support, Radiation Shield, Energy Supply, Food Stock e a carta. Hard tem sete: os cinco indicadores separados, o painel de efeitos e a carta. Continue mission entra diretamente na partida, sem repetir o tutorial.
 - Indicadores reutilizam as descrições e previsões dos detalhes existentes, com realce de um indicador por vez. Na última etapa, a carta demonstra continuamente um pequeno arrasto nos dois sentidos, preenchendo o botão correspondente como no arrasto real, sem selecionar alternativas. Respeitar movimento reduzido.
 - Next, deslize horizontal em qualquer sentido ou setas avançam. A última etapa usa Let’s play!. Skip tutorial fica disponível desde o início; Escape também pula. O foco e os cliques da partida ficam bloqueados pelo diálogo modal.
 - O tutorial não altera recursos, relógio, baralho, escolhas nem efeitos. A missão inicial é salva antes dele. Recarregar e continuar não repete o tutorial; não existe progresso de tutorial persistido.

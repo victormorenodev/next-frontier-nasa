@@ -9,13 +9,16 @@ assert.deepEqual(Object.keys(s), ['oxygen', 'water', 'shield', 'energy', 'food']
 // Every quantity has a unit, written short and in words.
 assert.deepEqual(
   Object.fromEntries(Object.entries(I.QUANTITIES).map(([k, q]) => [k, q.unit])),
-  {oxygen: 'kg', water: 'L', shield: 'g/cm²', energy: 'kWh', food: 'kg'});
+  {oxygen: 'kg', water: 'L', shield: '%', energy: 'kWh', food: 'kg'});
 Object.values(I.QUANTITIES).forEach(q => assert.ok(q.unitName && q.start <= q.max));
 
 // Changes stay between 0 and max and never mutate the old state.
 assert.equal(I.change(s, 'energy', 500).energy, 300);
 assert.equal(I.change(s, 'energy', -500).energy, 0);
 assert.equal(s.energy, 240);
+assert.equal(s.shield,80);assert.equal(I.QUANTITIES.shield.max,100);
+assert.equal(I.change(s,'shield',50).shield,100);assert.equal(I.change(s,'shield',-100).shield,0);
+assert.equal(I.change(s,'shield',-.25).shield,79.75);
 assert.throws(() => I.change(s, 'gold', 1));
 
 // Five indicators, in screen order, one per quantity, with their player-facing names.

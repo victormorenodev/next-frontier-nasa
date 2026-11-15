@@ -1,372 +1,477 @@
 [
   {
-    "id": "mock-dusty-panels",
-    "mock": true,
-    "difficulty": "easy",
-    "description": "Dust is covering the solar panels. Less sunlight means less power.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "Solar panels on a dusty Mars base",
-    "source": {
-      "institution": "NASA JPL",
-      "url": "https://www.jpl.nasa.gov/images/pia25284-insights-power-generation-after-landing-and-spring-2022/"
-    },
-    "left": {
-      "label": "Wait for wind",
-      "effects": {},
-      "ongoing": [
-        {
-          "rates": {
-            "energy": -30
-          },
-          "for": 3,
-          "note": "Dusty panels"
-        }
-      ],
-      "description": ""
-    },
-    "right": {
-      "label": "Clean them",
-      "effects": {
-        "energy": -8,
-        "oxygen": -2
-      },
-      "description": ""
-    },
-    "category": "maintenance",
-    "probability": 0.3333333333333333,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-oxygen-repair",
-    "mock": true,
-    "difficulty": "medium",
-    "description": "The oxygen machine is making a strange noise. It needs a repair.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "A machine that makes oxygen",
-    "source": {
-      "institution": "NASA",
-      "url": "https://www.nasa.gov/solar-system/nasas-oxygen-generating-experiment-moxie-completes-mars-mission/"
-    },
-    "left": {
-      "label": "Repair later",
-      "effects": {},
-      "ongoing": [
-        {
-          "rates": {
-            "oxygen": -1.5
-          },
-          "for": 4,
-          "note": "Weaker machine"
-        }
-      ],
-      "description": ""
-    },
-    "right": {
-      "label": "Repair now",
-      "effects": {
-        "energy": -10
-      },
-      "ongoing": [
-        {
-          "rates": {
-            "oxygen": -3
-          },
-          "for": 1,
-          "note": "Machine off for repair"
-        }
-      ],
-      "description": ""
-    },
-    "category": "maintenance",
-    "probability": 0.3333333333333333,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-solar-storm",
-    "mock": true,
-    "difficulty": "hard",
-    "description": "A solar storm is coming! Thicker walls of water can make the shelter safer.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "The Sun throwing out a big storm",
-    "source": {
-      "institution": "NASA",
-      "url": "https://www.nasa.gov/solar-system/planets/mars/nasa-watches-mars-light-up-during-epic-solar-storm/"
-    },
-    "left": {
-      "label": "Keep it as is",
-      "effects": {},
-      "description": ""
-    },
-    "right": {
-      "label": "Add water to walls",
-      "effects": {
-        "water": -100,
-        "shield": 0.5,
-        "energy": -6
-      },
-      "description": ""
-    },
+    "id": "1",
     "category": "emergency",
     "probability": 0.3333333333333333,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-lettuce",
-    "mock": true,
     "difficulty": "easy",
-    "description": "The lettuce in the greenhouse is growing. Pick it now or let it grow more?",
-    "image": "images/mock-card.svg",
-    "imageAlt": "Lettuce growing under lights",
+    "description": "An oxygen tank is leaking. The air pressure is falling!",
+    "sourceDescription": "Warning! Pressure is dropping because an oxygen storage tank is leaking!",
+    "image": "images/cards/1.jpg",
+    "imageAlt": "Oxygen tanks inside a spacecraft.",
+    "imageCaption": "Oxygen tanks inside a spacecraft.",
+    "imageSource": "https://www.esa.int/media/emergency-oxygen-tanks-international-space-station#modal-images",
     "source": {
-      "institution": "NASA",
-      "url": "https://www.nasa.gov/wp-content/uploads/2019/04/veggie_fact_sheet_508.pdf"
+      "institution": "ESA",
+      "url": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/moon/artemis/european-service-module-air-and-water",
+      "kind": "reference"
     },
     "left": {
-      "label": "Pick it now",
-      "effects": {
-        "food": 3
+      "label": "Use a backup tank",
+      "description": "Switch to a backup oxygen tank right away!",
+      "sourceResponse": "Switch to a backup oxygen tank right away!",
+      "effectPercentages": {
+        "oxygen": 15,
+        "shield": -5
       },
-      "description": ""
+      "effects": {
+        "oxygen": 9,
+        "shield": -5
+      }
     },
     "right": {
-      "label": "Let it grow",
-      "effects": {},
-      "ongoing": [
-        {
-          "rates": {
-            "energy": -3
-          },
-          "for": 2,
-          "note": "Grow lights"
-        }
-      ],
-      "later": [
-        {
-          "after": 2,
-          "effects": {
-            "food": 6
-          },
-          "note": "Bigger lettuce"
-        }
-      ],
-      "description": ""
-    },
-    "category": "routine",
-    "probability": 0.5,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
+      "label": "Wait and see",
+      "description": "Just wait and hope it stops leaking.",
+      "sourceResponse": "Just wait and hope it stops leaking.",
+      "effectPercentages": {
+        "oxygen": -15,
+        "shield": 5
+      },
+      "effects": {
+        "oxygen": -9,
+        "shield": 5
+      }
+    }
   },
   {
-    "id": "mock-water-filter",
-    "mock": true,
-    "difficulty": "medium",
-    "description": "The water filter is clogged. Cleaning it uses power.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "A water filter",
-    "source": {
-      "institution": "NASA",
-      "url": "https://ntrs.nasa.gov/api/citations/20210024855/downloads/BVAD_2.15.22-final.pdf"
-    },
-    "left": {
-      "label": "Skip it",
-      "effects": {},
-      "ongoing": [
-        {
-          "rates": {
-            "water": -6
-          },
-          "for": 3,
-          "note": "Dirty filter"
-        }
-      ],
-      "description": ""
-    },
-    "right": {
-      "label": "Clean the filter",
-      "effects": {
-        "energy": -14
-      },
-      "description": ""
-    },
-    "category": "maintenance",
+    "id": "2",
+    "category": "emergency",
     "probability": 0.3333333333333333,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-supply-depot",
-    "mock": true,
     "difficulty": "medium",
-    "description": "There is food stored far from the base. The rover can bring some back.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "A rover driving on Mars",
+    "description": "The carbon dioxide filter broke. The crew has headaches.",
+    "sourceDescription": "The Four Bed Molecular Sieve (CO2 removal) broke down. The crew has headaches from bad air!",
+    "image": "images/cards/2.jpg",
+    "imageAlt": "A view from a spacecraft.",
+    "imageCaption": "A view from a spacecraft.",
+    "imageSource": "https://images.nasa.gov/details/as13-59-8500",
     "source": {
-      "institution": "NASA",
-      "url": "https://trek.nasa.gov/mars/"
+      "institution": "ESA",
+      "url": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/moon/artemis/european-service-module-air-and-water",
+      "kind": "reference"
     },
     "left": {
-      "label": "Stay home",
-      "effects": {},
-      "description": ""
+      "label": "Use LiOH canisters",
+      "description": "Use lithium hydroxide (LiOH) canisters to absorb the gas.",
+      "sourceResponse": "Use lithium hydroxide (LiOH) canisters to absorb the gas.",
+      "effectPercentages": {
+        "oxygen": 10,
+        "energy": -10
+      },
+      "effects": {
+        "oxygen": 6,
+        "energy": -30
+      }
     },
     "right": {
-      "label": "Drive the rover",
-      "effects": {
-        "energy": -22,
-        "food": 5
+      "label": "Keep working",
+      "description": "Ignore it and keep working with no filters.",
+      "sourceResponse": "Ignore it and keep working with no filters.",
+      "effectPercentages": {
+        "oxygen": -20,
+        "shield": 10
       },
-      "description": ""
+      "effects": {
+        "oxygen": -12,
+        "shield": 10
+      }
+    }
+  },
+  {
+    "id": "3",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
+    "difficulty": "hard",
+    "description": "Water recycling has failed. We need clean drinking water.",
+    "sourceDescription": "The multifiltration water processor failed. Total reliance on recycling is threatened!",
+    "image": "images/cards/3.jpg",
+    "imageAlt": "Water processing equipment.",
+    "imageCaption": "Water processing equipment.",
+    "imageSource": "https://spinoff.nasa.gov/sites/default/files/2020-09/030_web_2.jpg",
+    "source": {
+      "institution": "ESA",
+      "url": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/moon/artemis/european-service-module-air-and-water",
+      "kind": "reference"
     },
-    "category": "exploration",
+    "left": {
+      "label": "Use reserve water",
+      "description": "Draw emergency drinking water from the survival storage reserve.",
+      "sourceResponse": "Draw emergency drinking water from the survival storage reserve.",
+      "effectPercentages": {},
+      "effects": {}
+    },
+    "right": {
+      "label": "Push the recycler",
+      "description": "Force the Vapor Compression Distillation (VCD) unit to run past its limits.",
+      "sourceResponse": "Force the Vapor Compression Distillation (VCD) unit to run past its limits.",
+      "effectPercentages": {},
+      "effects": {}
+    }
+  },
+  {
+    "id": "4",
+    "category": "routine",
     "probability": 1.0,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-hot-battery",
-    "mock": true,
-    "difficulty": "hard",
-    "description": "The battery is getting too hot. We must cool it or use less power.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "A big battery with a warning light",
-    "source": {
-      "institution": "NASA",
-      "url": "https://science.nasa.gov/blogs/insight/"
-    },
-    "left": {
-      "label": "Cool it down",
-      "effects": {
-        "energy": -25,
-        "water": -10
-      },
-      "description": ""
-    },
-    "right": {
-      "label": "Lights off",
-      "effects": {},
-      "ongoing": [
-        {
-          "rates": {
-            "energy": 10,
-            "food": -0.5
-          },
-          "for": 2,
-          "note": "Lights off"
-        }
-      ],
-      "description": ""
-    },
-    "category": "emergency",
-    "probability": 0.3333333333333333,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-spoiled-food",
-    "mock": true,
     "difficulty": "easy",
-    "description": "Some food packs look damaged. Is the food inside still safe?",
-    "image": "images/mock-card.svg",
-    "imageAlt": "Food packs in a storage box",
+    "description": "The crew needs more oxygen. How much should we release?",
+    "sourceDescription": "The crew needs more oxygen pumped into the cabin from the high-pressure storage tanks.",
+    "image": "images/cards/4.jpg",
+    "imageAlt": "An astronaut repairs station equipment.",
+    "imageCaption": "An astronaut repairs station equipment.",
+    "imageSource": "https://www.nasa.gov/image-article/astronaut-bob-hines-replaces-carbon-dioxide-bottle/",
     "source": {
-      "institution": "Canadian Space Agency",
-      "url": "https://www.asc-csa.gc.ca/eng/sciences/food-production/"
+      "institution": "ESA",
+      "url": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/moon/artemis/european-service-module-air-and-water",
+      "kind": "reference"
     },
     "left": {
-      "label": "Throw them out",
-      "effects": {
-        "food": -4
-      },
-      "description": ""
+      "label": "Open the valves",
+      "description": "Open the main oxygen valves wider!",
+      "sourceResponse": "Open the main oxygen valves wider!",
+      "effectPercentages": {},
+      "effects": {}
     },
     "right": {
-      "label": "Check each one",
-      "effects": {
-        "energy": -6,
-        "food": -1
-      },
-      "description": ""
-    },
-    "category": "emergency",
-    "probability": 0.3333333333333333,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
+      "label": "Limit the flow",
+      "description": "Keep the valves half-closed to save tank safety.",
+      "sourceResponse": "Keep the valves half-closed to save tank safety.",
+      "effectPercentages": {},
+      "effects": {}
+    }
   },
   {
-    "id": "mock-thirsty-crew",
-    "mock": true,
-    "difficulty": "hard",
-    "description": "The crew needs more water. We could take some from the shelter walls.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "Water tanks around a shelter",
-    "source": {
-      "institution": "NASA",
-      "url": "https://www.nasa.gov/reference/4-0-human-performance/"
-    },
-    "left": {
-      "label": "Use wall water",
-      "effects": {
-        "shield": -0.5,
-        "water": 100
-      },
-      "description": ""
-    },
-    "right": {
-      "label": "Save water",
-      "effects": {},
-      "ongoing": [
-        {
-          "rates": {
-            "water": 2
-          },
-          "for": 3,
-          "note": "Saving water"
-        }
-      ],
-      "description": ""
-    },
-    "category": "routine",
-    "probability": 0.5,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
-  },
-  {
-    "id": "mock-plant-seeds",
-    "mock": true,
+    "id": "5",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
     "difficulty": "medium",
-    "description": "We have new seeds. Plants take many sols to grow, but they give food later.",
-    "image": "images/mock-card.svg",
-    "imageAlt": "Seeds and small plants in pots",
+    "description": "The machine that uses water to make oxygen is overheating!",
+    "sourceDescription": "The Solid Polymer Water Electrolysis machine that splits water to make fresh oxygen is overheating.",
+    "image": "images/cards/5.jpg",
+    "imageAlt": "An astronaut holds a drink pouch.",
+    "imageCaption": "An astronaut holds a drink pouch.",
+    "imageSource": "https://esemag.com/water/nasa-brine-processor-water-reclamation-international-space-station/",
     "source": {
-      "institution": "Canadian Space Agency",
-      "url": "https://www.asc-csa.gc.ca/eng/youth-educators/activities/fitness-and-nutrition/interplanetary-farming.asp"
+      "institution": "ESA",
+      "url": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/moon/artemis/european-service-module-air-and-water",
+      "kind": "reference"
     },
     "left": {
-      "label": "Keep the seeds",
-      "effects": {},
-      "description": ""
+      "label": "Cool the machine",
+      "description": "Send extra electrical power to cool down the electrolysis unit!",
+      "sourceResponse": "Send extra electrical power to cool down the electrolysis unit!",
+      "effectPercentages": {},
+      "effects": {}
     },
     "right": {
-      "label": "Plant them",
-      "effects": {
-        "water": -20,
-        "energy": -10
-      },
-      "ongoing": [
-        {
-          "rates": {
-            "energy": -3
-          },
-          "for": 13,
-          "note": "Grow lights"
-        },
-        {
-          "rates": {
-            "food": 1.5
-          },
-          "after": 3,
-          "for": 10,
-          "note": "New plants"
-        }
-      ],
-      "description": ""
+      "label": "Make less oxygen",
+      "description": "Slow down the oxygen production to save electricity.",
+      "sourceResponse": "Slow down the oxygen production to save electricity.",
+      "effectPercentages": {},
+      "effects": {}
+    }
+  },
+  {
+    "id": "6",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
+    "difficulty": "hard",
+    "description": "The Sabatier reactor broke. Use stored oxygen or keep it on?",
+    "sourceDescription": "The Sabatier carbon dioxide reduction reactor broke down! If we don't fix it, we will lose the oxygen tied up in exhaled gases.",
+    "image": "images/cards/6.png",
+    "imageAlt": "An astronaut works on life-support equipment.",
+    "imageCaption": "An astronaut works on life-support equipment.",
+    "imageSource": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/installing-life-support-the-hands-free-way",
+    "source": {
+      "institution": "ESA",
+      "url": "https://www.esa.int/articles/about-us/directorates/human-and-robotic-exploration/moon/artemis/european-service-module-air-and-water",
+      "kind": "reference"
     },
+    "left": {
+      "label": "Use stored oxygen",
+      "description": "Vent the carbon dioxide into space and rely purely on our limited stored oxygen tanks.",
+      "sourceResponse": "Vent the carbon dioxide into space and rely purely on our limited stored oxygen tanks.",
+      "effectPercentages": {},
+      "effects": {}
+    },
+    "right": {
+      "label": "Keep reactor on",
+      "description": "Force the broken reactor to keep running to recycle every drop of oxygen.",
+      "sourceResponse": "Force the broken reactor to keep running to recycle every drop of oxygen.",
+      "effectPercentages": {},
+      "effects": {}
+    }
+  },
+  {
+    "id": "7",
     "category": "science",
     "probability": 1.0,
-    "imageCaption": "A small Mars base with a dome and a solar panel."
+    "difficulty": "medium",
+    "description": "An empty growing tray is ready. Lettuce or soybeans?",
+    "sourceDescription": "We have an empty growing tray. Should we plant lettuce for an earlier harvest or soybeans for a larger harvest later?",
+    "image": "images/cards/7.jpg",
+    "imageAlt": "Plants grow inside a space experiment.",
+    "imageCaption": "Plants grow inside a space experiment.",
+    "imageSource": "https://www.space.com/38723-astronauts-farm-plants-install-garden-instrument.html",
+    "source": {
+      "institution": "Space.com",
+      "url": "https://www.space.com/38723-astronauts-farm-plants-install-garden-instrument.html",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Plant lettuce",
+      "description": "A lettuce crop begins growing.",
+      "sourceResponse": "Plant lettuce / consequence: A lettuce crop begins growing.",
+      "effectPercentages": {},
+      "effects": {}
+    },
+    "right": {
+      "label": "Plant soybeans",
+      "description": "Choose soybeans for a larger harvest later.",
+      "sourceResponse": "",
+      "effectPercentages": {},
+      "effects": {}
+    }
+  },
+  {
+    "id": "8",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
+    "difficulty": "hard",
+    "description": "The battery is almost full. Its power lines are hot!",
+    "sourceDescription": "The space station battery is charging up toward its 15 kWh limit, but the power lines are getting hot!",
+    "image": "images/cards/8.jpg",
+    "imageAlt": "Solar collectors at a power facility on Earth.",
+    "imageCaption": "Solar collectors at a power facility on Earth.",
+    "imageSource": "https://spinoff.nasa.gov/spinoff2002/er_7.html",
+    "source": {
+      "institution": "NASA Spinoff",
+      "url": "https://spinoff.nasa.gov/spinoff2002/er_7.html",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Pause charging",
+      "description": "Pause battery charging and let the power lines cool.",
+      "sourceResponse": "",
+      "effectPercentages": {},
+      "effects": {}
+    },
+    "right": {
+      "label": "Keep charging",
+      "description": "Keep charging the battery while watching the hot power lines.",
+      "sourceResponse": "",
+      "effectPercentages": {},
+      "effects": {}
+    }
+  },
+  {
+    "id": "9",
+    "category": "exploration",
+    "probability": 1.0,
+    "difficulty": "hard",
+    "description": "A Martian dust storm is covering our solar panels.",
+    "sourceDescription": "A massive Martian dust storm is heading straight for us! Dust is starting to coat our solar panels.",
+    "image": "images/cards/9.jpg",
+    "imageAlt": "Dust over the surface of Mars.",
+    "imageCaption": "Dust over the surface of Mars.",
+    "imageSource": "https://science.nasa.gov/resource/martian-dust-storm/",
+    "source": {
+      "institution": "NASA",
+      "url": "https://science.nasa.gov/resource/martian-dust-storm/",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Clean the panels",
+      "description": "Send crew outside immediately to clean the solar panels!",
+      "sourceResponse": "Send crew outside immediately to clean the solar panels!",
+      "effectPercentages": {
+        "oxygen": -15,
+        "energy": 15
+      },
+      "effects": {
+        "oxygen": -9,
+        "energy": 45
+      }
+    },
+    "right": {
+      "label": "Stay inside",
+      "description": "Ignore the dust and stay safe inside the habitat.",
+      "sourceResponse": "Ignore the dust and stay safe inside the habitat.",
+      "effectPercentages": {
+        "oxygen": 10,
+        "energy": -15
+      },
+      "effects": {
+        "oxygen": 6,
+        "energy": -45
+      }
+    }
+  },
+  {
+    "id": "10",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
+    "difficulty": "medium",
+    "description": "Dust blocks sunlight. The base is making less power.",
+    "sourceDescription": "Because we didn't clean the dust off, the solar panels are choking!",
+    "image": "images/cards/10.jpg",
+    "imageAlt": "A dusty solar panel on Mars.",
+    "imageCaption": "A dusty solar panel on Mars.",
+    "imageSource": "https://www.jpl.nasa.gov/images/pia25286-insights-dusty-solar-panel/",
+    "source": {
+      "institution": "NASA JPL",
+      "url": "https://www.jpl.nasa.gov/images/pia25286-insights-dusty-solar-panel/",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Turn off extras",
+      "description": "Shut down non-vital habitat systems to save the remaining battery power.",
+      "sourceResponse": "Shut down non-vital habitat systems to save what is left of our 15 kWh power pool.",
+      "effectPercentages": {
+        "oxygen": -10,
+        "energy": 15
+      },
+      "effects": {
+        "oxygen": -6,
+        "energy": 45
+      }
+    },
+    "right": {
+      "label": "Keep systems on",
+      "description": "Keep all systems running and burn through our emergency battery reserves.",
+      "sourceResponse": "Keep all systems running and burn through our emergency battery reserves.",
+      "effectPercentages": {
+        "oxygen": 15,
+        "energy": -20
+      },
+      "effects": {
+        "oxygen": 9,
+        "energy": -60
+      }
+    }
+  },
+  {
+    "id": "11",
+    "category": "emergency",
+    "probability": 0.3333333333333333,
+    "difficulty": "medium",
+    "description": "A solar flare is coming. Should we use the storm shelter?",
+    "sourceDescription": "Mission control warns of an incoming solar flare! Radiation levels are spiking outside our standard radiation shielding.",
+    "image": "images/cards/11.jpg",
+    "imageAlt": "An illustration of a spacecraft near the Sun.",
+    "imageCaption": "An illustration of a spacecraft near the Sun.",
+    "imageSource": "https://www.space.com/solar-orbiter-takes-closest-look-at-sun",
+    "source": {
+      "institution": "Space.com",
+      "url": "https://www.space.com/solar-orbiter-takes-closest-look-at-sun",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Use the shelter",
+      "description": "Order the crew into the heavily shielded central storm shelter immediately!",
+      "sourceResponse": "Order the crew into the heavily shielded central storm shelter immediately!",
+      "effectPercentages": {},
+      "effects": {}
+    },
+    "right": {
+      "label": "Work outside",
+      "description": "Ignore the warning and keep working outside to maintain food crop modules.",
+      "sourceResponse": "Ignore the warning and keep working outside to maintain food crop modules.",
+      "effectPercentages": {},
+      "effects": {}
+    }
+  },
+  {
+    "id": "12",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
+    "difficulty": "hard",
+    "description": "The water recycler is clogged. Flush it or keep it running?",
+    "sourceDescription": "The Vapor Compression Distillation (VCD) machine that recycles urine and wastewater is clogged with heavy deposits!",
+    "image": "images/cards/12.png",
+    "imageAlt": "An illustration of a space base.",
+    "imageCaption": "An illustration of a space base.",
+    "imageSource": "https://www.boletin.upiita.ipn.mx/Articulos/Detalle/85?utm_source=chatgpt.com",
+    "source": {
+      "institution": "IPN",
+      "url": "https://www.boletin.upiita.ipn.mx/Articulos/Detalle/85?utm_source=chatgpt.com",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Flush the recycler",
+      "description": "Flush the system immediately using extra water and high electrical power to clean it.",
+      "sourceResponse": "Flush the system immediately using extra water and high electrical power to clean it.",
+      "effectPercentages": {
+        "energy": -15,
+        "water": -15
+      },
+      "effects": {
+        "energy": -45,
+        "water": -105
+      }
+    },
+    "right": {
+      "label": "Keep it running",
+      "description": "Ignore the clogging and keep running the dirty machine.",
+      "sourceResponse": "Ignore the clogging and keep running the dirty machine.",
+      "effectPercentages": {
+        "energy": 15,
+        "water": 20
+      },
+      "effects": {
+        "energy": 45,
+        "water": 140
+      }
+    }
+  },
+  {
+    "id": "13",
+    "category": "maintenance",
+    "probability": 0.14285714285714285,
+    "difficulty": "medium",
+    "description": "The water recycler stopped. Wastewater is piling up!",
+    "sourceDescription": "Because we didn't clean the VCD processor, the recycling system completely broke down! Wastewater is piling up",
+    "image": "images/cards/13.jpg",
+    "imageAlt": "A technician tests life-support equipment.",
+    "imageCaption": "A technician tests life-support equipment.",
+    "imageSource": "https://www.esa.int/fr/articles/about-us/who-we-are/member-states/belgium-francais/le-recyclage-de-l-eau-dans-l-espace",
+    "source": {
+      "institution": "ESA",
+      "url": "https://www.esa.int/fr/articles/about-us/who-we-are/member-states/belgium-francais/le-recyclage-de-l-eau-dans-l-espace",
+      "kind": "image"
+    },
+    "left": {
+      "label": "Use stored water",
+      "description": "Open emergency stored water reserves to keep the base hydrated.",
+      "sourceResponse": "Open emergency stored water reserves to keep the base hydrated.",
+      "effectPercentages": {
+        "food": -15,
+        "water": 20
+      },
+      "effects": {
+        "food": -15,
+        "water": 140
+      }
+    },
+    "right": {
+      "label": "Run it anyway",
+      "description": "Force the broken machine to run without repairs, risking total water loss.",
+      "sourceResponse": "Force the broken machine to run without repairs, risking total water loss.",
+      "effectPercentages": {
+        "energy": -20,
+        "water": -25
+      },
+      "effects": {
+        "energy": -60,
+        "water": -175
+      }
+    }
   }
 ]

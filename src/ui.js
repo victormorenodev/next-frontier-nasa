@@ -8,7 +8,7 @@
   // Simple line icons, one per indicator.
   const ICONS = ResourceIcons;
 
-  // Whole numbers for big stocks, decimals for small ones (8.5 g/cm², 0.45 kg/sol).
+  // Whole numbers for big stocks, decimals for small physical stocks (0.45 kg/sol).
   const fmt = n => n.toLocaleString('en-US', {maximumFractionDigits: Math.abs(n) < 1 ? 2 : Math.abs(n) < 100 ? 1 : 0});
   // Trend of a quantity per sol: arrow + amount. Tiny changes count as steady.
   const STEADY = 0.005;
@@ -223,12 +223,12 @@
       const description=document.createElement('p');description.className='resource-description';
       description.textContent=GameData.resources.quantities[p.id].description || CurrentGameData.resources.quantities[p.id]?.description || '';
       const value=document.createElement('div');value.className='value';
-      const amount=document.createElement('strong');amount.className='amount';const display=ResourceDisplay.read(p.id,p.value);amount.textContent=`${fmt(display.value)} ${display.unit}`;
-      const capacity=document.createElement('span');capacity.className='of';capacity.textContent=Copy('resourceCapacity',{max:fmt(display.max),unit:display.unit});
+      const amount=document.createElement('strong');amount.className='amount';const display=ResourceDisplay.read(p.id,p.value);amount.textContent=`${fmt(display.value)}${display.unit==='%'?'%':display.unit?' '+display.unit:''}`;
+      const capacity=document.createElement('span');capacity.className='of';capacity.textContent=Copy('resourceCapacity',{max:fmt(display.max),unit:display.unit==='%'?'':display.unit});
       value.append(amount,capacity);
       const delta=ResourceDisplay.change(p.id,p.value,forecast[p.id]).value;
       const change=document.createElement('p');change.className='resource-change';change.dataset.trend=trendOf(delta);
-      change.textContent=Copy(Math.abs(delta)<STEADY?'resourceSteady':delta<0?(ResourceDisplay.mode==='easy'?'resourceLoseEasy':'resourceLose'):(ResourceDisplay.mode==='easy'?'resourceGainEasy':'resourceGain'),{amount:fmt(Math.abs(delta)),unit:display.unit});
+      change.textContent=Copy(Math.abs(delta)<STEADY?'resourceSteady':delta<0?(ResourceDisplay.mode==='easy'||p.id==='shield'?'resourceLoseEasy':'resourceLose'):(ResourceDisplay.mode==='easy'||p.id==='shield'?'resourceGainEasy':'resourceGain'),{amount:fmt(Math.abs(delta)),unit:display.unit});
       part.append(description,value,change);parts.append(part);
     });
     detail.append(title, parts);
@@ -414,7 +414,7 @@
       const tile = row.querySelector(`[data-id="${ind.id}"]`);
       tile.classList.remove('bump');
       const delta=ResourceDisplay.indicatorChange(ind,before,after);
-      if (ResourceDisplay.mode === 'easy' && delta === 0) return;
+      if ((ResourceDisplay.mode === 'easy' || ind.id === 'shield') && delta === 0) return;
       tile.dataset.change=delta>0?'up':'down';
       const slot=tile.parentElement;
       const label=slot.querySelector('.resource-delta');label.replaceChildren();
