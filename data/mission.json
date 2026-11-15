@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "totalSols": 40,
+  "totalSols": 35,
   "crew": 4,
   "solHours": 24.6597,
   "eventChances": {
@@ -13,7 +13,8 @@
         "easy",
         "medium"
       ],
-      "display": "percentage"
+      "display": "percentage",
+      "initialResourceFraction": 0.75
     },
     "hard": {
       "allowedCardDifficulties": [
@@ -21,7 +22,9 @@
         "medium",
         "hard"
       ],
-      "display": "physical"
+      "display": "physical",
+      "initialResourceFraction": 0.5
     }
-  }
+  },
+  "dailyCostMultiplier": 3
 }

@@ -2,26 +2,26 @@
   {
     "id": "routine",
     "name": "Routine",
-    "probability": 0.35
+    "probability": 0.2903225806451613
   },
   {
     "id": "maintenance",
     "name": "Maintenance",
-    "probability": 0.25
+    "probability": 0.2903225806451613
   },
   {
     "id": "exploration",
     "name": "Exploration",
-    "probability": 0.2
+    "probability": 0.03225806451612903
   },
   {
     "id": "science",
     "name": "Science",
-    "probability": 0.15
+    "probability": 0.16129032258064516
   },
   {
     "id": "emergency",
     "name": "Emergency",
-    "probability": 0.05
+    "probability": 0.22580645161290322
   }
 ]

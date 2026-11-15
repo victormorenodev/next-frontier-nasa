@@ -1,13 +1,13 @@
 /* Indicator system.
    Holds the base's quantities and derives the five indicators from them.
    No DOM here, so it also runs in Node for tests.
-   Every quantity has a physical unit; values stay between 0 and their max. */
+   Shield is a percentage score; other quantities use physical units; values stay between 0 and their max. */
 (function (root) {
   'use strict';
 
   // Each quantity the base keeps track of, with its unit (`unit` short, `unitName` in words).
-  // Start/max values come from the earlier prototype (see docs/RESEARCH.md, historical prototype parameters): prototype choices,
-  // not measured equipment. `max` is the storage capacity used to draw how full it is.
+  // Max values are game capacities, not measured equipment. Engine.start applies the
+  // configured fraction for the mode; start remains the fallback for legacy settings.
   const QUANTITIES = GameData.resources.quantities;
   const INDICATORS = GameData.resources.indicators;
 
@@ -37,8 +37,8 @@
 
   // What the interface needs for each indicator.
   // An indicator's level is its lowest part: plenty of water must not hide low oxygen.
-  function read(state) {
-    return INDICATORS.map(ind => {
+  function read(state, definitions = INDICATORS) {
+    return definitions.map(ind => {
       const parts = ind.parts.map(key => ({
         id: key,
         name: QUANTITIES[key].name,
@@ -53,6 +53,9 @@
     });
   }
 
-  const api = {QUANTITIES, INDICATORS, createState, change, apply, level, read};
+  // Actual depletion only: a rounded display of zero is not failure.
+  const depleted = state => Object.keys(QUANTITIES).find(q => state[q] <= 0) || null;
+
+  const api = {depleted, QUANTITIES, INDICATORS, createState, change, apply, level, read};
    root.Indicators = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -1,0 +1,384 @@
+[
+  {
+    "id": "air-pressure",
+    "term": "Air pressure",
+    "aliases": [
+      "air pressure"
+    ],
+    "definition": "How strongly the air pushes on the walls around it. A leak can make this pressure fall."
+  },
+  {
+    "id": "baseline",
+    "term": "Baseline",
+    "aliases": [
+      "baseline"
+    ],
+    "definition": "The normal starting level used to compare changes."
+  },
+  {
+    "id": "bleo",
+    "term": "BLEO",
+    "aliases": [
+      "BLEO",
+      "beyond low Earth orbit"
+    ],
+    "definition": "Short for “Beyond Low Earth Orbit”: regions beyond low Earth orbit, including journeys to the Moon and Mars."
+  },
+  {
+    "id": "bypass",
+    "term": "Bypass",
+    "aliases": [
+      "bypass"
+    ],
+    "definition": "An extra route around a blocked or damaged part of a system."
+  },
+  {
+    "id": "canister",
+    "term": "Canister",
+    "aliases": [
+      "canisters",
+      "canister"
+    ],
+    "definition": "A strong container. Some canisters hold chemicals that help clean the air."
+  },
+  {
+    "id": "carbon-dioxide",
+    "term": "Carbon dioxide (CO₂)",
+    "aliases": [
+      "carbon dioxide",
+      "CO₂",
+      "CO2"
+    ],
+    "definition": "A gas that makes up most of the air on Mars."
+  },
+  {
+    "id": "contamination",
+    "term": "Contamination",
+    "aliases": [
+      "contaminated",
+      "contaminating",
+      "contamination"
+    ],
+    "definition": "When unwanted germs or chemicals get into something, such as food or plants."
+  },
+  {
+    "id": "crop",
+    "term": "Crop",
+    "aliases": [
+      "crops",
+      "crop"
+    ],
+    "definition": "Plants grown for food or other useful materials."
+  },
+  {
+    "id": "electrolysis",
+    "term": "Electrolysis",
+    "aliases": [
+      "electrolysis"
+    ],
+    "definition": "Using electricity to split water into oxygen and another gas called hydrogen."
+  },
+  {
+    "id": "electromagnetic-shield",
+    "term": "Electromagnetic shield",
+    "aliases": [
+      "active electromagnetic shield",
+      "electromagnetic shield"
+    ],
+    "definition": "An experimental idea for using powered magnets to turn some harmful space particles away."
+  },
+  {
+    "id": "experiment",
+    "term": "Experiment",
+    "aliases": [
+      "experiments",
+      "experiment"
+    ],
+    "definition": "A planned test that helps scientists answer a question."
+  },
+  {
+    "id": "eva",
+    "term": "Extravehicular activity (EVA)",
+    "aliases": [
+      "extravehicular activity",
+      "EVA",
+      "spacewalking",
+      "spacewalk"
+    ],
+    "definition": "Work outside a spacecraft or base while wearing a spacesuit."
+  },
+  {
+    "id": "filter",
+    "term": "Filter",
+    "aliases": [
+      "air-cleaning system",
+      "air-cleaning equipment",
+      "air filter",
+      "air filters",
+      "filters",
+      "filter"
+    ],
+    "definition": "A device that removes unwanted material from air or water."
+  },
+  {
+    "id": "fungus",
+    "term": "Fungus",
+    "aliases": [
+      "fungus",
+      "fungi"
+    ],
+    "definition": "A living thing, such as mold. Some kinds can damage plants."
+  },
+  {
+    "id": "greenhouse",
+    "term": "Greenhouse",
+    "aliases": [
+      "greenhouses",
+      "greenhouse"
+    ],
+    "definition": "A closed space where we can control conditions to grow plants."
+  },
+  {
+    "id": "habitat",
+    "term": "Habitat",
+    "aliases": [
+      "habitats",
+      "habitat"
+    ],
+    "definition": "A place built for astronauts to live and work safely."
+  },
+  {
+    "id": "life-support",
+    "term": "Life support",
+    "aliases": [
+      "life-support",
+      "life support"
+    ],
+    "definition": "Systems that provide things astronauts need to stay alive, such as breathable air and clean water."
+  },
+  {
+    "id": "lithium-hydroxide",
+    "term": "Lithium hydroxide (LiOH)",
+    "aliases": [
+      "lithium hydroxide",
+      "LiOH"
+    ],
+    "definition": "A chemical used in special filters to remove carbon dioxide from the air."
+  },
+  {
+    "id": "module",
+    "term": "Module",
+    "aliases": [
+      "compartments",
+      "compartment",
+      "modules",
+      "module"
+    ],
+    "definition": "A separate section of a spacecraft or base, used for living, working or storing supplies."
+  },
+  {
+    "id": "moxie",
+    "term": "MOXIE",
+    "aliases": [
+      "MOXIE"
+    ],
+    "definition": "A machine that showed we can make oxygen from the air on Mars."
+  },
+  {
+    "id": "orbit",
+    "term": "Orbit",
+    "aliases": [
+      "orbiting",
+      "orbital",
+      "orbit"
+    ],
+    "definition": "The curved path a spacecraft or other object follows around a planet, moon or star."
+  },
+  {
+    "id": "oxygen",
+    "term": "Oxygen",
+    "aliases": [
+      "oxygen"
+    ],
+    "definition": "A gas that people need to breathe to stay alive."
+  },
+  {
+    "id": "oxygen-generator",
+    "term": "Oxygen generation system (OGS)",
+    "aliases": [
+      "oxygen generation system",
+      "oxygen generators",
+      "oxygen generator",
+      "OGS"
+    ],
+    "definition": "Equipment that uses electricity to make oxygen from water."
+  },
+  {
+    "id": "power-grid",
+    "term": "Power grid",
+    "aliases": [
+      "power grid",
+      "grid"
+    ],
+    "definition": "The connected wires and equipment that carry electricity where it is needed."
+  },
+  {
+    "id": "radiation",
+    "term": "Radiation",
+    "aliases": [
+      "radiation"
+    ],
+    "definition": "Energy that travels as waves or particles. Some kinds can harm astronauts."
+  },
+  {
+    "id": "radiation-shield",
+    "term": "Radiation shield",
+    "aliases": [
+      "radiation shielding",
+      "radiation shield",
+      "shielded"
+    ],
+    "definition": "Protection that reduces the radiation reaching astronauts. It does not block every kind of radiation."
+  },
+  {
+    "id": "regolith",
+    "term": "Regolith",
+    "aliases": [
+      "regolith"
+    ],
+    "definition": "The dust, sand and small rocks covering the surface of Mars."
+  },
+  {
+    "id": "reservoir",
+    "term": "Reservoir",
+    "aliases": [
+      "reservoirs",
+      "reservoir"
+    ],
+    "definition": "A tank or other place where water is stored for later use."
+  },
+  {
+    "id": "rover",
+    "term": "Rover",
+    "aliases": [
+      "exploration vehicle",
+      "rovers",
+      "rover"
+    ],
+    "definition": "A vehicle that travels across the surface of a planet to explore it."
+  },
+  {
+    "id": "sabatier-reactor",
+    "term": "Sabatier reactor",
+    "aliases": [
+      "Sabatier reactor",
+      "Sabatier"
+    ],
+    "definition": "A machine that uses carbon dioxide and hydrogen to make water. The water can be used again."
+  },
+  {
+    "id": "sensor",
+    "term": "Sensor",
+    "aliases": [
+      "sensors",
+      "sensor"
+    ],
+    "definition": "A device that measures something, such as heat or air pressure."
+  },
+  {
+    "id": "solar-collector",
+    "term": "Solar collector",
+    "aliases": [
+      "solar collectors",
+      "solar collector"
+    ],
+    "definition": "Equipment that collects energy from sunlight, often as heat."
+  },
+  {
+    "id": "solar-energetic-particles",
+    "term": "Solar energetic particles (SEP)",
+    "aliases": [
+      "solar energetic particles",
+      "SEP surge",
+      "SEP"
+    ],
+    "definition": "Tiny, fast-moving particles from the Sun that can harm astronauts and equipment."
+  },
+  {
+    "id": "solar-flare",
+    "term": "Solar flare",
+    "aliases": [
+      "solar flares",
+      "solar flare"
+    ],
+    "definition": "A sudden, powerful burst of light and other radiation from the Sun."
+  },
+  {
+    "id": "solar-panel",
+    "term": "Solar panel",
+    "aliases": [
+      "solar panels",
+      "solar panel",
+      "solar arrays",
+      "solar array"
+    ],
+    "definition": "Equipment that uses sunlight to make electricity."
+  },
+  {
+    "id": "solar-storm",
+    "term": "Solar storm",
+    "aliases": [
+      "solar storms",
+      "solar storm"
+    ],
+    "definition": "Strong activity on the Sun that can send dangerous particles into space."
+  },
+  {
+    "id": "storm-shelter",
+    "term": "Storm shelter",
+    "aliases": [
+      "central storm shelter",
+      "storm shelter",
+      "shelter"
+    ],
+    "definition": "A protected place where astronauts can wait during dangerous space weather."
+  },
+  {
+    "id": "valve",
+    "term": "Valve",
+    "aliases": [
+      "valves",
+      "valve"
+    ],
+    "definition": "A part that opens or closes to control the flow of a gas or liquid."
+  },
+  {
+    "id": "vcd",
+    "term": "Vapor Compression Distillation (VCD)",
+    "aliases": [
+      "Vapor Compression Distillation",
+      "VCD"
+    ],
+    "definition": "A water-recycling machine that turns water in waste into a gas, then cools it back into liquid water."
+  },
+  {
+    "id": "vent",
+    "term": "Vent",
+    "aliases": [
+      "venting",
+      "vent"
+    ],
+    "definition": "To let air or another gas out through an opening."
+  },
+  {
+    "id": "water-recycling",
+    "term": "Water recycling",
+    "aliases": [
+      "water recycling",
+      "recycling water",
+      "water recycler",
+      "recycler"
+    ],
+    "definition": "Cleaning used water so we can use it again."
+  }
+]

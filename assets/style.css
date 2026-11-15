@@ -98,6 +98,32 @@ main {
   .end-button:not(:disabled):hover { background: color-mix(in srgb, var(--page-danger) 16%, transparent); }
 }
 
+/* Sound toggle: speaker with waves when on, crossed when off. */
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+.sound-toggle svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sound-toggle .sound-mute { display: none; }
+.sound-toggle.muted .sound-mute { display: inline; }
+.sound-toggle.muted .sound-waves { display: none; }
+.sound-icon-button {
+  display: grid;
+  place-items: center;
+  width: 44px;                   /* same touch size as End mission */
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--page-text);
+  background: transparent;
+  color: var(--page-text);
+  cursor: pointer;
+  opacity: .85;
+}
+.sound-icon-button svg { width: 22px; height: 22px; }
+.sound-icon-button:focus-visible { outline: 3px solid var(--page-text); outline-offset: 3px; }
+@media (hover: hover) {
+  .sound-icon-button:hover { opacity: 1; background: color-mix(in srgb, var(--page-text) 12%, transparent); }
+}
+
 /* ── Indicator row ─────────────────────────────── */
 .indicators {
   flex-shrink: 0;
@@ -105,7 +131,7 @@ main {
   max-width: 460px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));   /* minmax(0) stops the SVGs from widening the row */
+  grid-template-columns: repeat(var(--indicator-count, 5), minmax(0, 1fr));   /* minmax(0) stops the SVGs from widening the row */
   gap: 7px;
   touch-action: none;          /* sliding a finger across the row reads each indicator */
   user-select: none;
@@ -688,6 +714,8 @@ main { position: relative; z-index: 1; }
   .sol strong { font-size: 32px; }
   .sol small { font-size: 17px; }
   .end-button { min-height: 54px; padding-inline: 22px; font-size: 18px; border-radius: 28px; }
+  .sound-icon-button { width: 54px; height: 54px; }
+  .sound-icon-button svg { width: 26px; height: 26px; }
   .indicators { gap: 16px; }
   .tile { border-radius: 22px; }
   .tile .trend { right: 9px; bottom: 7px; font-size: 18px; }
@@ -1074,4 +1102,163 @@ main {
   .difficulty-option { padding-block: 12px; }
   .difficulty-option small { font-size: 12px; }
   .difficulty-back { margin-top: 8px; }
+}
+
+/* Hard mission effects: three permanent slots, with details above the panel. */
+.effect-panel { position: relative; flex-shrink: 0; align-self: center; margin-top: 10px; padding: 8px 12px; border: 1px solid #8694ad; border-radius: 16px; background: #222b3df5; box-shadow: 0 4px 16px #0005; z-index: 5; }
+.effect-slots { display: flex; gap: 10px; }
+.effect-slot { width: 48px; height: 48px; border: 1px solid #78869b; border-radius: 8px; background: #131c2e; }
+.effect-icon { display: flex; flex-wrap: wrap; align-content: center; align-items: center; justify-content: center; gap: 2px; width: 100%; height: 100%; padding: 5px; border: 0; border-radius: 7px; background: #354b60; color: #d3f4ed; cursor: pointer; }
+.effect-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.effect-icon:focus-visible { outline: 3px solid #b9efdf; outline-offset: 2px; }
+.effect-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: min(300px, calc(100vw - 56px)); max-height: 45dvh; overflow-y: auto; padding: 14px; border: 1px solid #93b6c1; border-radius: 12px; background: #182c35; color: #edf6f5; box-shadow: 0 6px 24px #0008; font-size: 14px; line-height: 1.4; }
+.effect-tooltip strong { display: block; margin-bottom: 8px; }
+.effect-tooltip p { margin: 5px 0 0; }
+.effect-panel:not(.dismissed) .effect-slot:focus-within .effect-tooltip, .effect-panel:not(.dismissed) .effect-slot.is-open .effect-tooltip { display: block; }
+@media (hover: hover) { .effect-panel:not(.dismissed) .effect-slot:hover .effect-tooltip { display: block; } }
+@media (max-height: 699px) and (orientation: landscape) { .effect-panel { grid-column: 1; grid-row: 4; margin: 0; justify-self: center; } }
+
+
+@media (max-height: 699px) and (orientation: landscape) {
+  #detail.life-support-detail { top: 0; padding: 6px 10px; }
+  .life-support-detail > .resource-description { font-size: 11px; line-height: 1.25; margin: 3px 0; }
+  .life-support-detail .resource-change { font-size: 11px; line-height: 1.25; margin: 3px 0; }
+}
+
+/* Endings use the available area so the explanation and restart fit small screens. */
+.card-slot.ended { width: min(100cqw, 480px); height: 100cqh; min-height: 0; aspect-ratio: auto; padding: clamp(10px, 3cqw, 24px); gap: 10px; }
+.card-slot.ended h2 { font-size: clamp(28px, 7cqw, 36px); line-height: 1.15; }
+.card-slot.ended p { font-size: clamp(18px, 4.5cqw, 22px); line-height: 1.4; }
+
+.card-area { container-name: mission-stage; }
+.ending-icon { width: 80px; height: 80px; fill: none; stroke: #ffb0a2; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+[data-ending=complete] .ending-icon { stroke: #a3e6b0; }
+[data-ending=quit] .ending-icon { stroke: #bcd7ee; }
+@container mission-stage (max-height: 360px) {
+  .card-slot.ended { grid-template-columns: 44px minmax(0, 1fr); column-gap: 10px; row-gap: 10px; }
+  .ending-icon { width: 44px; height: 44px; align-self: center; }
+  .card-slot.ended h2 { justify-self: start; text-align: left; }
+  .card-slot.ended p, .card-slot.ended .new-mission { grid-column: 1 / -1; }
+}
+
+@media (max-width: 599px) and (max-height: 650px) and (orientation: portrait) {
+  .difficulty-panel .briefing-eyebrow, .difficulty-panel .difficulty-intro { display: none; }
+  .difficulty-panel h1 { margin-top: 0; }
+}
+
+/* Approved illustrated failure cards already contain their title and explanation. */
+.card-slot.ended.illustrated-ending { display: flex; flex-direction: column; align-items: center; width: min(100cqw, 480px); height: 100cqh; min-height: 0; padding: 0; border: 0; background: none; gap: 10px; }
+.ending-art { display: block; flex: 1 1 0; min-height: 0; width: 100%; object-fit: contain; }
+.illustrated-ending .new-mission { flex: 0 0 auto; max-width: 100%; min-height: 48px; padding-inline: 16px; }
+.ending-accessible-copy { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px !important; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Mobile-first entry menu: one centered column at every viewport size. */
+.main-menu { position: fixed; inset: 0; display: grid; place-items: center; isolation: isolate; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); background: #211f38 url('images/mars-menu.svg?v=20261115-menu3') 79% bottom / cover no-repeat; }
+.main-menu::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 50% 45%, #171a2be8, #1d1d3099 55%, #24203133), linear-gradient(#171a2b88, #171a2b33); }
+.main-menu::after { content: ''; position: absolute; inset: 16px; border: 1px solid #b3aaa42e; border-radius: 22px; pointer-events: none; }
+.main-menu-content { width: min(100%, 360px); position: relative; text-align: center; }
+.menu-orbit { display: block; width: 48px; height: 30px; fill: none; stroke: #e0ad80; stroke-width: 1.5; margin: 0 auto 16px; }
+.main-menu h1 { margin: 0 0 24px; line-height: .96; letter-spacing: -.045em; text-shadow: 0 4px 32px #10121c80; }
+.menu-title-next { display: block; color: #ddb28f; font-size: 26px; font-weight: 500; letter-spacing: .12em; margin-bottom: 6px; }
+.menu-title-frontier { display: block; color: #fff1de; font-size: clamp(55px, 15vw, 68px); font-weight: 800; }
+.main-menu-actions { display: grid; gap: 10px; width: 100%; }
+.main-menu-actions button { display: grid; grid-template-columns: 23px minmax(0, 1fr) 23px; align-items: center; gap: 10px; width: 100%; min-height: 56px; border: 1px solid #a4b1c04a; border-radius: 12px; background: #252b3df5; padding: 12px 14px; color: #e9e7e3; font: inherit; font-size: 17px; font-weight: 650; text-align: center; cursor: pointer; box-shadow: 0 5px 16px #10121e20; }
+.main-menu-actions button svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.main-menu-actions #menu-start { background: #dfb38c; border-color: #f1d2b2; color: #292733; box-shadow: inset 0 1px #fff2dc6e, 0 5px 20px #0e101b40; }
+#menu-start svg { fill: currentColor; stroke: none; }
+.menu-action-arrow { font-size: 24px; line-height: 1; font-weight: 400; }
+.main-menu-actions button:not(:disabled):hover { background: #344056; border-color: #bac8d4; }
+.main-menu-actions #menu-start:hover { background: #edc6a3; border-color: #ffe2c8; }
+.main-menu-actions button:disabled { background: #242839; border-color: #777e8e40; color: #969aaa; cursor: default; box-shadow: none; }
+.main-menu-actions button:focus-visible, .menu-dialog button:focus-visible { outline: 3px solid #f6dbaf; outline-offset: 4px; }
+.menu-save-note { display: table; max-width: 100%; margin: 12px auto 0; padding: 6px 10px; border-radius: 6px; background: #1a1e2ee8; color: #b7bdca; font-size: 13px; }
+.menu-dialog { width: min(calc(100vw - 48px), 520px); max-height: calc(100dvh - 48px); padding: 28px; border: 1px solid #8d9aa8; border-radius: 20px; background: #25283b; color: #f7f1e6; box-shadow: 0 24px 80px #0008; }
+.menu-dialog::backdrop { background: #101324bd; }
+.menu-dialog h2 { margin: 0 0 20px; font-size: 28px; }
+.menu-dialog p { margin: 0 0 16px; font-size: 16px; line-height: 1.45; }
+.menu-dialog button { width: 100%; min-height: 48px; margin-top: 8px; padding: 12px; border: 1px solid #f1d2b2; border-radius: 10px; background: #dfb38c; color: #292733; font: inherit; font-size: 17px; font-weight: 650; cursor: pointer; }
+@media (min-width: 768px) and (min-height: 600px) {
+  .main-menu { padding: 40px; }
+  .main-menu-content { width: min(100%, 440px); }
+  .menu-orbit { width: 62px; height: 40px; margin-bottom: 20px; }
+  .main-menu h1 { margin-bottom: 32px; }
+  .menu-title-next { font-size: 34px; margin-bottom: 10px; }
+  .menu-title-frontier { font-size: 88px; }
+  .main-menu-actions { gap: 12px; }
+  .main-menu-actions button { min-height: 62px; padding: 14px 20px; font-size: 19px; }
+}
+@media (max-height: 500px) {
+  .main-menu { padding-block: max(20px, env(safe-area-inset-top)); }
+  .main-menu-content { width: min(100%, 360px); }
+  .menu-orbit { display: none; }
+  .main-menu h1 { margin-bottom: 20px; }
+  .menu-title-next { font-size: 22px; margin-bottom: 4px; }
+  .menu-title-frontier { font-size: 50px; }
+  .main-menu-actions { gap: 8px; }
+  .main-menu-actions button { min-height: 46px; padding-block: 8px; font-size: 16px; }
+  .menu-save-note { font-size: 12px; }
+  .menu-dialog { padding: 18px 24px; }
+  .menu-dialog h2 { margin-bottom: 12px; }
+  .menu-dialog p { margin-bottom: 10px; font-size: 14px; }
+}
+
+/* Onboarding highlights real elements without sending choices to the engine. */
+.tutorial-dialog { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); overflow: hidden; touch-action: pan-y; }
+.tutorial-dialog::backdrop { background: transparent; }
+.tutorial-spotlight { position: fixed; pointer-events: none; border: 3px solid #f3ce9d; border-radius: 18px; box-shadow: 0 0 0 150vmax #101324c9, 0 0 20px #f3ce9d55; }
+.tutorial-panel { position: fixed; display: flex; flex-direction: column; gap: 8px; width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 14px; border: 1px solid #bea68b; border-radius: 18px; background: #282b40; box-shadow: 0 12px 44px #0007; }
+.tutorial-header, .tutorial-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.tutorial-panel button { min-height: 44px; padding: 8px 16px; border: 1px solid #f1d2b2; border-radius: 10px; background: #dfb38c; color: #292733; font: inherit; font-weight: 750; font-size: 16px; cursor: pointer; }
+.tutorial-panel #tutorial-skip { min-height: 44px; padding: 5px 8px; border-color: #a7afc570; background: transparent; color: #e9e6e0; font-size: 13px; font-weight: 600; }
+.tutorial-panel button:focus-visible { outline: 3px solid #f6dbaf; outline-offset: 3px; }
+.tutorial-copy { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.tutorial-copy h2 { margin: 0 0 8px; font-size: 21px; line-height: 1.2; }
+#tutorial-body p { margin: 0; font-size: 16px; line-height: 1.4; }
+#tutorial-body p + p { margin-top: 10px; }
+#tutorial-body .resource-change { font-size: 15px; }
+.tutorial-footer button { flex-shrink: 0; }
+.card3d.tutorial-demo { animation: tutorial-card-swipe 2.4s ease-in-out infinite; }
+@keyframes tutorial-card-swipe { 0%, 48%, 100% { transform: translateX(0) rotate(0); } 22% { transform: translateX(-18px) rotate(-3deg); } 75% { transform: translateX(18px) rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .card3d.tutorial-demo { animation: none; } }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  #game.tutorial-card-step > .card-area { margin-top: calc(76px + var(--tutorial-card-offset, 0px)); }
+}
+
+.tutorial-header, .tutorial-footer { justify-content: flex-end; }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  #game.tutorial-card-step #effect-panel { display: none; }
+}
+
+/* Authored event text stays readable inside the smallest portrait cards. */
+@container card (max-width: 240px) {
+  .card-text { font-size: 14px; line-height: 1.3; margin-block: 8px; }
+  .answer { font-size: 12px; }
+}
+
+/* Glossary text stays inline; explanations use the top layer, outside card clipping. */
+.glossary-term { color: #b9e9ff; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.glossary-term:focus-visible { outline: 2px solid #f6dbaf; outline-offset: 2px; border-radius: 2px; }
+.glossary-tooltip { position: fixed; inset: auto; margin: 0; width: min(280px, calc(100vw - 16px)); box-sizing: border-box; padding: 14px 16px; border: 1px solid #b9e9ff; border-radius: 12px; background: #202538; color: #fff5e9; font: 16px/1.4 system-ui, sans-serif; box-shadow: 0 8px 32px #0008; }
+.glossary-tooltip strong { display: block; color: #b9e9ff; margin-bottom: 6px; }
+.glossary-tooltip p { margin: 0; }
+.glossary-dialog { overflow-y: auto; }
+.glossary-dialog dl { margin: 0; }
+.glossary-dialog dt { color: #b9e9ff; font-size: 18px; font-weight: 700; margin: 18px 0 6px; }
+.glossary-dialog dd { margin: 0; font-size: 16px; line-height: 1.45; }
+.glossary-dialog #glossary-close { position: sticky; bottom: 0; margin-top: 20px; }
+.glossary-dialog[open] { display: flex; flex-direction: column; overflow: hidden; max-height: calc(100dvh - 48px); }
+.glossary-dialog h2 { flex-shrink: 0; }
+.glossary-dialog dl { min-height: 0; overflow-y: auto; padding-right: 8px; }
+.glossary-dialog #glossary-close { position: static; flex-shrink: 0; }
+
+/* Mission selection follows the same left/right gesture as decision cards. */
+.difficulty-panel { touch-action: pan-y; transition: transform .18s ease; user-select: none; }
+.difficulty-panel.dragging { transition: none; cursor: grabbing; }
+.difficulty-option.lean { background: #625577; box-shadow: inset 0 0 0 2px #f1d2b2; }
+.difficulty-option strong { font-size: clamp(18px, 3vw, 28px); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { .difficulty-panel { transition: none; } }
+@media (max-width: 599px) and (max-height: 650px) and (orientation: portrait) {
+  .difficulty-panel .difficulty-intro { display: block; margin-bottom: 12px; font-size: 13px; }
 }

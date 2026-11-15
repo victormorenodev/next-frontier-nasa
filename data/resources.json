@@ -5,7 +5,7 @@
       "unit": "kg",
       "unitName": "kilograms",
       "start": 60,
-      "max": 60,
+      "max": 200,
       "description": "Air for your crew to breathe."
     },
     "water": {
@@ -13,23 +13,23 @@
       "unit": "L",
       "unitName": "liters",
       "start": 600,
-      "max": 700,
+      "max": 1900,
       "description": "Water for your crew to drink and use in the base."
     },
     "shield": {
       "name": "Shield",
-      "unit": "g/cm²",
-      "unitName": "grams per square centimeter",
-      "start": 8,
-      "max": 10,
-      "description": "Material around the shelter helps protect your crew from radiation."
+      "unit": "%",
+      "unitName": "percent",
+      "start": 80,
+      "max": 100,
+      "description": "Shows how well the astronauts are protected from radiation."
     },
     "energy": {
       "name": "Energy",
       "unit": "kWh",
       "unitName": "kilowatt-hours",
       "start": 240,
-      "max": 300,
+      "max": 1480,
       "description": "Stored power keeps the lights and machines running."
     },
     "food": {
@@ -37,7 +37,7 @@
       "unit": "kg",
       "unitName": "kilograms of dry food",
       "start": 100,
-      "max": 100,
+      "max": 235,
       "description": "Food gives your crew energy to work and explore."
     }
   },
@@ -87,5 +87,16 @@
       "icon": "food",
       "color": "#7ddc8a"
     }
-  ]
+  ],
+  "easyLifeSupport": {
+    "id": "life-support",
+    "name": "Life Support",
+    "parts": [
+      "oxygen",
+      "water"
+    ],
+    "icon": "health",
+    "color": "#70dfc2",
+    "description": "Life Support combines the oxygen you breathe and the water you drink."
+  }
 }

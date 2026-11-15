@@ -8,11 +8,17 @@ const I = require('./load-engine.cjs').Indicators;
 // Small seeded random so results are repeatable.
 const seeded = seed => () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 
-// Every card is valid; ids are unique; there are 10 mock cards.
+// The authored catalog contains 31 unique IDs with runtime image lookup.
 CARDS.forEach(c => assert.deepEqual(D.validateCard(c), [], c.id));
-assert.equal(CARDS.length, 10);
+assert.equal(CARDS.length, 31);
 assert.equal(new Set(CARDS.map(c => c.id)).size, CARDS.length);
-assert.ok(CARDS.every(c => c.mock));
+assert.ok(CARDS.every(c => !c.mock));
+assert.deepEqual(CARDS.map(c=>c.id),['5','9','11','14','15','16','17','18','19','20','21','22','23','24','26','27','29','1','2','3','4','page1-5','6','7','8','page1-9','10','page1-11','12','13','25']);
+for(const c of CARDS){
+ assert.equal(c.imageById,true);
+ assert.ok(['jpg','png','jpeg'].some(ext=>require('node:fs').existsSync(`images/cards/${c.imageId}.${ext}`)),c.id+' needs an image');
+}
+
 
 // Validation catches bad data.
 const bad = {...CARDS[0], difficulty: 'super', left: {label: 'x', effects: {gold: 1}}};
@@ -29,6 +35,7 @@ const deck = D.createDeck(CARDS, 100000, seeded(42));
 const counts = {};
 for (const c of deck) counts[c.category] = (counts[c.category] || 0) + 1;
 for (const category of categories) {
+  assert.equal(category.probability,CARDS.filter(c=>c.category===category.id).length/CARDS.length);
   assert.ok(Math.abs(counts[category.id] / deck.length - category.probability) < 0.006, category.id);
   const members=CARDS.filter(c=>c.category===category.id);
   for(const card of members){
@@ -42,8 +49,8 @@ const only={...CARDS[0],category:'solo',probability:1};
 assert.equal(D.createDeck([only],5,()=>0,[{id:'solo',name:'Solo',probability:1}]).length,5);
 let rolls=[0.35,0];
 assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].category,'maintenance');
-rolls=[0,0.5];
-assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].id,CARDS.find(c=>c.category==='routine'&&c.id!==repeats[0].id).id);
+rolls=[.96,.5];
+assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].id,CARDS.filter(c=>c.category==='emergency')[3].id);
 assert.throws(()=>D.createDeck(CARDS,1,()=>1));
 assert.throws(()=>D.createDeck(CARDS,-1));
 const disabled=[{...only,probability:0},{...only,id:'enabled',probability:1}];
@@ -56,19 +63,17 @@ const easyDeck=D.createDeck(fixtureCards,20,()=>.99,fixtureCategories,['easy','m
 assert.ok(easyDeck.every(c=>c.id==='safe'));
 assert.throws(()=>D.createDeck(fixtureCards,1,()=>0,fixtureCategories,['medium']));
 assert.equal(fixtureCards[0].probability,1);
+const easyCatalog=D.createDeck(CARDS,1000,seeded(8),categories,['easy','medium']);
+assert.ok(easyCatalog.every(c=>c.difficulty!=='hard'));
+assert.ok(new Set(D.createDeck(CARDS,20000,seeded(9),categories).map(c=>c.id)).size===31);
 
-// Answer effects change the indicators, and water ↔ shield keeps the mass (100 L = 0.5 g/cm²).
-const storm = CARDS.find(c => c.id === 'mock-solar-storm');
-const s0 = I.createState(), s1 = I.apply(s0, storm.right.effects);
-assert.equal(s1.water, s0.water - 100);
-assert.equal(s1.shield, s0.shield + 0.5);
-const kg = s => s.water + s.shield * 10 * 20; // L of water + (g/cm² → kg/m²) × 20 m²
-assert.equal(kg(s1), kg(s0));
-
-// Taking water back from the shield must fit in the tank at the start of a game (no mass lost).
-const thirsty = CARDS.find(c => c.id === 'mock-thirsty-crew');
-const s2 = I.apply(s0, thirsty.left.effects);
-assert.equal(kg(s2), kg(s0));
+// Shield is a 0–100 score; sheet p values are additive points.
+const s0=I.createState();
+assert.equal(I.apply(s0,CARDS.find(c=>c.id==='11').left.effects).shield,78);
+assert.equal(I.apply(s0,CARDS.find(c=>c.id==='11').right.effects).shield,68);
+assert.equal(I.apply(s0,{shield:50}).shield,100);
+assert.equal(I.apply(s0,{shield:-100}).shield,0);
+assert.equal(I.apply(s0,{shield:5}).water,s0.water);
 
 // Mission schedules can request no cards or as many as 80.
 assert.deepEqual(D.createDeck(CARDS, 0), []);

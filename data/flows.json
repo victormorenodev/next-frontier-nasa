@@ -2,49 +2,33 @@
   {
     "id": "breathing",
     "quantity": "oxygen",
-    "kind": "reference",
-    "note": "4 astronauts breathe (0.84 kg O\u2082 per person per Earth day, NASA NTRS 20160005782)",
-    "amount": -0.84,
-    "basis": "perCrewEarthDay"
-  },
-  {
-    "id": "oxygen-maker",
-    "quantity": "oxygen",
     "kind": "simulated",
-    "note": "Machine that makes oxygen",
+    "note": "Daily oxygen use for the four-person base",
     "basis": "perSol",
-    "amount": 3
-  },
-  {
-    "id": "eating",
-    "quantity": "food",
-    "kind": "reference",
-    "note": "4 astronauts eat (0.62 kg dry food per person per Earth day, NASA NTRS 20160005782)",
-    "amount": -0.62,
-    "basis": "perCrewEarthDay"
+    "amount": -3.5
   },
   {
     "id": "water-loss",
     "quantity": "water",
     "kind": "simulated",
-    "note": "Recycling does not get every drop back",
+    "note": "Daily water loss for the four-person base",
     "basis": "perSol",
-    "amount": -4
-  },
-  {
-    "id": "solar-panels",
-    "quantity": "energy",
-    "kind": "simulated",
-    "note": "Daily solar energy budget",
-    "basis": "perSol",
-    "amount": 100
+    "amount": -10
   },
   {
     "id": "base-power",
     "quantity": "energy",
     "kind": "simulated",
-    "note": "Lights, heaters, computers",
+    "note": "Daily energy use for the base",
     "basis": "perSol",
-    "amount": -60
+    "amount": -5
+  },
+  {
+    "id": "eating",
+    "quantity": "food",
+    "kind": "simulated",
+    "note": "Daily dry food use for the four-person base",
+    "basis": "perSol",
+    "amount": -2.6
   }
 ]
