@@ -10,7 +10,7 @@ Consolidada em **15/11/2026** a partir do código atual. Este documento descreve
 | `data/mission.json` | Tripulação, duração do sol, duração da missão, eventos/sol e configurações dos modos |
 | `data/resources.json` | Quantidades, capacidades, unidades, descrições e indicadores |
 | `data/categories.json` | IDs, nomes e probabilidades das categorias |
-| `data/cards.json` | Treze cartas do CSV, escolhas, descrições, percentuais autorais, efeitos em unidades de simulação, imagens, legendas, fontes e probabilidades condicionais |
+| `data/cards.json` | Dezessete cartas da Página2, escolhas, descrições, efeitos em unidades explícitas, imagens por ID, legendas, fontes e probabilidades condicionais |
 | `data/flows.json` | Consumos/produções, bases de conversão e classificação reference/simulated |
 | `data/interface.json` | Textos, templates, imagem e crédito do briefing |
 | `src/bootstrap.js` | Carregamento HTTP, validação, leitura do save, inicialização e tratamento de falha |
@@ -83,7 +83,7 @@ Após concluir um sol, a UI salva o novo snapshot, anima os recursos por 1,4 s e
 
 Frente da carta: imagem/legenda, problema e respostas, sem dificuldade nem contagem de eventos. Verso: escolha, explicação opcional, ícones/nomes dos recursos, valores, fonte e botão de avanço. A página não rola; o layout usa altura dinâmica, safe areas, padding e organização lateral em telas baixas. A lista interna de efeitos tem overflow de segurança para conteúdo extenso.
 
-O tablet de relatório está implementado com abertura/recolhimento, paginação e tom de missão, mas seu botão está oculto. O painel inferior do Hard é independente do tablet, conforme descrito abaixo. Não há mãos de astronauta.
+O tablet de relatório está implementado com abertura/recolhimento, paginação e tom de missão, mas seu botão está oculto. Não há mãos de astronauta.
 
 ## Persistência e compatibilidade
 
@@ -101,9 +101,9 @@ Ainda não existem login, sincronização, suporte offline dedicado ou cartas co
 
 O workflow Publish game roda `npm test`, prepara `public/` com index.html, src/, data/, assets/ e images/, e usa GitHub Pages. Gatilhos: push na main e execução manual. Não publica documentação/testes/prints de diagnóstico. Qualquer hospedagem estática HTTP compatível pode servir os mesmos arquivos. A presença do workflow ou de um endereço informado anteriormente não confirma disponibilidade do site: consultar o resultado da publicação quando necessário.
 
-## Painel de efeitos no Hard
+## Painel de efeitos retirado
 
-O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito remove o efeito mais antigo e seu ícone, deslocando os demais para a esquerda. O efeito retirado é cancelado: suas taxas futuras param e mudanças agendadas ainda não aplicadas são descartadas. Alterações já causadas nos recursos não são revertidas; efeitos removidos não voltam quando outro termina. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
+O painel de efeitos abaixo das cartas foi removido de ambos os modos. O tutorial Hard apresenta somente os cinco indicadores e a carta (seis etapas); Easy mantém quatro indicadores e a carta. O catálogo atual contém apenas efeitos imediatos. O motor continua compatível com efeitos pendentes em saves antigos, e o tablet permanece oculto.
 
 ## Life Support no Easy
 
@@ -129,7 +129,7 @@ A UI mostra imediatamente a falha de uma escolha e salva o final, sem apresentar
 
 `mission.dailyCostMultiplier` (opcional, positivo, padrão 1) multiplica somente os fluxos-base cujo amount é negativo. Está em 3 para teste, em ambos os modos, mas o seletor foi removido e novas missões usam consumo normal. Produção positiva e efeitos imediatos/contínuos/agendados das cartas não são multiplicados. Os coeficientes de referência em `flows.json` permanecem originais; o multiplicador é balanceamento de teste, não nova referência científica. Novas missões usam o valor atual; saves mantêm seu snapshot de dados. Remover o campo ou usar 1 restaura o consumo normal para novas missões. Blindagem não ganha consumo diário.
 
-As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado; o painel de efeitos fica oculto ao encerrar para reservar espaço ao final. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
+As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
 
 ## Início de nova missão e seleção de consumo
 
@@ -159,7 +159,7 @@ Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os l
 
 ## Tutorial modal da missão
 
-`src/tutorial.js` expõe `MissionTutorial.create`. `ui.js` o inicia depois de renderizar e salvar a primeira carta de uma nova missão de qualquer modo. Easy tem cinco etapas: os quatro indicadores atuais de ResourceDisplay, na ordem da HUD, e a carta real. Hard tem sete: os cinco indicadores, o painel real de efeitos e a carta. A continuação de saves não inicia a guia. Se houver recarga durante a guia, o save retoma a primeira carta sem escolhas já aplicadas e sem reiniciar a guia; a apresentação não é persistida.
+`src/tutorial.js` expõe `MissionTutorial.create`. `ui.js` o inicia depois de renderizar e salvar a primeira carta de uma nova missão de qualquer modo. Easy tem cinco etapas: os quatro indicadores atuais de ResourceDisplay, na ordem da HUD, e a carta real. Hard tem seis: os cinco indicadores e a carta. A continuação de saves não inicia a guia. Se houver recarga durante a guia, o save retoma a primeira carta sem escolhas já aplicadas e sem reiniciar a guia; a apresentação não é persistida.
 
 O diálogo nativo `mission-tutorial` torna o restante da página inerte e mantém o foco em seus controles. Um realce com sombra ao redor destaca o elemento real. A explicação tenta se posicionar abaixo/acima ou ao lado do alvo, recalculando em resize e visualViewport resize; texto longo tem overflow interno de segurança. No passo da carta, celulares em retrato reservam temporariamente uma margem maior antes dela para a explicação não a cobrir; fechar/pular restaura o layout normal. Cada etapa de recurso chama a mesma renderização dos detalhes e copia somente descrição e previsão, sem duplicar regras científicas ou cálculo.
 
@@ -169,7 +169,6 @@ Next, gesto horizontal em qualquer sentido e setas mudam de etapa; a última per
 
 O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.
 
-No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do painel, sem criar efeitos fictícios. Explica alterações por sol e eventos agendados, sem explicar a remoção de efeitos pela fila. Em celulares em retrato, somente no passo da carta o painel é ocultado temporariamente para manter a carta legível; ao concluir ou pular, ele reaparece sem alterar os efeitos.
 
 ## Limite real de três efeitos
 
@@ -177,19 +176,12 @@ No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do pai
 
 Taxas de um efeito removido param nas integrações futuras, e consequências agendadas removidas não disparam. O cancelamento não reverte estoques alterados antes dele, não restitui recursos consumidos e não reativa efeitos anteriores quando uma vaga fica livre. Previsões, active e integração usam a mesma normalização. `Engine.checkFailure` normaliza saves antigos na retomada; a UI salva essa migração quando os fluxos mudam, preservando estado físico, relógio e sequência.
 
-O tutorial do painel fala somente sobre consultar alterações por sol e eventos agendados; a regra de cancelamento não aparece na explicação ao jogador.
 
-## Importação das 13 cartas autorais
+## Catálogo atual de eventos — Página2
 
-`scripts/import_event_cards.py` lê o CSV original sem modificá-lo, localiza o cabeçalho Id, ignora linhas sem ID e exige os 13 IDs únicos. Liga cada ID à única imagem correspondente em `images/cards/`, respeitando JPG/PNG. Dificuldades vêm do CSV. Categorias são uma classificação editorial por assunto; as probabilidades-base continuam as atuais e as chances das cartas são iguais dentro de cada categoria. Easy tem oito cartas elegíveis e exclui Exploration, cuja única carta é Hard; Hard tem as 13.
+O catálogo contém somente as 17 cartas da Página2. O importador lê categorias, dificuldades e pares `resposta 1 // resposta 2` em unidades explícitas (kg, L, kWh, pontos de Shield), sem conversão de percentuais. Textos curtos na frente; respostas completas no verso e originais preservados. Pesos iguais dentro de cada categoria. Easy tem 15 cartas elegíveis, Hard tem 17. Side effects da carta 9 fica como anotação, sem gerar efeitos contínuos.
 
-Influências separadas por `\` ou `/` são pares da resposta 1/2. O importador usa Decimal para converter pontos percentuais da capacidade para kg, L, kWh e pontos percentuais de Shield, sem arredondar estado em execução. Vazios e pares vazios viram zero. `effects` é o valor nas unidades de simulação usado pelo motor; `effectPercentages` é metadado numérico de auditoria e a validação verifica sua correspondência com a capacidade. Alterar capacidades exige regenerar os efeitos antes de iniciar novas missões.
-
-A primeira resposta é left e a segunda right. Rótulos e descrições da frente são curtos; as respostas completas ficam nas descrições do verso, com a menção da carta 10 a 15 kWh ajustada à bateria atual; `sourceResponse` e `sourceDescription` preservam os textos originais. A segunda resposta da carta 7 e as duas da 8 foram completadas por autorização. Não foram inventadas taxas, durações, colheitas ou SFX. Textos 8/10 evitam a capacidade de 15 kWh de outro equipamento; cartas 10/13 são independentes de uma escolha anterior, conforme o sorteio com reposição.
-
-Referências preenchidas no CSV usam `source.kind: reference`; sem referência, o importador omite source e a UI oculta a linha no verso. Saves antigos com `source.kind: image` também têm essa linha ocultada. `imageSource` preserva a origem informada para cada imagem. Os coeficientes de efeito são balanceamento do autor, não medições dos artigos citados. `source.kind`, `sourceDescription`, `sourceResponse`, `imageSource` e `effectPercentages` são opcionais para continuar validando saves anteriores.
-
-A substituição afeta o catálogo de novas missões. Snapshots anteriores mantêm cartas, sequência e dados físicos salvos; o asset mock não é removido para não quebrar essas partidas. [Auditoria do conteúdo](docs/CARDS.md).
+`src/card-images.js` procura JPG, PNG e JPEG pelo ID, usa placeholder quando ausentes e tenta novamente a cada 15 segundos enquanto a frente está aberta. Não é preciso reimportar o CSV para adicionar imagens. A legenda descreve o arquivo e termina com Image source: e a origem informada, ou valor vazio. [Detalhes e auditoria](docs/CARDS.md).
 
 ## Escala percentual de Shield e migração
 
@@ -201,7 +193,7 @@ O resultado é validado e salvo automaticamente; se a gravação falhar, a parti
 
 ## Capacidades e partida em andamento
 
-Novas missões usam os máximos O₂ 200 kg, água 1900 L, comida seca 235 kg, energia 1480 kWh e Shield 100 pontos. Os estoques iniciais são 75% dos máximos no Easy e 50% no Hard; as perdas diárias seguem a seção abaixo. São parâmetros de balanceamento, não dimensionamento científico. Efeitos percentuais das cartas foram recalculados com essas capacidades. Partidas em andamento preservam seu snapshot de capacidades e cartas.
+Novas missões usam os máximos O₂ 200 kg, água 1900 L, comida seca 235 kg, energia 1480 kWh e Shield 100 pontos. Os estoques iniciais são 75% dos máximos no Easy e 50% no Hard; as perdas diárias seguem a seção abaixo. São parâmetros de balanceamento, não dimensionamento científico. A Página2 já fornece efeitos em unidades explícitas, independentes das capacidades. Partidas em andamento preservam seu snapshot de capacidades e cartas.
 
 O único slot de localStorage guarda somente a última missão em andamento. Iniciar outra missão substitui esse slot; terminar com sucesso, falhar ou desistir remove o save. A tela final continua visível na sessão atual, mas não é retomada após recarregar. Saves antigos já encerrados são descartados na inicialização e não habilitam Continue mission. Nenhum histórico de partidas é armazenado.
 
@@ -223,7 +215,11 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 
 ## Fontes das cartas e das imagens
 
-O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Sources da Página2 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+
+## Remoção do painel inferior de efeitos
+
+O painel inferior não é renderizado nem ocupa espaço em nenhum modo. A etapa Lasting effects foi retirada do tutorial Hard, que agora tem seis etapas. O catálogo atual usa somente efeitos imediatos, apresentados no verso. A simulação de efeitos contínuos/agendados de saves antigos continua compatível; o tablet permanece oculto.
 
 ## Áudio
 
@@ -232,10 +228,16 @@ O verso mostra Source somente quando a carta possui uma referência preenchida; 
 | Ponto no código | Som |
 | --- | --- |
 | `ui.js`, `pointerdown` na linha de indicadores (tile) e `keydown` Enter/Espaço | `button` |
-| `card-ui.js`, `answer(side, how)`: `how = 'button'` para botões e setas, `'swipe'` para arrasto além do limiar; só toca se a resposta for aceita | `button` / `swipe` |
+| `card-ui.js`: botões/setas ao responder; swipe ao iniciar a inclinação (mais de 8 px), uma vez por gesto | `button` / `swipe` |
 | `card-ui.js`, botão Next/Finish do verso | `button` |
 | `ui.js`, `onNext` → `finish()` da passagem de sol, se a missão não terminou | `sol` |
 
-Loops (`music`, `ship`): `Audio` com `loop`, iniciados no primeiro `pointerdown`/`pointerup`/`touchend`/`click`/`keydown` (fase de captura) e removidos esses ouvintes quando um `play()` dá certo. Começam no volume 0 e sobem em 1,5 s. `visibilitychange` pausa/retoma. `bindToggle(botão, render)` liga os dois botões de som ao mesmo estado; `setEnabled` grava `next-frontier-sound`. `loopVolumes()` ajuda a conferir os volumes no console.
+Loops (`music`, `ship`): `Audio` com `loop`, iniciados no primeiro `pointerdown`/`pointerup`/`touchend`/`click`/`keydown` (fase de captura) e mantidos esses ouvintes para recuperar interrupções posteriores. Começam no volume 0 e sobem em 1,5 s. `visibilitychange` pausa/retoma. `bindToggle(botão, render)` liga os dois botões de som ao mesmo estado; `setEnabled` grava `next-frontier-sound`. `loopVolumes()` ajuda a conferir os volumes no console.
 
 Validação feita: no navegador (via HTTP), registrando as chamadas de `play()`: menu → loops; toque no indicador → button; hover → nada; resposta por botão/seta → button; Next → button; passagem para o Sol 2 → sol; arrasto à direita/esquerda → swipe; arrasto curto → nada; som desligado → nenhum efeito, loops pausados, preferência salva. *Fade-in* e silêncio conferidos com `Audio` simulado no Node. O volume relativo música × nave foi definido de ouvido pelos valores acima e deve ser ajustado ouvindo no dispositivo.
+
+## Recuperação de áudio
+
+Os eventos reais de interação continuam observados após a primeira reprodução: um loop pausado ou bloqueado é tentado novamente no próximo toque/clique/tecla, independentemente do outro loop. Uma tentativa pendente por loop evita duplicar play durante a sequência pointerdown/pointerup/click. Retorno à aba/pageshow tenta retomar; pagehide pausa os loops. Uma reprodução assíncrona que termina após desligar o som ou ocultar a página não reinicia o áudio. Desligar pausa também efeitos já em reprodução. A preferência off continua respeitada, sem ativar som silenciosamente. Testes em tests/audio.test.cjs cobrem bloqueios parciais/totais, interrupções, retorno à aba e mute durante play pendente.
+
+A música de fundo e o som ambiente usam loop nativo contínuo. O efeito swipe toca uma vez quando a carta começa a inclinar no arrasto (mais de 8 px), mesmo se o jogador cancelar; não se repete ao soltar/confirmar. A demonstração automática do tutorial permanece silenciosa.

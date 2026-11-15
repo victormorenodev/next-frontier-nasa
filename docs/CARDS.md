@@ -1,48 +1,28 @@
-# Cartas de evento — catálogo e conversão
+# Cartas de evento — Página2
 
-Fonte: [CSV original](<../Cartas de evento - Página1.csv>). O arquivo foi preservado. Este documento registra escolhas editoriais e a conversão autorizada, não parâmetros científicos de uma base real.
+Fonte atual: [Cartas de evento - Página2.csv](<../Cartas de evento - Página2.csv>). O CSV é preservado; linhas sem ID são ignoradas. O catálogo substitui integralmente as cartas anteriores em novas missões.
 
-## Regras de importação
+São 17 IDs: 5, 9, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 27 e 29. Categoria e dificuldade vêm da planilha. Cartas têm pesos iguais dentro da categoria; Easy permite 15 cartas (exclui 9 e 26), Hard permite todas. As cinco categorias têm cartas elegíveis em ambos os modos.
 
-- IDs 1–13 e dificuldades vêm da planilha; resposta 1 → left, resposta 2 → right.
-- Valores `15/-15` ou `15\-15` representam pontos percentuais da capacidade: valor de simulação = percentual × max / 100. Não são percentuais do estoque restante.
-- Capacidades atuais: O₂ 200 kg, Water 1900 L, Shield 100 pontos (100%), Energy 1480 kWh e Food 235 kg secos.
-- Campos vazios ou somente separador viram zero. As cartas 3–8 ficam sem efeitos quantificados; nenhuma taxa ou consequência agendada foi inventada.
-- Probabilidades das cinco categorias mantidas. A classificação por tema é editorial; dentro da categoria, chances iguais.
-- Textos de frente e botões foram resumidos para crianças; `sourceDescription` guarda os enunciados originais e o verso guarda as respostas completas (com ajuste da menção a 15 kWh na carta 10 para a bateria atual). `sourceResponse` preserva o texto original de cada resposta, ou vazio quando ela foi completada.
+## Efeitos e textos
 
-## Respostas completadas por autorização
+Cada célula usa `primeira resposta // segunda resposta`, com unidades explícitas: kg para oxigênio/comida seca, L para água, kWh para energia e p para pontos de Shield. **Não são porcentagens da capacidade.** O importador valida as unidades, aceita vírgula decimal e espaços entre sinal e número, e ignora os pontos soltos antes do separador nas células de água 15/16. Valores não são arredondados nem escalados pela capacidade.
 
-- 7 / segunda: “Choose soybeans for a larger harvest later.” (Plant soybeans).
-- 8 / primeira: “Pause battery charging and let the power lines cool.” (Pause charging).
-- 8 / segunda: “Keep charging the battery while watching the hot power lines.” (Keep charging).
-- A carta 7 não produz colheita automaticamente: o CSV não define quantidade nem prazo.
+A primeira resposta vira left, a segunda right. A frente e os botões têm resumos em inglês simples; sourceDescription/sourceResponse preservam os originais. Respostas completas aparecem no verso. Sources alimenta Source no verso; o campo Source Verified? é preservado em sourceVerified e não transforma as referências em validação científica dos efeitos.
 
-## Efeitos imediatos nas unidades de simulação
+A coluna Side effects da carta 9 menciona redução de geração por oito sols. Como o painel/tipo de cartas contínuas foi retirado e a geração automática deixou de existir, a anotação fica em sourceSideEffects, **sem executar efeitos contínuos**. Extra informations permanece em sourceNotes. Somente as alterações imediatas das cinco colunas de recursos são aplicadas.
 
-| ID | Dificuldade | Categoria | Primeira resposta | Segunda resposta |
-| --- | --- | --- | --- | --- |
-| 1 | easy | emergency | O₂ +30 kg; Shield -5% | O₂ -30 kg; Shield +5% |
-| 2 | medium | emergency | O₂ +20 kg; Energy -148 kWh | O₂ -40 kg; Shield +10% |
-| 3 | hard | maintenance | 0 | 0 |
-| 4 | easy | routine | 0 | 0 |
-| 5 | medium | maintenance | 0 | 0 |
-| 6 | hard | maintenance | 0 | 0 |
-| 7 | medium | science | 0 | 0 |
-| 8 | hard | maintenance | 0 | 0 |
-| 9 | hard | exploration | O₂ -30 kg; Energy +222 kWh | O₂ +20 kg; Energy -222 kWh |
-| 10 | medium | maintenance | O₂ -20 kg; Energy +222 kWh | O₂ +30 kg; Energy -296 kWh |
-| 11 | medium | emergency | 0 | 0 |
-| 12 | hard | maintenance | Energy -222 kWh; Water -285 L | Energy +222 kWh; Water +380 L |
-| 13 | medium | maintenance | Food -35.25 kg; Water +380 L | Energy -296 kWh; Water -475 L |
+## Imagens pelo ID
 
-Os limites 0–capacidade continuam aplicados pelo motor. Um ganho pode ser parcialmente limitado quando o estoque já está cheio. Easy converte somente a apresentação e mantém Life Support como mínimo proporcional de água/oxigênio.
+`imageById: true` faz `src/card-images.js` procurar, em ordem, `images/cards/ID.jpg`, `.png` e `.jpeg` a cada apresentação. O campo image continua com o caminho convencional JPG, sem assumir que existe. Não há listagem de diretório nem build. Arquivos antigos não são sorteados só por estarem nessa pasta.
 
-## Referências e imagens
+Sem arquivo válido, usar `images/cards/placeholder.svg`, alt e legenda “Image not available yet.”. O carregador tenta novamente a cada 15 segundos enquanto a frente continua aberta; um arquivo adicionado passa a aparecer automaticamente. URLs de tentativa mudam para evitar cache negativo. Ao mudar de carta/face, cancelar atualizações pendentes para não trocar a imagem da próxima carta. Os três formatos são decodificados pelo navegador; um arquivo quebrado não impede testar o seguinte.
 
-Cada imagem usa exatamente o ID da carta, incluindo 6.png e 12.png. Legendas descrevem a imagem efetivamente fornecida: a 8 mostra coletores solares na Terra e a 12 é uma ilustração de base espacial. Não são fotos de uma base humana em Marte.
+A legenda termina sempre com Image source: e o link da coluna Imagem da carta, com o domínio como rótulo. Sem link, manter o rótulo e o valor vazio. Ao carregar uma imagem, usar sua descrição; durante o placeholder, não descrever uma foto ausente.
 
-As cartas 1–6 têm a referência ESA preenchida no CSV. Para 7–13, sem referência científica preenchida, o campo Source fica ausente no verso. Esses links não validam os números de balanceamento. SFX anotados no CSV não foram implementados porque não há áudio fornecido nem implementação solicitada.
+Após integrar o commit remoto d5ee7bf, todos os 17 IDs têm imagem local. As imagens 11 e 19 foram substituídas, e 21, 22, 23, 24 e 29 foram adicionadas. Legendas e alt foram revisados após inspeção dos sete arquivos. A apresentação usa a legenda/alt atuais também para saves com o mesmo ID e caminho de imagem, sem alterar seus recursos ou escolhas. O placeholder continua disponível para imagens removidas, ausentes ou inválidas.
+
+Os arquivos 5, 18 e 20 diferem do assunto/imagem principal de suas páginas informadas. A imagem 11 agora mostra uma erupção solar, enquanto o link original da planilha era o de uma ilustração de nave. As legendas descrevem o arquivo local sem atribuir identidades incertas. Os links de origem informados pelo autor são preservados, não certificados como correspondência exata.
 
 ## Reprodução
 
@@ -52,10 +32,4 @@ python scripts/import_event_cards.py --check
 npm test
 ```
 
-O jogo usa data/cards.json; a conversão não faz parte da inicialização do navegador. Saves antigos não são sobrescritos: somente novas missões passam a sortear estas cartas.
-
-Shield usa diretamente pontos percentuais nos dois modos: −5 no CSV vira −5 pontos do índice 0–100, e não −0,5 g/cm². O valor inicial é 75% no Easy e 50% no Hard; essa escala não mede dose nem quantidade física de blindagem.
-
-## Fontes das cartas e das imagens
-
-O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+O navegador lê data/cards.json. Python serve apenas para importação editorial. Saves em andamento preservam o catálogo com que começaram; novas missões usam somente a Página2.

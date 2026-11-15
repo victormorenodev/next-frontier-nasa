@@ -123,5 +123,6 @@
   "menuGlossary": "Glossary",
   "soundLabel": "Sound",
   "soundOn": "On",
-  "soundOff": "Off"
+  "soundOff": "Off",
+  "cardImageMissing": "Image not available yet."
 }

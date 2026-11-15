@@ -19,6 +19,7 @@
   };
 
   function create(slot, handlers) {
+    let cancelImage = () => {};
     let phase = 'none';          // 'front' | 'back' | 'message' | 'none'
     let drag = null;
     let demoFrame = 0, demonstrating = false;
@@ -59,10 +60,10 @@
     back.append(chosenLabel, chosen, choiceDescription, effects, source, mockNote, nextBtn);
 
     // ── Answering ──
-    // `how`: 'button' (tap/click/arrow key) or 'swipe' (drag) — picks the sound effect.
+    // Button choices play here; a swipe already played when the card began to tilt.
     function answer(side, how = 'button') {
       if (phase !== 'front' || handlers.canAnswer?.() === false) return;
-      globalThis.GameAudio?.play(how);
+      if (how === 'button') globalThis.GameAudio?.play('button');
       phase = 'answering';
       card3d.style.transform = '';                 // glide back to the centre, then flip
       highlight(null);
@@ -101,6 +102,7 @@
       drag.dx = e.clientX - drag.x;
       if (!drag.moving && Math.abs(drag.dx) > DRAG_START_PX) {
         drag.moving = true;
+        globalThis.GameAudio?.play('swipe');
         try { card3d.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ } // follow outside the card
         card3d.classList.add('dragging');
       }
@@ -153,17 +155,19 @@
       void card3d.offsetWidth;
       card3d.classList.add('deal');
 
-      image.src = card.image;
-      image.alt = card.imageAlt || '';
+      cancelImage();
       const currentCard=CurrentGameData.cards.find(c=>c.id===card.id&&c.image===card.image);
-      caption.textContent=(card.imageCaption ?? currentCard?.imageCaption ?? '').trim();
-      caption.append(` ${Copy('imageSourceLabel')}`);
-      const imageSource=card.imageSource ?? currentCard?.imageSource ?? (card.source?.kind==='image' ? card.source.url : '');
-      if(imageSource){
-        const link=el('a',null,new URL(imageSource).hostname.replace(/^www\./,''));
-        link.href=imageSource;link.target='_blank';link.rel='noopener noreferrer';caption.append(link);
-      }
-      caption.hidden=false;
+      const renderCaption = available => {
+        caption.textContent=available ? (currentCard?.imageCaption ?? card.imageCaption ?? '').trim() : Copy('cardImageMissing');
+        caption.append(` ${Copy('imageSourceLabel')}`);
+        const imageSource=currentCard?.imageSource ?? card.imageSource ?? (card.source?.kind==='image' ? card.source.url : '');
+        if(imageSource){
+          const link=el('a',null,new URL(imageSource).hostname.replace(/^www\./,''));
+          link.href=imageSource;link.target='_blank';link.rel='noopener noreferrer';caption.append(link);
+        }
+        caption.hidden=false;Glossary.decorate(caption);
+      };
+      cancelImage=CardImages.show(image,{...card,imageAlt:currentCard?.imageAlt ?? card.imageAlt},renderCaption);
       text.textContent = card.description;
       leftBtn.textContent = `← ${card.left.label}`;
       rightBtn.textContent = `${card.right.label} →`;
@@ -203,6 +207,7 @@
 
     function showBack(card, side, isLast, happened, beforeState) {
       Glossary.close();
+      cancelImage();
       const picked = card[side];
       chosen.textContent = picked.label;
       const explanation = typeof picked.description === 'string' ? picked.description.trim() : '';
@@ -245,6 +250,7 @@
 
     function showMessage(title, body, buttonLabel, onClick, ending = 'quit', imagePath = null) {
       Glossary.close();
+      cancelImage();
       phase = 'message';
       slot.classList.remove('has-card');
       slot.classList.add('ended');

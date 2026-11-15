@@ -157,3 +157,7 @@ Os efeitos percentuais fornecidos pelo autor são somados em pontos do índice. 
 Para a base de quatro pessoas, o autor definiu perdas líquidas de 3,5 kg de oxigênio, 10 L de água, 5 kWh de energia e 2,6 kg de comida seca por sol. Shield não tem desgaste diário. São parâmetros de balanceamento (`kind: simulated`), não novos coeficientes atribuídos à NASA. O₂ e comida são próximos dos totais históricos arredondados, mas os valores atuais são totais por sol (`perSol`), sem nova conversão de dia terrestre ou multiplicação por quatro. A produção automática anterior de O₂/energia foi removida para que o saldo real corresponda às perdas solicitadas. Efeitos de cartas e o multiplicador temporário selecionável continuam separados.
 
 Os estoques iniciais atuais são uma fração da capacidade por dificuldade: 75% no Easy e 50% no Hard, incluindo Shield. São escolhas de balanceamento, não estimativas científicas de autonomia. O estado físico conserva as frações de unidade.
+
+## Catálogo Página2 (vigente)
+
+O catálogo anterior da Página1 foi substituído por 17 cartas. A Página2 fornece valores físicos explícitos e pontos de Shield, não percentuais; referências e a marca Source Verified? são preservadas, sem afirmar validação científica dos valores autorais. Side effects da carta 9 é apenas anotação, pois não existe produção automática nem novas cartas contínuas. A auditoria atual de imagens/fontes está em [CARDS.md](CARDS.md).

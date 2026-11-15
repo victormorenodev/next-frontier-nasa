@@ -28,6 +28,8 @@
 
   let enabled = readPref();
   let unlocked = false;          // true after the first interaction (browser allows sound)
+  const starting = new Set();
+  const playingEffects = new Set();
   const listeners = new Set();   // UI parts that show the on/off state
 
   const make = ({file}, loop) => {
@@ -53,11 +55,16 @@
   function startLoops() {
     if (!enabled || !unlocked || document.hidden) return;
     Object.entries(loops).forEach(([k, audio]) => {
-      if (!audio.paused) return;
+      if (!audio.paused || starting.has(audio)) return;
+      starting.add(audio);
       audio.volume = 0;                 // start silent; fadeIn raises it (no loud first instant)
       audio.play()
-        .then(() => { fadeIn(audio, LOOPS[k].volume); stopListening(); })
-        .catch(() => { /* not allowed yet or file missing: try again on the next interaction */ });
+        .then(() => {
+          if (!enabled || document.hidden) { audio.pause(); return; }
+          fadeIn(audio, LOOPS[k].volume);
+        })
+        .catch(() => { /* Retry on the next real interaction, including after interruptions. */ })
+        .finally(() => starting.delete(audio));
     });
   }
 
@@ -70,13 +77,21 @@
     if (!enabled || !effects[name]) return;
     const sound = effects[name].cloneNode();
     sound.volume = EFFECTS[name].volume;
-    sound.play().catch(() => { /* blocked or missing: stay silent */ });
+    playingEffects.add(sound);
+    const release = () => playingEffects.delete(sound);
+    sound.addEventListener('ended', release, {once:true});
+    sound.addEventListener('error', release, {once:true});
+    sound.play().catch(release);
   }
 
   function setEnabled(on) {
     enabled = on;
     writePref(on);
-    if (on) startLoops(); else stopLoops();
+    if (on) startLoops(); else {
+      stopLoops();
+      playingEffects.forEach(sound => sound.pause());
+      playingEffects.clear();
+    }
     listeners.forEach(fn => fn(on));
   }
 
@@ -88,15 +103,16 @@
     button.addEventListener('click', () => setEnabled(!enabled));
   }
 
-  // First interaction anywhere unlocks audio and starts the backgrounds. Phones only allow
-  // sound when the finger lifts, so several events are watched until the music really starts.
+  // Keep real interaction listeners: browsers can interrupt or block a loop again after
+  // the first successful play. Each loop retries independently, without restarting playing audio.
   const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'];
   const unlock = () => { unlocked = true; startLoops(); };
-  function stopListening() { UNLOCK_EVENTS.forEach(type => document.removeEventListener(type, unlock, true)); }
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
 
   // No background sound while the game is in another tab or the phone screen is off.
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopLoops(); else startLoops(); });
+  window.addEventListener('pagehide', stopLoops);
+  window.addEventListener('pageshow', startLoops);
 
   root.GameAudio = {play, setEnabled, bindToggle, isEnabled: () => enabled, EFFECTS, LOOPS,
     // Current loop volumes (for checks in the browser console).

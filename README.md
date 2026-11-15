@@ -46,7 +46,7 @@ Passe o mouse sobre um indicador no PC ou segure/deslize no toque para ver a fun
 
 Probabilidades são frações entre 0 e 1. Categorias somam 1 e cartas somam 1 por categoria, com tolerância de 1e-9. Cada categoria precisa de cartas e total positivo. Probabilidade zero desabilita a seleção. Uma categoria com uma única carta usa probability 1 nessa carta. O filtro de dificuldade remove categorias sem cartas elegíveis e preserva a proporção entre as restantes.
 
-Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As 13 cartas atuais vêm de `Cartas de evento - Página1.csv`, usam suas imagens por ID e têm rótulos curtos com a resposta completa no verso. As respostas ausentes das cartas 7/8 foram completadas e influências vazias receberam zero, conforme autorizado.
+Cada carta tem ID único, category, probability, difficulty, description, image, imageAlt, imageCaption, source e respostas left/right. Cada resposta possui label e pode incluir description, effects, ongoing e later. Textos devem ser curtos e em inglês. As 17 cartas atuais vêm de `Cartas de evento - Página2.csv`, usam imagens por ID e têm rótulos curtos com a resposta completa no verso. Os efeitos já vêm em unidades físicas/pontos e não são percentuais.
 
 - `effects`: mudanças imediatas nas unidades físicas dos estoques e pontos percentuais de Shield, inclusive no Easy.
 - `ongoing`: rates por sol, after opcional e for opcional; omitir for significa continuar indefinidamente.
@@ -98,9 +98,9 @@ Manter essa estrutura e verificar o resultado do deploy. O estado atual de dispo
 - [docs/RESEARCH.md](docs/RESEARCH.md): pesquisa, fontes e cuidados científicos.
 - [Histórico de implementação](docs/history/ARCHITECTURE.md) e [contexto anterior](docs/history/PROJECT_CONTEXT.md): versões arquivadas, não instruções atuais.
 
-## Painel de efeitos no Hard
+## Painel de efeitos retirado
 
-O modo Hard exibe um painel inferior com três espaços quadrados. Efeitos contínuos e consequências agendadas das escolhas ocupam os espaços, com ícones dos recursos afetados. Hover, foco de teclado ou toque abrem o detalhe; um segundo toque no mesmo ícone fecha. O detalhe mostra nome, impacto físico por sol (ou alteração única agendada) e tempo restante/espera. Efeitos encerrados desaparecem. O painel funciona como fila de três ícones, sem paginação: um novo efeito remove o efeito mais antigo e seu ícone, deslocando os demais para a esquerda. O efeito retirado é cancelado: suas taxas futuras param e mudanças agendadas ainda não aplicadas são descartadas. Alterações já causadas nos recursos não são revertidas; efeitos removidos não voltam quando outro termina. Efeitos imediatos continuam apresentados no verso, pois não têm taxa por sol. O painel não aparece no Easy e o botão do tablet continua oculto.
+O painel de efeitos abaixo das cartas foi removido de ambos os modos. O tutorial Hard apresenta somente os cinco indicadores e a carta (seis etapas); Easy mantém quatro indicadores e a carta. O catálogo atual contém apenas efeitos imediatos. O motor continua compatível com efeitos pendentes em saves antigos, e o tablet permanece oculto.
 
 ## Life Support no Easy
 
@@ -118,7 +118,7 @@ Temporariamente, `data/mission.json` → `dailyCostMultiplier: 3` triplica o con
 
 Não há desgaste diário de blindagem: ela pode zerar por efeitos de cartas. O zero da derrota é o valor interno do recurso; um indicador Easy arredondado para zero ainda pode conter uma pequena reserva.
 
-As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado; o painel de efeitos fica oculto ao encerrar para reservar espaço ao final. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
+As telas finais sem imagem (e o fallback de carregamento) usam título e descrição ampliados e ícones próprios: Life Support com pulso interrompido, pulmões riscados (oxigênio), gota rachada (água), escudo rachado (blindagem), raio partido (energia) e caixa vazia (comida). Sucesso usa marca de confirmação e encerramento manual usa saída. Em espaços baixos, ícone e título ficam lado a lado. Os desenhos ficam em `src/icons.js` (`EndingIcons`) e são decorativos, pois o texto identifica o resultado.
 
 ## Início de nova missão e seleção de consumo
 
@@ -148,30 +148,18 @@ Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os l
 
 ## Tutorial da missão
 
-Ao iniciar uma nova missão, uma guia curta apresenta os indicadores e depois a carta. Easy usa quatro indicadores; Hard usa os cinco recursos separados e acrescenta uma etapa sobre o painel de efeitos antes da carta. As explicações usam as descrições e previsões já disponíveis nos detalhes dos recursos. A carta se move continuamente para os lados e preenche o botão correspondente como no arrasto real; nenhuma escolha é aplicada nessa demonstração. A etapa só termina por Let’s play! ou por pular.
+Ao iniciar uma nova missão, uma guia curta apresenta os indicadores e depois a carta. Easy usa quatro indicadores; Hard usa os cinco recursos separados antes da carta. As explicações usam as descrições e previsões já disponíveis nos detalhes dos recursos. A carta se move continuamente para os lados e preenche o botão correspondente como no arrasto real; nenhuma escolha é aplicada nessa demonstração. A etapa só termina por Let’s play! ou por pular.
 
-Toque em Next, deslize para qualquer lado ou use as setas para avançar; na última etapa, use Let’s play!. Skip tutorial está disponível desde a primeira etapa, e Escape também permite pular. Durante a guia, recursos e tempo ficam intactos. Continuar uma missão salva não repete o tutorial. No Hard, a explicação do painel mostra como consultar mudanças por sol e eventos agendados, sem explicações sobre a remoção de efeitos da fila.
+Toque em Next, deslize para qualquer lado ou use as setas para avançar; na última etapa, use Let’s play!. Skip tutorial está disponível desde a primeira etapa, e Escape também permite pular. Durante a guia, recursos e tempo ficam intactos. Continuar uma missão salva não repete o tutorial.
 
 O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.
 
-No tutorial Hard, a etapa Lasting effects destaca os três espaços reais do painel, sem criar efeitos fictícios. Explica alterações por sol e eventos agendados, sem explicar a remoção de efeitos pela fila. Em celulares em retrato, somente no passo da carta o painel é ocultado temporariamente para manter a carta legível; ao concluir ou pular, ele reaparece sem alterar os efeitos.
 
-## Catálogo atual de eventos
+## Catálogo atual de eventos — Página2
 
-As novas missões usam as 13 cartas do CSV e as imagens `images/cards/1.jpg` a `13.jpg` (6 e 12 são PNG). As influências são percentuais da capacidade máxima do recurso, convertidos antes do jogo para unidades de simulação (físicas nos estoques e pontos percentuais em Shield): `efeito = percentual × capacidade / 100`. Por exemplo, 15 pontos de Oxygen equivalem a 30 kg; 15 de Water, 285 L; 15 de Energy, 222 kWh. As capacidades atuais foram definidas pelo autor, independentemente das notas laterais da planilha.
+O catálogo contém somente as 17 cartas da Página2. O importador lê categorias, dificuldades e pares `resposta 1 // resposta 2` em unidades explícitas (kg, L, kWh, pontos de Shield), sem conversão de percentuais. Textos curtos na frente; respostas completas no verso e originais preservados. Pesos iguais dentro de cada categoria. Easy tem 15 cartas elegíveis, Hard tem 17. Side effects da carta 9 fica como anotação, sem gerar efeitos contínuos.
 
-Os valores da primeira resposta vão para left e os da segunda para right. O arquivo usa barra invertida como separador; o importador também aceita `/`. Esses efeitos são imediatos. Influências vazias são zero; não há durações ou taxas criadas para preencher lacunas. O JSON guarda `effectPercentages` para auditoria, mas o motor aplica apenas `effects`, em unidades físicas dos estoques e pontos percentuais de Shield.
-
-Para regenerar após editar o CSV ou as capacidades:
-
-```bash
-python scripts/import_event_cards.py
-python scripts/import_event_cards.py --check
-```
-
-O Python é necessário apenas para essa conversão editorial; jogar e executar `npm test` continuam sem essa etapa. O navegador lê o JSON, não o CSV. [Mapeamento, respostas completadas e conversões](docs/CARDS.md).
-
-Continuar missões antigas preserva o baralho salvo, inclusive cartas mock. Inicie uma nova missão para usar o catálogo novo. A imagem mock e sua apresentação ficam disponíveis somente para compatibilidade dos saves antigos.
+`src/card-images.js` procura JPG, PNG e JPEG pelo ID, usa placeholder quando ausentes e tenta novamente a cada 15 segundos enquanto a frente está aberta. Não é preciso reimportar o CSV para adicionar imagens. A legenda descreve o arquivo e termina com Image source: e a origem informada, ou valor vazio. [Detalhes e auditoria](docs/CARDS.md).
 
 ## Shield em porcentagem
 
@@ -183,7 +171,7 @@ Saves antigos em g/cm² são convertidos automaticamente, preservando a proporç
 
 ## Capacidades e partida em andamento
 
-Novas missões usam os máximos O₂ 200 kg, água 1900 L, comida seca 235 kg, energia 1480 kWh e Shield 100 pontos. Os estoques iniciais são 75% dos máximos no Easy e 50% no Hard; as perdas diárias seguem a seção abaixo. São parâmetros de balanceamento, não dimensionamento científico. Efeitos percentuais das cartas foram recalculados com essas capacidades. Partidas em andamento preservam seu snapshot de capacidades e cartas.
+Novas missões usam os máximos O₂ 200 kg, água 1900 L, comida seca 235 kg, energia 1480 kWh e Shield 100 pontos. Os estoques iniciais são 75% dos máximos no Easy e 50% no Hard; as perdas diárias seguem a seção abaixo. São parâmetros de balanceamento, não dimensionamento científico. A Página2 já fornece efeitos em unidades explícitas, independentes das capacidades. Partidas em andamento preservam seu snapshot de capacidades e cartas.
 
 O único slot de localStorage guarda somente a última missão em andamento. Iniciar outra missão substitui esse slot; terminar com sucesso, falhar ou desistir remove o save. A tela final continua visível na sessão atual, mas não é retomada após recarregar. Saves antigos já encerrados são descartados na inicialização e não habilitam Continue mission. Nenhum histórico de partidas é armazenado.
 
@@ -205,8 +193,18 @@ O modo interno Easy aparece como MARINER 4, com recursos iniciais em 75%; Hard a
 
 ## Fontes das cartas e das imagens
 
-O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Referência para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+O verso mostra Source somente quando a carta possui uma referência preenchida; não mostra Image source nem reserva espaço quando source está ausente. O importador usa somente a coluna Sources da Página2 para source. A origem da imagem permanece separada em imageSource e aparece ao final da legenda: “Image source:” seguida de um link com o domínio. Sem origem informada, o rótulo permanece e o valor fica vazio. O link abre em outra aba e não inicia arrasto da carta. Saves antigos com source de tipo image têm a origem na legenda, sem essa linha no verso.
+
+## Remoção do painel inferior de efeitos
+
+O painel inferior não é renderizado nem ocupa espaço em nenhum modo. A etapa Lasting effects foi retirada do tutorial Hard, que agora tem seis etapas. O catálogo atual usa somente efeitos imediatos, apresentados no verso. A simulação de efeitos contínuos/agendados de saves antigos continua compatível; o tablet permanece oculto.
 
 ## Sons
 
 Arquivos em `sfx/`, controlados por `src/audio.js`: clique ao tocar nos indicadores e nos botões da carta, *swipe* ao responder arrastando, som de novo dia quando o sol muda, e música de fundo com o som da nave por baixo, mais baixo. A música começa no primeiro toque/clique (regra dos navegadores) e o botão de alto-falante, no menu e na barra da missão, liga e desliga todo o som; a escolha fica salva no navegador. Para trocar um som ou volume, editar o arquivo em `sfx/` ou a tabela no início de `src/audio.js`. Detalhes em [AGENTS.md](AGENTS.md#sons).
+
+## Recuperação de áudio
+
+Os eventos reais de interação continuam observados após a primeira reprodução: um loop pausado ou bloqueado é tentado novamente no próximo toque/clique/tecla, independentemente do outro loop. Uma tentativa pendente por loop evita duplicar play durante a sequência pointerdown/pointerup/click. Retorno à aba/pageshow tenta retomar; pagehide pausa os loops. Uma reprodução assíncrona que termina após desligar o som ou ocultar a página não reinicia o áudio. Desligar pausa também efeitos já em reprodução. A preferência off continua respeitada, sem ativar som silenciosamente. Testes em tests/audio.test.cjs cobrem bloqueios parciais/totais, interrupções, retorno à aba e mute durante play pendente.
+
+A música de fundo e o som ambiente usam loop nativo contínuo. O efeito swipe toca uma vez quando a carta começa a inclinar no arrasto (mais de 8 px), mesmo se o jogador cancelar; não se repete ao soltar/confirmar. A demonstração automática do tutorial permanece silenciosa.

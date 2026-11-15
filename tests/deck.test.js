@@ -8,13 +8,13 @@ const I = require('./load-engine.cjs').Indicators;
 // Small seeded random so results are repeatable.
 const seeded = seed => () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 
-// The authored catalog contains 13 unique IDs and real local images.
+// The authored catalog contains 17 unique IDs with runtime image lookup.
 CARDS.forEach(c => assert.deepEqual(D.validateCard(c), [], c.id));
-assert.equal(CARDS.length, 13);
+assert.equal(CARDS.length, 17);
 assert.equal(new Set(CARDS.map(c => c.id)).size, CARDS.length);
 assert.ok(CARDS.every(c => !c.mock));
-assert.deepEqual(CARDS.map(c=>c.id),Array.from({length:13},(_,i)=>String(i+1)));
-for(const c of CARDS)assert.ok(require('node:fs').existsSync(c.image),c.image);
+assert.deepEqual(CARDS.map(c=>c.id),['5','9','11','14','15','16','17','18','19','20','21','22','23','24','26','27','29']);
+for(const c of CARDS)assert.equal(c.imageById,true);
 
 // Validation catches bad data.
 const bad = {...CARDS[0], difficulty: 'super', left: {label: 'x', effects: {gold: 1}}};
@@ -45,7 +45,7 @@ assert.equal(D.createDeck([only],5,()=>0,[{id:'solo',name:'Solo',probability:1}]
 let rolls=[0.35,0];
 assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].category,'maintenance');
 rolls=[.96,.5];
-assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].id,CARDS.filter(c=>c.category==='emergency')[1].id);
+assert.equal(D.createDeck(CARDS,1,()=>rolls.shift())[0].id,CARDS.filter(c=>c.category==='emergency')[2].id);
 assert.throws(()=>D.createDeck(CARDS,1,()=>1));
 assert.throws(()=>D.createDeck(CARDS,-1));
 const disabled=[{...only,probability:0},{...only,id:'enabled',probability:1}];
@@ -59,14 +59,13 @@ assert.ok(easyDeck.every(c=>c.id==='safe'));
 assert.throws(()=>D.createDeck(fixtureCards,1,()=>0,fixtureCategories,['medium']));
 assert.equal(fixtureCards[0].probability,1);
 const easyCatalog=D.createDeck(CARDS,1000,seeded(8),categories,['easy','medium']);
-assert.ok(easyCatalog.every(c=>!['3','6','8','9','12'].includes(c.id)));
-assert.ok(new Set(D.createDeck(CARDS,20000,seeded(9),categories).map(c=>c.id)).size===13);
+assert.ok(easyCatalog.every(c=>!['9','26'].includes(c.id)));
+assert.ok(new Set(D.createDeck(CARDS,20000,seeded(9),categories).map(c=>c.id)).size===17);
 
-// Shield is a 0–100 score; CSV percentages become additive percentage points.
+// Shield is a 0–100 score; sheet p values are additive points.
 const s0=I.createState();
-assert.equal(I.apply(s0,CARDS.find(c=>c.id==='1').left.effects).shield,75);
-assert.equal(I.apply(s0,CARDS.find(c=>c.id==='1').right.effects).shield,85);
-assert.equal(I.apply(s0,CARDS.find(c=>c.id==='2').right.effects).shield,90);
+assert.equal(I.apply(s0,CARDS.find(c=>c.id==='11').left.effects).shield,78);
+assert.equal(I.apply(s0,CARDS.find(c=>c.id==='11').right.effects).shield,68);
 assert.equal(I.apply(s0,{shield:50}).shield,100);
 assert.equal(I.apply(s0,{shield:-100}).shield,0);
 assert.equal(I.apply(s0,{shield:5}).water,s0.water);

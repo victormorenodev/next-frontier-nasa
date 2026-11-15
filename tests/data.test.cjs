@@ -4,8 +4,7 @@ const fs=require('node:fs');const code=fs.readFileSync('src/validation.js','utf8
 const data=Object.fromEntries(['categories','mission','resources','flows','cards','interface','glossary'].map(k=>[k,require('../data/'+k+'.json')]));
 validateData(data);
 assert.equal(data.glossary.length,10);
-assert.ok(data.cards.slice(0,6).every(c=>c.source?.kind==='reference'));
-assert.ok(data.cards.slice(6).every(c=>c.source===undefined));
+assert.ok(data.cards.every(c=>c.source?.kind==='reference'));
 const missingSources=structuredClone(data);delete missingSources.cards[0].source;missingSources.cards[0].imageSource='';validateData(missingSources);
 
 for(const mutate of [d=>d.glossary[0].definition='',d=>d.glossary[0].aliases=[],d=>d.glossary[1].aliases=['MOXIE']]){const bad=structuredClone(data);mutate(bad);assert.throws(()=>validateData(bad));}
@@ -17,15 +16,13 @@ const previousSettings=structuredClone(data);delete previousSettings.mission.dif
 
 for(const card of data.cards)for(const side of ['left','right']){
  const answer=card[side];assert.ok(answer.label&&answer.description);
- for(const key of Object.keys(data.resources.quantities))assert.ok(Math.abs((answer.effects[key]||0)-(answer.effectPercentages[key]||0)*data.resources.quantities[key].max/100)<1e-9,card.id+': '+side+' '+key);
 }
-assert.equal(data.cards.find(c=>c.id==='1').left.effects.oxygen,30);
-assert.equal(data.cards.find(c=>c.id==='1').right.effects.oxygen,-30);
-assert.equal(data.cards.find(c=>c.id==='1').left.effects.shield,-5);
-assert.equal(data.cards.find(c=>c.id==='12').left.effects.water,-285);
-assert.equal(data.cards.find(c=>c.id==='13').right.effects.water,-475);
-assert.ok(data.cards.slice(2,8).every(c=>!Object.keys(c.left.effects).length&&!Object.keys(c.right.effects).length));
-const badConversion=structuredClone(data);badConversion.cards[0].left.effects.oxygen=15;assert.throws(()=>validateData(badConversion));
+assert.equal(data.cards.find(c=>c.id==='14').left.effects.oxygen,.6);
+assert.equal(data.cards.find(c=>c.id==='15').left.effects.water,-2);
+assert.equal(data.cards.find(c=>c.id==='16').left.effects.water,-23);
+assert.equal(data.cards.find(c=>c.id==='18').left.effects.food,.15);
+assert.equal(data.cards.find(c=>c.id==='26').left.effects.energy,-3.5);
+assert.ok(data.cards.every(c=>!c.left.effectPercentages&&!c.right.effectPercentages&&!c.left.ongoing&&!c.right.ongoing));
 const badSource=structuredClone(data);badSource.cards[0].source.kind='invented';assert.throws(()=>validateData(badSource));
 for(const description of ['', '   ', 'Your crew repairs the filter.']){const fixture=structuredClone(data);fixture.cards[0].left.description=description;validateData(fixture)}
 const old=structuredClone(data);delete old.cards[0].left.description;validateData(old);
@@ -39,6 +36,8 @@ for(const oldMax of [10,32]){
  legacySave.state.shield=71.25;
  legacySave.cardChanges={shield:-5.5,water:-4};
  const shared=legacySave.data.cards[0];
+ shared.left.effects.shield=-5;
+ shared.left.effectPercentages=Object.fromEntries(Object.entries(shared.left.effects).map(([k,v])=>[k,100*v/data.resources.quantities[k].max]));
  shared.left.ongoing=[{rates:{shield:.5},for:2,note:'Shield work'}];
  shared.left.later=[{after:2,effects:{shield:3}}];
  legacySave.deck[0]=shared;legacySave.deck[1]=shared;

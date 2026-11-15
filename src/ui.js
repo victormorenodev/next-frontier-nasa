@@ -73,72 +73,7 @@
     renderActive();
   }
 
-  const effectPanel = document.getElementById('effect-panel');
-  const effectSlots = document.getElementById('effect-slots');
-  function renderEffectPanel() {
-    effectPanel.hidden = mission.ended || (mission.difficulty || 'hard') !== 'hard';
-    if (effectPanel.hidden) return;
-    const now = mission.elapsed;
-    const items = [
-      ...flows.ongoing.filter(o => o.end > now).map(o => ({...o, amounts: o.rates, recurring: true})),
-      ...flows.later.map(o => ({...o, amounts: o.effects, start: o.at, recurring: false}))
-    ].filter(o => !o.panelHidden)
-      .sort((a, b) => (a.panelOrder || 0) - (b.panelOrder || 0))
-      .slice(-MAX_EFFECTS);
-    effectSlots.replaceChildren();
-    for (let i = 0; i < MAX_EFFECTS; i++) {
-      const item = items[i];
-      const slot = document.createElement('div'); slot.className = 'effect-slot';
-      effectSlots.append(slot);
-      if (!item) { slot.setAttribute('aria-label', Copy('effectEmpty')); continue; }
-      const name = item.note || Copy('effectFallback');
-      const button = document.createElement('button'); button.type = 'button';
-      button.className = 'effect-icon'; button.setAttribute('aria-label', name);
-      const tooltip = document.createElement('div'); tooltip.className = 'effect-tooltip';
-      tooltip.id = `effect-tip-${i}`; tooltip.setAttribute('role', 'tooltip');
-      button.setAttribute('aria-describedby', tooltip.id);
-      const heading = document.createElement('strong'); heading.textContent = name; tooltip.append(heading);
-      Object.entries(item.amounts).forEach(([key, amount]) => {
-        const ind = Indicators.INDICATORS.find(ind => ind.parts.includes(key));
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
-        svg.innerHTML = ICONS[ind.icon]; button.append(svg);
-        const line = document.createElement('p');
-        line.textContent = Copy(item.recurring ? 'effectRate' : 'effectOnce', {
-          resource: Indicators.QUANTITIES[key].name,
-          amount: `${amount > 0 ? '+' : ''}${fmt(amount)}`,
-          unit: Indicators.QUANTITIES[key].unit
-        }); tooltip.append(line);
-      });
-      const timing = document.createElement('p');
-      timing.textContent = item.start > now
-        ? Copy('effectStarts', {sols: solsText(item.start - now)})
-        : item.end === Infinity ? Copy('always') : Copy('tabletRemaining', {sols: solsText(item.end - now)});
-      tooltip.append(timing);
-      button.addEventListener('click', () => {
-        const open = slot.classList.contains('is-open');
-        effectSlots.querySelectorAll('.is-open').forEach(el => el.classList.remove('is-open'));
-        slot.classList.toggle('is-open', !open);
-        // Focus and hover must not keep the detail visible after a second tap.
-        effectPanel.classList.toggle('dismissed', open);
-      });
-      slot.append(button, tooltip);
-    }
-  }
-  document.addEventListener('pointerdown', event => {
-    if (!effectPanel.contains(event.target)) effectSlots.querySelectorAll('.is-open').forEach(el => el.classList.remove('is-open'));
-  });
-  effectPanel.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      effectSlots.querySelectorAll('.is-open').forEach(el => el.classList.remove('is-open'));
-      effectPanel.classList.add('dismissed');
-    }
-  });
-  effectPanel.addEventListener('pointerleave', () => effectPanel.classList.remove('dismissed'));
-  effectPanel.addEventListener('focusout', () => effectPanel.classList.remove('dismissed'));
-
   function renderActive() {
-    renderEffectPanel();
     const items = Flows.active(flows, mission.elapsed).reverse();
     const pages = Math.max(1, Math.ceil(items.length / MAX_EFFECTS));
     effectsPage = Math.min(effectsPage, pages - 1);
@@ -462,7 +397,6 @@
     document.getElementById('sol').textContent = Copy("solCount", {sol:mission.sol,total:Mission.TOTAL_SOLS});
     endButton.disabled = mission.ended;
     if (!mission.ended) return;
-    effectPanel.hidden = true;
     const done = mission.reason === 'complete';
     const failed = mission.reason === 'failed';
     const resource = mission.difficulty === 'easy' && ['oxygen','water'].includes(mission.failedResource)
@@ -648,16 +582,6 @@
         return content;
       }
     }));
-    if (ResourceDisplay.mode === 'hard') {
-      steps.push({
-        target: effectPanel, title: Copy('tutorialEffectsTitle'),
-        content: () => {
-          const content = document.createElement('div');
-          const p = document.createElement('p'); p.textContent = Copy('tutorialEffectsBody'); content.append(p);
-          return content;
-        }
-      });
-    }
     steps.push({
       target: document.getElementById('card'), title: Copy('tutorialCardTitle'), demo: true,
       content: () => { const p = document.createElement('p'); p.textContent = Copy('tutorialCardBody'); return p; }

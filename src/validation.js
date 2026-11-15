@@ -57,8 +57,11 @@ export function validateData(d, {legacy = false, allowLegacyShield = false} = {}
     for(const c of d.categories){const group=d.cards.filter(card=>card.category===c.id);need(group.length>0&&sum(group),'category '+c.id+'.cards.probability')}
   }
   for(const c of d.cards){
+    for(const key of ['sourceSideEffects','sourceNotes'])need(c[key]===undefined||typeof c[key]==='string','card '+c.id+'.'+key);
+    need(c.sourceVerified===undefined||typeof c.sourceVerified==='boolean','card '+c.id+'.sourceVerified');
     need(c.sourceDescription===undefined||typeof c.sourceDescription==='string','card '+c.id+'.sourceDescription');
     need(c.imageSource===undefined||c.imageSource===''||typeof c.imageSource==='string'&&/^https?:\/\//.test(c.imageSource),'card '+c.id+'.imageSource');
+    need(c.imageById===undefined||typeof c.imageById==='boolean','card '+c.id+'.imageById');
     need(c.imageCaption===undefined||typeof c.imageCaption==='string','card '+c.id+'.imageCaption');
     need(c.description&&c.image&&['easy','medium','hard'].includes(c.difficulty),'card '+c.id);
     if(c.source!=null){
