@@ -21,6 +21,8 @@
   function create(slot, handlers) {
     let phase = 'none';          // 'front' | 'back' | 'message' | 'none'
     let drag = null;
+    let demoFrame = 0, demonstrating = false;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     // ── Build the card once; contents change per card ──
     const card3d = el('div', 'card3d');
@@ -58,7 +60,7 @@
 
     // ── Answering ──
     function answer(side) {
-      if (phase !== 'front') return;
+      if (phase !== 'front' || handlers.canAnswer?.() === false) return;
       phase = 'answering';
       card3d.style.transform = '';                 // glide back to the centre, then flip
       highlight(null);
@@ -85,7 +87,7 @@
 
     // ── Drag to answer (mouse, finger or pen) ──
     card3d.addEventListener('pointerdown', e => {
-      if (phase !== 'front' || e.button > 0) return;
+      if (phase !== 'front' || handlers.canAnswer?.() === false || e.button > 0) return;
       drag = {id: e.pointerId, x: e.clientX, dx: 0, moving: false};
     });
     card3d.addEventListener('pointermove', e => {
@@ -251,7 +253,29 @@
       b.focus();
     }
 
-    return {showFront, showBack, showMessage};
+    function updateDemoHighlight() {
+      cancelAnimationFrame(demoFrame);
+      highlight(null);
+      if (!demonstrating || reducedMotion.matches) return;
+      const tick = () => {
+        if (!demonstrating || reducedMotion.matches) return;
+        // Follow the actual CSS animation clock, including repeated cycles.
+        const animation = card3d.getAnimations().find(item => item.animationName === 'tutorial-card-swipe');
+        const progress = animation?.effect?.getComputedTiming().progress;
+        highlight(progress >= .08 && progress <= .40 ? 'left' : progress >= .58 && progress <= .94 ? 'right' : null);
+        demoFrame = requestAnimationFrame(tick);
+      };
+      tick();
+    }
+    reducedMotion.addEventListener('change', updateDemoHighlight);
+    function demonstrate(enabled) {
+      demonstrating = enabled;
+      card3d.classList.remove('deal');
+      card3d.classList.toggle('tutorial-demo', enabled);
+      if (!enabled) card3d.style.transform = '';
+      updateDemoHighlight();
+    }
+    return {showFront, showBack, showMessage, demonstrate};
   }
 
   root.CardUI = {create};

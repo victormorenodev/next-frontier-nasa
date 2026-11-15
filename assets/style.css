@@ -1181,3 +1181,28 @@ main {
   .menu-dialog h2 { margin-bottom: 12px; }
   .menu-dialog p { margin-bottom: 10px; font-size: 14px; }
 }
+
+/* Easy onboarding highlights real elements without sending choices to the engine. */
+.tutorial-dialog { position: fixed; inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--text); overflow: hidden; touch-action: pan-y; }
+.tutorial-dialog::backdrop { background: transparent; }
+.tutorial-spotlight { position: fixed; pointer-events: none; border: 3px solid #f3ce9d; border-radius: 18px; box-shadow: 0 0 0 150vmax #101324c9, 0 0 20px #f3ce9d55; }
+.tutorial-panel { position: fixed; display: flex; flex-direction: column; gap: 8px; width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 14px; border: 1px solid #bea68b; border-radius: 18px; background: #282b40; box-shadow: 0 12px 44px #0007; }
+.tutorial-header, .tutorial-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.tutorial-panel button { min-height: 44px; padding: 8px 16px; border: 1px solid #f1d2b2; border-radius: 10px; background: #dfb38c; color: #292733; font: inherit; font-weight: 750; font-size: 16px; cursor: pointer; }
+.tutorial-panel #tutorial-skip { min-height: 44px; padding: 5px 8px; border-color: #a7afc570; background: transparent; color: #e9e6e0; font-size: 13px; font-weight: 600; }
+.tutorial-panel button:focus-visible { outline: 3px solid #f6dbaf; outline-offset: 3px; }
+.tutorial-copy { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.tutorial-copy h2 { margin: 0 0 8px; font-size: 21px; line-height: 1.2; }
+#tutorial-body p { margin: 0; font-size: 16px; line-height: 1.4; }
+#tutorial-body p + p { margin-top: 10px; }
+#tutorial-body .resource-change { font-size: 15px; }
+.tutorial-footer button { flex-shrink: 0; }
+.card3d.tutorial-demo { animation: tutorial-card-swipe 2.4s ease-in-out infinite; }
+@keyframes tutorial-card-swipe { 0%, 48%, 100% { transform: translateX(0) rotate(0); } 22% { transform: translateX(-18px) rotate(-3deg); } 75% { transform: translateX(18px) rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .card3d.tutorial-demo { animation: none; } }
+
+@media (max-width: 700px) and (orientation: portrait) {
+  #game.tutorial-card-step > .card-area { margin-top: 76px; }
+}
+
+.tutorial-header, .tutorial-footer { justify-content: flex-end; }

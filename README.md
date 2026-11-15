@@ -137,10 +137,18 @@ A imagem mantém proporção sem corte e o botão Start New Mission fica fora de
 
 A entrada normal abre um menu com Next Frontier e os botões **Start New Mission**, **Continue mission** e **Credits**, sem botão de sair. Continue mission fica visível, mas desativado quando não há save válido no localStorage (inclusive se o armazenamento estiver indisponível ou o save for inválido), acompanhado de “No saved mission yet.”. O fundo `assets/images/mars-menu.svg` deriva do estilo geométrico de Marte e inclui habitats, antenas e painéis solares; o fundo durante a missão permanece o anterior.
 
-Start New Mission abre o briefing da nova missão; Continue mission retoma diretamente a fase e o modo salvos, sem passar pelo briefing. A continuação não aparece mais como botão dentro do briefing. Nessa tela foram removidos o rótulo “Next Frontier · Mission briefing” e o parágrafo “Look after…”. Não há tutorial implementado nesta alteração. Créditos abrem um diálogo com a atribuição da imagem NASA e das ilustrações geradas.
+Start New Mission abre o briefing da nova missão; Continue mission retoma diretamente a fase e o modo salvos, sem passar pelo briefing. A continuação não aparece mais como botão dentro do briefing. Nessa tela foram removidos o rótulo “Next Frontier · Mission briefing” e o parágrafo “Look after…”. Novas missões Easy mostram o tutorial descrito abaixo; Hard não tem tutorial. Créditos abrem um diálogo com a atribuição da imagem NASA e das ilustrações geradas.
 
 O menu não altera nem apaga o save. Continuar restaura a missão existente; escolher uma nova missão mantém o fluxo atual. A recarga interna usada para iniciar uma nova missão com dados atuais mantém a seleção de modo/consumo e vai direto ao jogo. Se a inicialização falhar, o aviso e Try again continuam acessíveis na tela de briefing. Textos novos ficam em `data/interface.json`; a navegação e os diálogos ficam em `src/ui.js`.
 
 O menu é mobile-first e usa uma única coluna centralizada horizontal e verticalmente em celulares, tablets e desktop, em ambas as orientações. Título, textos dos botões e aviso de save são centralizados. A largura é limitada a 360 px na base e 440 px em telas a partir de 768 px com altura suficiente; telas baixas usam tipografia e espaçamentos compactos, preservando os alvos de toque e as safe areas. Ícones decorativos identificam as três ações. Os botões têm fundo sólido, foco visível e estado desativado explícito, sem depender de transparência sobre a paisagem.
 
 Para impedir mistura de HTML novo com CSS/módulos/textos antigos do cache, os links de CSS e bootstrap no HTML usam a mesma versão de assets (`v`). O bootstrap propaga essa versão aos módulos (inclusive validation) e busca os JSONs com `cache: no-store`. Ao mudar a versão de assets em uma entrega, atualizar os dois links do HTML juntos. Os snapshots de regras das missões salvas continuam preservados; os textos atuais seguem prioritários.
+
+## Tutorial do Easy
+
+Ao iniciar uma nova missão Easy, uma guia curta apresenta os quatro indicadores e depois a carta. As explicações usam as descrições e previsões já disponíveis nos detalhes dos recursos. A carta se move continuamente para os lados e preenche o botão correspondente como no arrasto real; nenhuma escolha é aplicada nessa demonstração. A etapa só termina por Let’s play! ou por pular.
+
+Toque em Next, deslize para qualquer lado ou use as setas para avançar; na última etapa, use Let’s play!. Skip tutorial está disponível desde a primeira etapa, e Escape também permite pular. Durante a guia, recursos e tempo ficam intactos. Continuar uma missão salva não repete o tutorial. Hard mantém o início direto, sem tutorial por enquanto.
+
+O tutorial não exibe contador de etapas nem a dica “Swipe sideways or tap the button”. Os gestos e setas continuam avançando as etapas de indicadores; no passo final, não encerram a demonstração. Let’s play! inicia o jogo; Skip tutorial e Escape continuam disponíveis para pular.

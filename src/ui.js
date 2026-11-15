@@ -22,6 +22,7 @@
   const tablet = document.getElementById('effects-tablet');
   let effectsPage = 0;
   const MAX_EFFECTS = 3;      // the effects box shows at most this many
+  let easyTutorial = null;
   let state;
   let mission;
   let flows;          // what the base uses and makes every sol, and answers still in effect
@@ -304,7 +305,7 @@
 
   const endButton = document.getElementById('end-mission');
   const dialog = document.getElementById('end-dialog');
-  const cardUI = CardUI.create(document.getElementById('card'), {onAnswer, onNext});
+  const cardUI = CardUI.create(document.getElementById('card'), {onAnswer, onNext, canAnswer: () => !easyTutorial?.active});
   let solTransition = false;
   let solTimer;
   let cardChanges = {};
@@ -335,6 +336,7 @@
     render();
     renderMission();
     showSol();
+    if (difficulty === 'easy') startEasyTutorial();
   }
 
   function showSol() {
@@ -345,7 +347,7 @@
   }
 
   function onAnswer(side) {
-    if (mission.ended || solTransition) return;
+    if (mission.ended || solTransition || easyTutorial?.active) return;
     const card = deck[index], answer = card[side];
     const before = state;
     adopt(Engine.answer(snapshot(), side));
@@ -361,7 +363,7 @@
   function snapshot() { return {state,mission,flows,deck,index,schedule,eventIndex,savedSide}; }
   function adopt(value) { ({state,mission,flows,deck,index,schedule,eventIndex,savedSide}=value); ResourceDisplay.mode=mission.difficulty || 'hard'; }
   function onNext() {
-    if(solTransition) return;
+    if(solTransition || easyTutorial?.active) return;
     const before=state;
     const result=Engine.next(snapshot());
     if (result.snapshot.mission===mission && result.snapshot.index===index) return;
@@ -565,6 +567,31 @@
     });
   }
   window.addEventListener('storage', e=>{if(e.key==='next-frontier-save'){ continueButton.disabled=true; game.inert=true; if(confirm(Copy("changedTab"))) location.reload(); }});
+  easyTutorial = EasyTutorial.create({
+    demonstrate: enabled => {
+      game.classList.toggle('tutorial-card-step', enabled);
+      cardUI.demonstrate(enabled);
+    },
+    onFinish: () => document.querySelector('#card .answer')?.focus({preventScroll:true})
+  });
+  function startEasyTutorial() {
+    const steps = ResourceDisplay.indicators().map(ind => ({
+      target: row.querySelector(`[data-id="${ind.id}"]`),
+      title: ind.name,
+      content: () => {
+        renderDetail(Indicators.read(state, ResourceDisplay.indicators()).find(item => item.id === ind.id));
+        const content = document.createElement('div'); content.className = 'tutorial-resource-detail';
+        detail.querySelectorAll('.resource-description, .resource-change').forEach(item => content.append(item.cloneNode(true)));
+        renderDetail(null);
+        return content;
+      }
+    }));
+    steps.push({
+      target: document.getElementById('card'), title: Copy('tutorialCardTitle'), demo: true,
+      content: () => { const p = document.createElement('p'); p.textContent = Copy('tutorialCardBody'); return p; }
+    });
+    easyTutorial.start(steps);
+  }
   buildTiles();
   try {
     const pendingDifficulty=sessionStorage.getItem('next-frontier-start');

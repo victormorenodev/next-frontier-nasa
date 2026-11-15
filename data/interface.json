@@ -111,5 +111,10 @@
   "creditsArt": "Ending card illustrations: created with OpenAI image generation.",
   "menuTitleNext": "Next",
   "menuTitleFrontier": "Frontier",
-  "menuNoSave": "No saved mission yet."
+  "menuNoSave": "No saved mission yet.",
+  "tutorialSkip": "Skip tutorial",
+  "tutorialNext": "Next",
+  "tutorialPlay": "Let’s play!",
+  "tutorialCardTitle": "Make a choice",
+  "tutorialCardBody": "Each choice has a trade-off: it can help one supply but use another. Tap a choice, or swipe left or right."
 }
