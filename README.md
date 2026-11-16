@@ -1,106 +1,106 @@
 # Mission: Perseverance
 
-Jogo de decisões por cartas em uma base marciana, com quatro astronautas e uma missão de **25 sols no Easy ou 30 no Hard**. O jogador assume o papel de capitão. Textos do jogo em inglês simples, voltados ao público de 7–12 anos.
+A card-based decision game set on a Martian base, with four astronauts and a mission lasting **25 sols on Easy or 30 on Hard**. The player takes the role of captain. The game uses simple English for players aged 7–12.
 
-Documentação revisada contra o código e os JSONs em **15/11/2026**. Pesquisa e modelos históricos estão em [docs/RESEARCH.md](docs/RESEARCH.md); não definem as regras atuais.
+Documentation checked against the code and JSON files on **November 15, 2026**. Research and historical models are recorded in [docs/RESEARCH.md](docs/RESEARCH.md); they do not define the current rules.
 
-## Executar
+## Run
 
-Na raiz do repositório:
+From the repository root:
 
 ```bash
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Abra **http://127.0.0.1:8000/**. São módulos JavaScript nativos e JSONs por fetch: HTTP é obrigatório, `file://` não funciona. Não há framework, dependências npm ou build obrigatório para jogar.
+Open **http://127.0.0.1:8000/**. The game uses native JavaScript modules and fetches JSON files: HTTP is required, and `file://` does not work. No framework, npm dependencies, or build step is required to play.
 
-## Jogar
+## Play
 
-O menu tem **Start New Mission**, **Continue mission**, **Glossary** e controle de som (Credits está oculto), sem botão de sair. Continue fica desativado quando não há missão válida em andamento no navegador.
+The menu contains **Start New Mission**, **Continue mission**, **Glossary**, and a sound control (Credits is hidden), with no exit button. Continue is disabled when the browser has no valid mission in progress.
 
-Start New Mission abre o briefing com imagem NASA e crédito. Botão, arrasto ou setas levam à seleção **Welcome, Captain!**. Arrastar à esquerda escolhe Operation Steins; à direita, Operation Gate. Botões e setas também funcionam. O seletor de consumo acelerado foi retirado; novas missões usam consumo normal.
+Start New Mission opens the briefing with a credited NASA image. A button, swipe, or arrow keys lead to the **Welcome, Captain!** selection screen. Swipe left for Operation Steins or right for Operation Gate. Buttons and arrow keys also work. The faster-consumption selector has been removed; new missions use normal consumption.
 
-| Missão | Modo interno | Indicação na interface | Recursos iniciais | Cartas elegíveis |
+| Mission | Internal mode | Interface label | Starting resources | Eligible cards |
 | --- | --- | --- | ---: | ---: |
-| Operation Steins | Easy | Ages 7–10 | 75% da capacidade | 27 (easy/medium) |
-| Operation Gate | Hard | Ages 11+ | 50% da capacidade | 31 (easy/medium/hard) |
+| Operation Steins | Easy | Ages 7–10 | 75% of capacity | 27 (easy/medium) |
+| Operation Gate | Hard | Ages 11+ | 50% of capacity | 31 (easy/medium/hard) |
 
-Cada sol tem uma carta (80%) ou duas (20%). Responda por botão, arrasto ou setas; o verso mostra a escolha, explicação opcional, efeitos imediatos e **Source:** quando há referência. Efeitos diários são aplicados uma vez, após a última carta do sol. Cartas podem reaparecer, mas nunca imediatamente após o mesmo ID, inclusive entre sols. Completar 25 sols no Easy ou 30 no Hard vence; qualquer recurso interno em zero causa **Mission Failed**, com prioridade sobre a vitória.
+Each sol has one card (80%) or two (20%). Answer using buttons, swipes, or arrow keys; the back shows the choice, an optional explanation, immediate effects, and **Source:** when a reference is available. Daily effects are applied once, after the last card of the sol. Cards can reappear, but the same ID never appears twice in a row, including across sols. Complete 25 sols on Easy or 30 on Hard to win; any internal resource reaching zero causes **Mission Failed**, taking priority over victory.
 
-## Recursos e consumo
+## Resources and consumption
 
-Valores físicos internos não são arredondados. Shield é um índice abstrato de proteção dos astronautas, de 0 a 100 pontos, sem equivalência a dose ou porcentagem garantida de radiação bloqueada.
+Internal physical values are not rounded. Shield is an abstract measure of astronaut protection, from 0 to 100 points, with no equivalence to radiation dose or a guaranteed percentage of radiation blocked.
 
-| Recurso | Máximo | Início Easy | Início Hard | Perda normal por sol (base inteira) |
+| Resource | Maximum | Easy start | Hard start | Normal loss per sol (entire base) |
 | --- | ---: | ---: | ---: | ---: |
-| Oxygen Level | 200 kg | 150 kg | 100 kg | 3,5 kg |
+| Oxygen Level | 200 kg | 150 kg | 100 kg | 3.5 kg |
 | Water Stock | 1900 L | 1425 L | 950 L | 10 L |
-| Radiation Shield | 100 pontos | 75 | 50 | nenhuma |
+| Radiation Shield | 100 points | 75 | 50 | none |
 | Energy Supply | 1480 kWh | 1110 kWh | 740 kWh | 5 kWh |
-| Food Stock | 235 kg secos | 176,25 kg | 117,5 kg | 2,6 kg |
+| Food Stock | 235 kg dry food | 176.25 kg | 117.5 kg | 2.6 kg |
 
-Não há produção automática compensando essas perdas. As cartas aplicam alterações adicionais nas unidades dos estoques e pontos de Shield. Os valores são balanceamento autoral, não dimensionamento científico de uma base real.
+There is no automatic production to offset these losses. Cards apply additional changes in resource units and Shield points. These values are authored game-balance parameters, not scientific specifications for a real base.
 
-Easy exibe inteiros de 0 a 100 sem unidade nos estoques. Água e oxigênio aparecem juntos em **Life Support**, com cruz de saúde: `round(100 × min(oxygen / oxygen.max, water / water.max))`. Seus estoques continuam separados. Hard mostra os cinco indicadores com unidades físicas; **Shield mostra % nos dois modos**, com ícone de astronauta dentro de escudo. Um zero apenas arredondado não encerra a missão.
+Easy displays resource stocks as integers from 0 to 100 without units. Water and oxygen appear together as **Life Support**, with a health-cross icon: `round(100 × min(oxygen / oxygen.max, water / water.max))`. Their stocks remain separate internally. Hard shows all five indicators with physical units; **Shield displays % in both modes**, with an astronaut inside a shield icon. A displayed zero caused only by rounding does not end the mission.
 
-Hover ou foco de teclado nos indicadores abre o detalhe; no toque, segurar/deslizar mostra e soltar fecha. Life Support mostra só o valor combinado e sua previsão, sem números separados de água/oxigênio. No verso, “Changes water”/“Changes oxygen” identifica cada componente, sem somar essas variações como se fossem o delta combinado.
+Hovering over or focusing an indicator opens its details; on touch screens, hold or slide to show them and release to close. Life Support shows only the combined value and its forecast, without separate water/oxygen numbers. On the card back, “Changes water”/“Changes oxygen” identifies each component without adding those changes as if they were a combined delta.
 
-Mudanças animam por 1,4 s; a passagem de sol inclui luz do fundo por 600 ms, respeitando movimento reduzido. Não há painel de efeitos abaixo das cartas. O tablet de relatório continua implementado com botão oculto.
+Changes animate for 1.4 seconds; the transition to a new sol includes a background light effect lasting 600 ms, respecting reduced-motion settings. There is no effects panel below the cards. The report tablet remains implemented with its button hidden.
 
-## Cartas, imagens e probabilidades
+## Cards, images, and probabilities
 
-O catálogo combina **14 cartas da Página1 e 17 da Página2**. Os IDs 5/9/11 repetidos são eventos distintos: as versões da Página1 usam `page1-5`, `page1-9` e `page1-11`. `imageId` preserva o número usado para a imagem. Há **28 imagens distintas para os 31 eventos**, todos disponíveis no catálogo atual.
+The catalog combines **14 cards from Página1 and 17 from Página2**. Repeated IDs 5/9/11 represent distinct events: the Página1 versions use `page1-5`, `page1-9`, and `page1-11`. `imageId` preserves the number used for the image. There are **28 distinct images for the 31 events**, all available in the current catalog.
 
-| Categoria | Cartas | Probabilidade-base |
+| Category | Cards | Base probability |
 | --- | ---: | ---: |
-| Routine | 9 | 9/31 ≈ 29,03% |
-| Maintenance | 9 | 9/31 ≈ 29,03% |
-| Exploration | 1 | 1/31 ≈ 3,23% |
-| Science | 5 | 5/31 ≈ 16,13% |
-| Emergency | 7 | 7/31 ≈ 22,58% |
+| Routine | 9 | 9/31 ≈ 29.03% |
+| Maintenance | 9 | 9/31 ≈ 29.03% |
+| Exploration | 1 | 1/31 ≈ 3.23% |
+| Science | 5 | 5/31 ≈ 16.13% |
+| Emergency | 7 | 7/31 ≈ 22.58% |
 
-Sorteia-se categoria e depois carta, com chances iguais dentro da categoria. No Easy, as cartas Hard são excluídas e os pesos restantes normalizados; os pesos-base das categorias vêm do catálogo completo. Partidas salvas mantêm seus pesos antigos.
+A category is drawn first, then a card, with equal chances within each category. On Easy, Hard cards are excluded and the remaining weights are normalized; base category weights come from the full catalog. Saved missions retain their original weights.
 
-Imagens são procuradas por `imageId` (ou ID), nas extensões `.webp`, `.jpg`, `.png`, `.jpeg`, priorizando WebP e URLs estáveis para cache. Se faltarem ou forem inválidas, aparece um placeholder; o carregador tenta novamente a cada 15 segundos enquanto a frente está aberta. A legenda termina com **Image source:** e link da origem, ou valor vazio. As referências do verso são independentes; sem referência, a linha Source não aparece.
+Images are resolved by `imageId` (or ID), trying `.webp`, `.jpg`, `.png`, and `.jpeg`, prioritizing WebP and stable URLs for caching. Missing or invalid images display a placeholder; the loader retries every 15 seconds while the card front remains open. Captions end with **Image source:** and a source link, or an empty value. References on the back are independent; without a reference, the Source line is omitted.
 
-Para reimportar as planilhas e recalcular os pesos:
+To reimport the spreadsheets and recalculate weights:
 
 ```bash
 python scripts/import_event_cards.py
 python scripts/import_event_cards.py --check
 ```
 
-O importador atualiza `data/cards.json` e `data/categories.json`. Os efeitos atuais são **unidades explícitas, não percentuais da capacidade**. O navegador lê os JSONs, sem executar Python. [Mapeamento e auditoria](docs/CARDS.md).
+The importer updates `data/cards.json` and `data/categories.json`. Current effects use **explicit units, not percentages of capacity**. The browser reads JSON files without running Python. [Mapping and audit](docs/CARDS.md).
 
-## Tutorial, glossário e áudio
+## Tutorial, glossary, and audio
 
-Novas missões têm tutorial sobre os indicadores e a carta: cinco etapas no Easy, seis no Hard. Radiation Shield explica o que é radiação e a proteção dos astronautas. Next, deslize ou setas avançam; Skip tutorial está disponível desde o início. A última etapa demonstra a inclinação e o preenchimento dos botões continuamente até **Let’s play!**, sem aplicar escolhas nem tocar o som de arrasto. Continuar missão não repete o tutorial.
+New missions include a tutorial about the indicators and cards: five steps on Easy and six on Hard. Radiation Shield explains radiation and astronaut protection. Next, swipes, or arrow keys advance the tutorial; Skip tutorial is available from the start. The final step continuously demonstrates card tilting and button highlighting until **Let’s play!**, without applying choices or playing the swipe sound. Continuing a mission does not repeat the tutorial.
 
-O glossário tem **41 termos**, em ordem alfabética, no menu e nos textos das cartas, com cor e sublinhado pontilhado. Hover, toque ou foco mostram explicações curtas; **botões de escolha não recebem glossário**. [Auditoria e fontes](docs/GLOSSARY.md). Nomes dos recursos/indicadores (Life Support, Oxygen e Radiation Shield, incluindo seus aliases) não recebem marcação nas cartas; suas explicações ficam nos detalhes dos indicadores. As entradas continuam no glossário do menu.
+The glossary contains **41 terms**, alphabetically ordered, available in the menu and annotated in card text with color and dotted underlines. Hover, touch, or keyboard focus shows short explanations; **answer buttons do not receive glossary annotations**. [Audit and sources](docs/GLOSSARY.md). Resource/indicator names (Life Support, Oxygen, and Radiation Shield, including their aliases) are not annotated on cards; their explanations are available in indicator details. These entries remain in the menu glossary.
 
-Música e som ambiente ficam em loop após uma interação permitida pelo navegador. O botão de som no menu e no jogo controla todos os sons e guarda a preferência. Há efeitos para indicadores/botões, avanço do sol e movimento da carta (ao começar a inclinar e a cada virada ou retomada do arrasto, mesmo sem confirmar). Os sons usam a Web Audio API: tocam sem atraso e a música emenda o loop sem pausa. Interrupções são recuperadas nas próximas interações ou no retorno à aba, respeitando o som desligado.
+Music and ambient sound loop after an interaction permitted by the browser. The sound buttons in the menu and game control all sounds and remember the preference. Effects play for indicators/buttons, advancing to a new sol, and card movement (when tilting starts and whenever dragging reverses or resumes, even without confirming). Sounds use the Web Audio API for immediate playback and gapless music loops. Interruptions are recovered on subsequent interactions or when returning to the tab, respecting the sound-off preference.
 
-## Progresso salvo
+## Saved progress
 
-Um slot `next-frontier-save` guarda **somente a última missão em andamento**, incluindo fase, modo, estoques, baralho e configuração original. Continuar restaura sem reaplicar escolhas. Vitória, derrota ou desistência removem o save; a tela final permanece só na sessão atual. Saves antigos já encerrados são descartados na inicialização.
+The `next-frontier-save` slot stores **only the latest mission in progress**, including its phase, mode, stocks, deck, and original configuration. Continue restores it without reapplying choices. Victory, failure, or quitting removes the save; the ending screen remains only for the current session. Older saves of completed missions are discarded at startup.
 
-Abrir o briefing não substitui uma missão; escolher o novo modo substitui o slot sem confirmação. A confirmação de End mission continua existindo. Saves antigos preservam duração, capacidades, cartas, sequência e ajustes de consumo. A migração de Shield antigo em g/cm² converte proporcionalmente para 0–100 sem reaplicar escolhas.
+Opening the briefing does not replace a mission; selecting a new mode replaces the slot without confirmation. End mission still requires confirmation. Older saves retain their duration, capacities, cards, sequence, and consumption settings. Migration of legacy Shield values in g/cm² converts them proportionally to 0–100 without reapplying choices.
 
-O progresso pertence ao navegador e à origem do site; não há login, sincronização ou suporte offline dedicado. Outra aba que altera o save suspende a interface antiga. Falhas de armazenamento mostram aviso; saves inválidos podem ser substituídos iniciando outra missão. A preferência `next-frontier-sound` é independente da partida.
+Progress belongs to the browser and site origin; there is no login, synchronization, or dedicated offline support. Another tab modifying the save suspends the old interface. Storage failures display a warning; invalid saves can be replaced by starting a new mission. The `next-frontier-sound` preference is independent of the mission.
 
-## Editar e validar
+## Edit and validate
 
-| Arquivo | Conteúdo |
+| File | Contents |
 | --- | --- |
-| `data/mission.json` | Duração, tripulação, eventos/sol e fração inicial por modo |
-| `data/resources.json` | Máximos, unidades, descrições, indicadores e fallback inicial legado |
-| `data/cards.json`, `data/categories.json` | Conteúdo e probabilidades gerados pelo importador |
-| `data/flows.json` | Perdas/produções-base; atualmente apenas perdas `perSol`, `simulated` |
-| `data/interface.json` | Textos e caminhos das imagens de briefing/finais |
-| `data/glossary.json` | Termos, aliases e definições |
-| `scripts/import_event_cards.py` | Leitura das planilhas, textos resumidos e legendas editoriais |
+| `data/mission.json` | Duration, crew, events per sol, and starting fraction per mode |
+| `data/resources.json` | Maximums, units, descriptions, indicators, and legacy starting-value fallback |
+| `data/cards.json`, `data/categories.json` | Content and probabilities generated by the importer |
+| `data/flows.json` | Base losses/production; currently only `perSol`, `simulated` losses |
+| `data/interface.json` | Interface text and briefing/ending image paths |
+| `data/glossary.json` | Terms, aliases, and definitions |
+| `scripts/import_event_cards.py` | Spreadsheet parsing, shortened text, and editorial captions |
 
-Layout, gestos, cálculos, ícones e áudio ficam no código. Não inserir fórmulas executáveis nos JSONs. O motor ainda aceita efeitos contínuos/agendados para compatibilidade, mas o catálogo atual só aplica efeitos imediatos.
+Layout, gestures, calculations, icons, and audio are implemented in code. Do not insert executable formulas into JSON files. The engine still supports ongoing/scheduled effects for compatibility, but the current catalog uses only immediate effects.
 
 ```bash
 npm test
@@ -109,16 +109,16 @@ git diff --check
 git status --short
 ```
 
-São **dez suítes Node**, sem dependências npm, cobrindo motor, dados, apresentação, persistência e áudio. Node é ferramenta de desenvolvimento, não requisito do jogador. Alterações visuais exigem conferência no navegador: 320×568, 375×667, 1032×1376 e 844×390, incluindo toque, teclado e movimento reduzido. A duração histórica de 15–20 minutos não foi validada com crianças.
+There are **ten Node test suites**, without npm dependencies, covering the engine, data, presentation, persistence, and audio. Node is a development tool, not a player requirement. Visual changes require browser checks at 320×568, 375×667, 1032×1376, and 844×390, including touch, keyboard, and reduced motion. The historical target of 15–20 minutes has not been validated with children.
 
-## Publicar e consultar documentos
+## Publishing and documentation
 
-O workflow **Publish game** (`.github/workflows/pages.yml`) testa e publica em GitHub Pages por push na `main` ou execução manual. O pacote contém `index.html`, `src/`, `data/`, `assets/`, `images/` e `sfx/`; também pode ser servido por outra hospedagem estática HTTP. Commit local não publica sozinho. Não presumir sucesso de deploy nem enviar prints/logs/documentação interna como parte do jogo.
+The **Publish game** workflow (`.github/workflows/pages.yml`) tests and deploys to GitHub Pages on pushes to `main` or manual runs. The package contains `index.html`, `src/`, `data/`, `assets/`, `images/`, and `sfx/`; it can also be served by another static HTTP host. A local commit does not publish the game by itself. Do not assume deployment succeeded or include screenshots, logs, or internal documentation in the game package.
 
-- [AGENTS.md](AGENTS.md): orientações vigentes para agentes.
-- [ARCHITECTURE.md](ARCHITECTURE.md): implementação e compatibilidade.
-- [docs/CARDS.md](docs/CARDS.md): importação, imagens e fontes das cartas.
-- [docs/GLOSSARY.md](docs/GLOSSARY.md): termos revisados e referências.
-- [docs/RESEARCH.md](docs/RESEARCH.md): pesquisa e limites científicos.
-- [CLAUDE.md](CLAUDE.md): ponto de entrada, sem duplicar regras.
-- [docs/history/](docs/history/): versões históricas, sem valor de instrução atual.
+- [AGENTS.md](AGENTS.md): current agent instructions.
+- [ARCHITECTURE.md](ARCHITECTURE.md): implementation and compatibility.
+- [docs/CARDS.md](docs/CARDS.md): card import, images, and sources.
+- [docs/GLOSSARY.md](docs/GLOSSARY.md): reviewed terms and references.
+- [docs/RESEARCH.md](docs/RESEARCH.md): research and scientific limitations.
+- [CLAUDE.md](CLAUDE.md): entry point without duplicated rules.
+- [docs/history/](docs/history/): historical versions, not current instructions.
